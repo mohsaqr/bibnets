@@ -16,4 +16,8 @@
 ^bibnets_.*\.tar\.gz$
 ^AGENTS\.md$
 ^cran-comments\.md$
+^codex$
 ^DESCRIPTION\.orig$
+^sidelined$
+^\.DS_Store$
+^.*\.DS_Store$

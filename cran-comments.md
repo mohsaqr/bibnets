@@ -7,8 +7,9 @@
 0 errors | 0 warnings | 0 notes
 
 Tested on:
-- macOS Sequoia 15.5 (aarch64), R 4.5.0
+- macOS Tahoe 26.3.1 (aarch64), R 4.5.2 — `R CMD check --as-cran`: OK
 - win-builder (R-devel) — pending
+- All 6 URLs validated via `urlchecker::url_check()`
 
 ## Notes
 
