@@ -43,6 +43,14 @@ formats or runs equivalence tests.
 
 ## Install
 
+Once accepted on CRAN:
+
+```r
+install.packages("bibnets")
+```
+
+Development version from GitHub:
+
 ```r
 # install.packages("remotes")
 remotes::install_github("mohsaqr/bibnets")

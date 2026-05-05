@@ -2,19 +2,19 @@ Package: bibnets
 Title: Citation, Co-Citation, and Bibliometric Network Construction
 Version: 0.3.0
 Authors@R: c(
-    person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre"),
+    person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
     person("Sonsoles", "López-Pernas", role = "aut",
            comment = c(ORCID = "0000-0002-9621-1392")))
 Description: Constructs bibliometric networks from scholarly data. Supports
     co-authorship, keyword co-occurrence, co-citation, bibliographic
     coupling, and direct citation networks with multiple counting and
-    normalisation methods. Reads Scopus, Web of Science, BibTeX, RIS,
-    OpenAlex, Lens.org, and Dimensions exports. Includes tools for
-    temporal analysis, backbone extraction, and export to common network
-    formats. Methods described in López-Pernas, Saqr & Apiola (2023)
-    <doi:10.1007/978-3-031-25336-2_5> and Apiola, Saqr & López-Pernas
-    (2023) <doi:10.1007/978-3-031-25336-2_6>.
+    normalisation methods. Reads 'Scopus', 'Web of Science', 'BibTeX',
+    'RIS', 'OpenAlex', 'Lens.org', and 'Dimensions' exports. Includes
+    tools for temporal analysis, backbone extraction, and export to
+    common network formats. Methods described in López-Pernas, Saqr
+    & Apiola (2023) <doi:10.1007/978-3-031-25336-2_5> and Apiola,
+    Saqr & López-Pernas (2023) <doi:10.1007/978-3-031-25336-2_6>.
 License: MIT + file LICENSE
 URL: https://github.com/mohsaqr/bibnets
 BugReports: https://github.com/mohsaqr/bibnets/issues
