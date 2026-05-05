@@ -26,3 +26,19 @@ test_that("reference_network with association strength", {
   expect_true(all(edges$weight > 0))
   expect_true(all(is.finite(edges$weight)))
 })
+
+test_that("reference_network strength counting is finite in column mode", {
+  d <- data.frame(id = paste0("W", 1:4), stringsAsFactors = FALSE)
+  d$references <- list(
+    c("R1", "R2", "R3", "R4", "R5"),
+    c("R1", "R2"),
+    c("R1", "R3"),
+    c("R2", "R3")
+  )
+
+  edges <- reference_network(d, counting = "strength", threshold = 0)
+
+  expect_gt(nrow(edges), 0L)
+  expect_false(anyNA(edges$weight))
+  expect_true(all(is.finite(edges$weight)))
+})

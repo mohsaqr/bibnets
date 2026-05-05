@@ -128,6 +128,17 @@ test_that("temporal_network passes ... args to network function", {
   expect_equal(length(tn), 0)
 })
 
+test_that("temporal_network warns when a window fails", {
+  d <- make_temporal_data()
+  bad_fun <- function(data, ...) stop("boom", call. = FALSE)
+
+  expect_warning(
+    tn <- temporal_network(d, bad_fun, window = 5, threshold = 0),
+    "Network construction failed for window"
+  )
+  expect_equal(length(tn), 0)
+})
+
 test_that("temporal_network requires year column", {
   d <- make_temporal_data()
   d$year <- NULL

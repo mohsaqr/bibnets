@@ -105,3 +105,8 @@ test_that("prune errors when both threshold and top_n given", {
   edges <- make_prune_edges()
   expect_error(prune(edges, threshold = 2, top_n = 3), "Only one")
 })
+
+test_that("prune rejects top_n=0", {
+  edges <- make_prune_edges()
+  expect_error(prune(edges, top_n = 0), "positive")
+})

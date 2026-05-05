@@ -19,7 +19,10 @@ multiply_bipartite <- function(B, mode = "columns",
                                threshold = 0,
                                top_n = NULL,
                                self_loops = FALSE) {
-  ## Perianes-Rodriguez strength: deferred row-normalization from apply_counting
+  ## Perianes-Rodríguez strength: deferred row-normalization from apply_counting.
+  ## This denominator is defined for row-mode projections (e.g., document
+  ## coupling). In column-mode projections, edge indices refer to column nodes,
+  ## so applying a row-level denominator would be dimensionally wrong.
   row_scale <- attr(B, "row_scale")
 
   ## Weighted co-occurrence matrix (sparse)
@@ -44,6 +47,9 @@ multiply_bipartite <- function(B, mode = "columns",
       keep_idx <- order(-freq)[seq_len(top_n)]
       A <- A[keep_idx, keep_idx]
       A_raw <- A_raw[keep_idx, keep_idx]
+      if (!is.null(row_scale) && mode == "rows") {
+        row_scale <- row_scale[keep_idx]
+      }
     }
   }
 
@@ -73,8 +79,8 @@ multiply_bipartite <- function(B, mode = "columns",
     ))
   }
 
-  ## Perianes-Rodriguez strength: divide by n_refs_i × n_refs_j
-  if (!is.null(row_scale) && similarity == "none") {
+  ## Perianes-Rodríguez strength: divide by n_refs_i × n_refs_j
+  if (!is.null(row_scale) && mode == "rows" && similarity == "none") {
     x <- x / (row_scale[i] * row_scale[j])
   }
 

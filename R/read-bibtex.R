@@ -49,9 +49,9 @@ read_bibtex <- function(file, encoding = "UTF-8") {
     if (is.null(current)) next
 
     ## Parse field = {value} or field = "value"
-    if (grepl("^\\s*\\w+\\s*=", line)) {
+    if (grepl("^\\s*[[:alnum:]_-]+\\s*=", line)) {
       ## New field
-      m <- regmatches(line, regexec("^\\s*(\\w+)\\s*=\\s*(.*)", line))[[1]]
+      m <- regmatches(line, regexec("^\\s*([[:alnum:]_-]+)\\s*=\\s*(.*)", line))[[1]]
       field_name <- tolower(trimws(m[2]))
       raw_val <- m[3]
 
@@ -131,8 +131,24 @@ read_bibtex <- function(file, encoding = "UTF-8") {
     standardize_authors(parts)
   })
 
-  ## References: not standard in BibTeX
-  result$references <- replicate(n, character(0), simplify = FALSE)
+  ## References: not standard in BibTeX, but some exports include them in
+  ## cited-references/references or, less formally, in note.
+  result$references <- lapply(entries, function(e) {
+    ref_field <- NA_character_
+    for (field in c("cited-references", "citedreferences", "references")) {
+      ref_field <- get_bib(e, field)
+      if (!is.na(ref_field)) break
+    }
+    if (is.na(ref_field)) {
+      note <- get_bib(e, "note")
+      if (!is.na(note) && grepl(";", note, fixed = TRUE)) {
+        ref_field <- note
+      }
+    }
+    if (is.na(ref_field)) return(character(0))
+    refs <- unlist(strsplit(ref_field, ";"), use.names = FALSE)
+    standardize_refs(refs)
+  })
 
   ## Keywords
   result$keywords <- lapply(entries, function(e) {

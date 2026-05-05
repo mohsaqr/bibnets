@@ -122,6 +122,8 @@ build_by_network <- function(data, field, by, counting, similarity,
   }
 
   ## Clean
+  f_val <- toupper(trimws(as.character(f_val)))
+  b_val <- toupper(trimws(as.character(b_val)))
   keep_f <- !is.na(f_val) & nchar(f_val) > 0
   f_doc <- f_doc[keep_f]; f_val <- f_val[keep_f]
   keep_b <- !is.na(b_val) & nchar(b_val) > 0

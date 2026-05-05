@@ -2,7 +2,7 @@
 #'
 #' Constructs a sparse works x entities two-mode matrix from a data frame
 #' with a list-column. This is the core engine behind all network construction
-#' functions, following the approach of Batagelj & Cerinsek (2013).
+#' functions, following the approach of Batagelj & Cerinšek (2013).
 #'
 #' @param data A data frame with at least columns `id` and the field specified.
 #' @param field Character. Name of the list-column containing entities
@@ -14,7 +14,7 @@
 #'   columns = unique entities.
 #'
 #' @references
-#' Batagelj, V., & Cerinsek, M. (2013). On bibliographic networks.
+#' Batagelj, V., & Cerinšek, M. (2013). On bibliographic networks.
 #' *Scientometrics*, 96(3), 845--864. \doi{10.1007/s11192-012-0940-1}
 #'
 #' @keywords internal

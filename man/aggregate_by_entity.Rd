@@ -4,7 +4,7 @@
 \alias{aggregate_by_entity}
 \title{Aggregate multi-valued fields by an entity}
 \usage{
-aggregate_by_entity(data, entity_field, value_field)
+aggregate_by_entity(data, entity_field, value_field, min_freq = 1L)
 }
 \arguments{
 \item{data}{A data frame with \code{id} and the specified columns.}
@@ -16,6 +16,8 @@ multiple entities.}
 
 \item{value_field}{Character. Name of the list-column to aggregate
 (e.g., \code{"references"}).}
+
+\item{min_freq}{Integer. Minimum number of papers per entity. Default 1.}
 }
 \value{
 A data frame with columns \code{id} (entity name) and \code{value_field}

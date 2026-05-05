@@ -93,8 +93,14 @@ to_gephi <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 
   type_label <- if (directed) "Directed" else "Undirected"
 
-  ## Edge table — Gephi expects Source, Target, Weight, Type
-  edge_out <- edges
+  ## Edge table — Gephi expects Source, Target, Weight, Type.
+  ## Strip bibnets_network class and attributes so the returned data frame
+  ## prints as a plain table (the renamed columns no longer match the
+  ## bibnets print method's expected `from`/`to`/`weight`).
+  edge_out <- as.data.frame(edges, stringsAsFactors = FALSE)
+  class(edge_out) <- "data.frame"
+  for (a in c("network_type", "counting", "similarity"))
+    attr(edge_out, a) <- NULL
   names(edge_out)[names(edge_out) == "from"]   <- "Source"
   names(edge_out)[names(edge_out) == "to"]     <- "Target"
   names(edge_out)[names(edge_out) == "weight"] <- "Weight"
@@ -103,6 +109,7 @@ to_gephi <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
   ## Move standard columns to the front
   first <- intersect(c("Source", "Target", "Weight", "Type"), names(edge_out))
   edge_out <- edge_out[, c(first, setdiff(names(edge_out), first))]
+  row.names(edge_out) <- NULL
 
   ## Node table — derive from edge list if not supplied
   if (is.null(nodes)) {
@@ -193,6 +200,15 @@ to_graphml <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
     }, character(1L))
   }
 
+  ## Build a <data> tag, skipping NA values entirely (GraphML treats absent
+  ## data as the type's default; emitting "NA" pollutes downstream tools).
+  data_tag <- function(col, value) {
+    if (is.na(value)) return(NA_character_)
+    sprintf('      <data key="%s">%s</data>', col, xml_escape(value))
+  }
+
+  drop_na <- function(x) x[!is.na(x)]
+
   ## Node elements
   all_ids <- unique(c(edges$from, edges$to))
   node_elems <- vapply(all_ids, function(v) {
@@ -200,11 +216,11 @@ to_graphml <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
     if (!is.null(nodes)) {
       row <- nodes[nodes$id == v, , drop = FALSE]
       if (nrow(row) > 0) {
-        attrs <- paste(vapply(node_attr_cols, function(col) {
-          sprintf('      <data key="%s">%s</data>', col,
-                  xml_escape(row[[col]][1]))
-        }, character(1L)), collapse = "\n")
-        attrs <- paste0("\n", attrs, "\n    ")
+        tags <- drop_na(vapply(node_attr_cols, function(col) {
+          data_tag(col, row[[col]][1])
+        }, character(1L)))
+        if (length(tags))
+          attrs <- paste0("\n", paste(tags, collapse = "\n"), "\n    ")
       }
     }
     sprintf('    <node id="%s">%s</node>', xml_escape(v), attrs)
@@ -212,12 +228,12 @@ to_graphml <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 
   ## Edge elements
   edge_elems <- vapply(seq_len(nrow(edges)), function(i) {
-    data_tags <- paste(vapply(edge_attr_cols, function(col) {
-      sprintf('      <data key="%s">%s</data>', col,
-              xml_escape(edges[[col]][i]))
-    }, character(1L)), collapse = "\n")
-    sprintf('    <edge source="%s" target="%s">\n%s\n    </edge>',
-            xml_escape(edges$from[i]), xml_escape(edges$to[i]), data_tags)
+    tags <- drop_na(vapply(edge_attr_cols, function(col) {
+      data_tag(col, edges[[col]][i])
+    }, character(1L)))
+    body <- if (length(tags)) paste0("\n", paste(tags, collapse = "\n"), "\n    ") else ""
+    sprintf('    <edge source="%s" target="%s">%s</edge>',
+            xml_escape(edges$from[i]), xml_escape(edges$to[i]), body)
   }, character(1L))
 
   ## Assemble

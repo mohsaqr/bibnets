@@ -68,6 +68,7 @@ read_biblio <- function(path,
   })
 
   ## Combine
+  dfs <- align_biblio_columns(dfs)
   result <- do.call(rbind, dfs)
   rownames(result) <- NULL
 
@@ -76,6 +77,29 @@ read_biblio <- function(path,
   }
 
   result
+}
+
+
+#' Align columns before row-binding bibliographic files
+#' @keywords internal
+align_biblio_columns <- function(dfs) {
+  all_cols <- unique(unlist(lapply(dfs, names), use.names = FALSE))
+  list_cols <- all_cols[vapply(all_cols, function(col) {
+    any(vapply(dfs, function(d) col %in% names(d) && is.list(d[[col]]),
+               logical(1L)))
+  }, logical(1L))]
+
+  lapply(dfs, function(d) {
+    missing <- setdiff(all_cols, names(d))
+    for (col in missing) {
+      if (col %in% list_cols) {
+        d[[col]] <- replicate(nrow(d), character(0), simplify = FALSE)
+      } else {
+        d[[col]] <- rep(NA, nrow(d))
+      }
+    }
+    d[, all_cols, drop = FALSE]
+  })
 }
 
 

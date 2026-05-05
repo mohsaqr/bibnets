@@ -19,7 +19,9 @@
 #'
 #' @references
 #' Small, H. (1973). Co-citation in the scientific literature.
-#' *JASIS*, 24(4), 265--269.
+#' A new measure of the relationship between two documents.
+#' *Journal of the American Society for Information Science*, 24(4),
+#' 265--269. \doi{10.1002/asi.4630240406}
 #'
 #' @export
 #' @examples

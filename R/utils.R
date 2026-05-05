@@ -11,12 +11,13 @@
 #'   multiple entities.
 #' @param value_field Character. Name of the list-column to aggregate
 #'   (e.g., `"references"`).
+#' @param min_freq Integer. Minimum number of papers per entity. Default 1.
 #'
 #' @return A data frame with columns `id` (entity name) and `value_field`
 #'   (list-column of pooled values, with duplicates preserved).
 #'
 #' @keywords internal
-aggregate_by_entity <- function(data, entity_field, value_field) {
+aggregate_by_entity <- function(data, entity_field, value_field, min_freq = 1L) {
   stopifnot(
     is.data.frame(data),
     entity_field %in% names(data),
@@ -36,10 +37,30 @@ aggregate_by_entity <- function(data, entity_field, value_field) {
     doc_idx <- seq_len(nrow(data))
   }
 
+  entity_names <- toupper(trimws(as.character(entity_names)))
+  keep <- !is.na(entity_names) & nchar(entity_names) > 0
+  entity_names <- entity_names[keep]
+  doc_idx <- doc_idx[keep]
+
+  ## Count papers per entity, not raw duplicated mentions within a paper.
+  entity_docs <- unique(data.frame(entity = entity_names, doc = doc_idx,
+                                   stringsAsFactors = FALSE))
+  if (min_freq > 1L) {
+    freq <- table(entity_docs$entity)
+    keep_entities <- names(freq)[freq >= min_freq]
+    entity_docs <- entity_docs[entity_docs$entity %in% keep_entities, , drop = FALSE]
+  }
+
+  if (nrow(entity_docs) == 0L) {
+    result <- data.frame(id = character(0), stringsAsFactors = FALSE)
+    result[[value_field]] <- list()
+    return(result)
+  }
+
   ## Pool values by entity
-  unique_entities <- sort(unique(entity_names))
+  unique_entities <- sort(unique(entity_docs$entity))
   pooled <- lapply(unique_entities, function(e) {
-    rows <- doc_idx[entity_names == e]
+    rows <- entity_docs$doc[entity_docs$entity == e]
     if (is.list(values_col)) {
       unlist(values_col[rows], use.names = FALSE)
     } else {

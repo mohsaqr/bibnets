@@ -35,6 +35,14 @@ test_that("source_network coupling produces journal nodes", {
   expect_true(all(all_nodes %in% c("J1", "J2")))
 })
 
+test_that("source_network coupling applies min_occur to aggregated sources", {
+  d <- make_test_data()
+  edges <- source_network(d, type = "coupling", min_occur = 2)
+  all_nodes <- unique(c(edges$from, edges$to))
+  expect_true(all(all_nodes %in% "J1"))
+  expect_equal(nrow(edges), 0L)
+})
+
 test_that("source_network equivalence returns bibnets_network", {
   d <- make_test_data()
   edges <- source_network(d, type = "equivalence")
@@ -174,6 +182,21 @@ test_that("conetwork by= links entities through shared values", {
   all_nodes <- unique(c(edges$from, edges$to))
   ## At least some authors should be linked
   expect_true(nrow(edges) > 0)
+})
+
+test_that("conetwork by= normalizes field labels before aggregation", {
+  d <- data.frame(
+    id = c("W1", "W2", "W3"),
+    tags = c("ml; dl", "ML; cv", "dl; CV"),
+    topics = c("x; y", "x", "y"),
+    stringsAsFactors = FALSE
+  )
+
+  edges <- conetwork(d, "tags", by = "topics")
+  all_nodes <- unique(c(edges$from, edges$to))
+
+  expect_false(any(all_nodes %in% c("ml", "dl", "cv")))
+  expect_true(all(all_nodes %in% c("ML", "DL", "CV")))
 })
 
 test_that("conetwork splits string columns on sep", {

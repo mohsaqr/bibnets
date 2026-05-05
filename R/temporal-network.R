@@ -70,7 +70,11 @@ temporal_network <- function(data,
                           time_vals >= windows$start[i] &
                           time_vals <= windows$end[i], ]
     if (nrow(subset_data) < 2) return(NULL)
-    edges <- tryCatch(network_fun(subset_data, ...), error = function(e) NULL)
+    edges <- tryCatch(network_fun(subset_data, ...), error = function(e) {
+      warning("Network construction failed for window '", windows$label[i],
+              "': ", conditionMessage(e), call. = FALSE)
+      NULL
+    })
     if (!is.null(edges) && nrow(edges) > 0) {
       edges$window <- windows$label[i]
       edges

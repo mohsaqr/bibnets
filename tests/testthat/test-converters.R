@@ -54,6 +54,21 @@ test_that("to_gephi custom nodes table merges correctly", {
   expect_equal(nrow(g$nodes), 3)
 })
 
+test_that("to_gephi $edges is a plain data.frame, not bibnets_network", {
+  ## Regression: previously the renamed Source/Target/Weight columns kept
+  ## the bibnets_network class, causing the S3 print method to look up
+  ## the now-missing $from / $to / $weight and display NA NA NA.
+  edges <- structure(make_small_edges(), class = c("bibnets_network", "data.frame"),
+                     network_type = "test", counting = "full")
+  g <- to_gephi(edges)
+  expect_identical(class(g$edges), "data.frame")
+  expect_null(attr(g$edges, "network_type"))
+  expect_null(attr(g$edges, "counting"))
+  ## Print must not produce any NA tokens for from/to/weight
+  out <- capture.output(print(g$edges))
+  expect_false(any(grepl("\\bNA\\b", out)))
+})
+
 test_that("to_gephi writes CSV files to disk", {
   edges <- make_small_edges()
   tmp <- tempdir()
@@ -121,6 +136,33 @@ test_that("to_graphml writes to file", {
   content <- readLines(tmp)
   expect_true(any(grepl("graphml", content)))
   file.remove(tmp)
+})
+
+test_that("to_graphml never emits literal NA in <data> tags", {
+  ## Regression: previously NA edge attribute values produced
+  ## <data key="weight">NA</data>, which downstream tools treat as a string.
+  edges <- data.frame(
+    from = c("A", "B"), to = c("B", "C"),
+    weight = c(NA_real_, 2),
+    count  = c(1L, NA_integer_),
+    stringsAsFactors = FALSE
+  )
+  xml <- to_graphml(edges)
+  expect_false(grepl(">NA<",     xml, fixed = TRUE))
+  expect_false(grepl(">NA_real", xml, fixed = TRUE))
+  ## Non-NA values still emitted
+  expect_true(grepl('<data key="weight">2</data>', xml, fixed = TRUE))
+  expect_true(grepl('<data key="count">1</data>',  xml, fixed = TRUE))
+})
+
+test_that("to_graphml skips NA node attributes when nodes table has them", {
+  edges <- make_small_edges()
+  nodes <- data.frame(id = c("A","B","C"),
+                      community = c(1L, NA_integer_, 2L),
+                      stringsAsFactors = FALSE)
+  xml <- to_graphml(edges, nodes = nodes)
+  ## Node B has NA community → no <data key="community"> tag for that node
+  expect_false(grepl(">NA<", xml, fixed = TRUE))
 })
 
 test_that("to_graphml escapes special characters in node IDs", {

@@ -62,12 +62,14 @@
 #'   sparse matrix.
 #'
 #' @references
-#' Hagen, N. T. (2008). Harmonic allocation of authorship credit.
-#' *Scientometrics*, 84(3), 785--793. \doi{10.1007/s11192-009-0129-4}
+#' Hagen, N. T. (2008). Harmonic allocation of authorship credit:
+#' Source-level correction of bibliometric bias assures accurate publication
+#' and citation analysis. *PLOS ONE*, 3(12), e4021.
+#' \doi{10.1371/journal.pone.0004021}
 #'
-#' Liu, W., & Fang, H. (2023). A geometric counting method adaptive to the
-#' author number. *Journal of Informetrics*, 17(2), 101397.
-#' \doi{10.1016/j.joi.2023.101397}
+#' Liu, X. Z., & Fang, H. (2023). A geometric counting method adaptive to the
+#' author number. *Journal of Informetrics*, 17(2), 101404.
+#' \doi{10.1016/j.joi.2023.101404}
 #'
 #' @export
 #' @examples
@@ -135,7 +137,8 @@ author_network <- function(data,
   } else if (type == "coupling") {
     check_data(data, "references")
     agg <- aggregate_by_entity(data, entity_field = "authors",
-                                value_field = "references")
+                                value_field = "references",
+                                min_freq = min_occur)
     B <- build_bipartite(agg, field = "references")
     ct <- if (is_positional) "full" else counting
     B <- apply_counting(B, counting = ct, network_type = "coupling")

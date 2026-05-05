@@ -102,3 +102,44 @@ test_that("read_openalex_csv keywords are single-element lists from primary_topi
 test_that("read_openalex_csv errors on non-existent file", {
   expect_error(read_openalex_csv("no_such_file.csv"))
 })
+
+test_that("read_biblio row-binds files with source-specific columns", {
+  oa <- tempfile(fileext = ".csv")
+  bib <- tempfile(fileext = ".bib")
+
+  writeLines(c(
+    "id,display_name,publication_year,primary_location.source.display_name,doi,cited_by_count,type,authorships.author.display_name,authorships.institutions.display_name,authorships.countries,primary_topic.display_name",
+    "https://openalex.org/W1,OpenAlex paper,2024,Journal A,https://doi.org/10.1/oa,2,article,Alice|Bob,Uni A|Uni B,US|GB,Networks"
+  ), oa)
+  writeLines(c(
+    "@article{key1,",
+    "  title = {BibTeX paper},",
+    "  author = {Smith, Jane},",
+    "  year = {2023},",
+    "  journal = {Journal B}",
+    "}"
+  ), bib)
+
+  d <- read_biblio(c(oa, bib))
+
+  expect_equal(nrow(d), 2L)
+  expect_true(all(c("countries", "affiliations", "authors") %in% names(d)))
+  expect_true(is.list(d$countries))
+  expect_true(is.list(d$authors))
+})
+
+test_that("read_bibtex extracts non-standard cited references", {
+  bib <- tempfile(fileext = ".bib")
+  writeLines(c(
+    "@article{key1,",
+    "  title = {BibTeX paper},",
+    "  author = {Smith, Jane},",
+    "  year = {2023},",
+    "  cited-references = {Ref A, 2020; Ref B, 2021}",
+    "}"
+  ), bib)
+
+  d <- read_bibtex(bib)
+
+  expect_equal(d$references[[1]], c("REF A, 2020", "REF B, 2021"))
+})

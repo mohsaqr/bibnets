@@ -43,7 +43,8 @@ source_network <- function(data,
   result <- if (type == "coupling") {
     check_data(data, c("journal", "references"))
     agg <- aggregate_by_entity(data, entity_field = "journal",
-                                value_field = "references")
+                                value_field = "references",
+                                min_freq = min_occur)
     B <- build_bipartite(agg, field = "references")
     B <- apply_counting(B, counting = counting, network_type = "coupling")
     multiply_bipartite(B, mode = "rows", similarity = similarity,
@@ -67,7 +68,8 @@ source_network <- function(data,
   } else {
     check_data(data, c("journal", "references"))
     agg <- aggregate_by_entity(data, entity_field = "journal",
-                                value_field = "references")
+                                value_field = "references",
+                                min_freq = min_occur)
     B <- build_bipartite(agg, field = "references")
     multiply_bipartite(B, mode = "rows", similarity = "cosine",
                        threshold = threshold, top_n = top_n,

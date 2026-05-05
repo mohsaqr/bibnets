@@ -40,8 +40,8 @@ prune <- function(edges, threshold = NULL, top_n = NULL) {
     return(edges)
   }
 
-  if (!is.numeric(top_n) || length(top_n) != 1L || top_n < 0)
-    stop("'top_n' must be a non-negative number", call. = FALSE)
+  if (!is.numeric(top_n) || length(top_n) != 1L || top_n <= 0)
+    stop("'top_n' must be a positive number", call. = FALSE)
   n <- as.integer(top_n)
 
   adj <- split(c(edges$weight, edges$weight), c(edges$from, edges$to))

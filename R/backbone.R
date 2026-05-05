@@ -22,7 +22,7 @@
 #' @references
 #' Serrano, M. Á., Boguñá, M., & Vespignani, A. (2009). Extracting the
 #' multiscale backbone of complex weighted networks. *PNAS*, 106(16),
-#' 6483–6488.
+#' 6483–6488. \doi{10.1073/pnas.0808904106}
 #'
 #' @export
 #' @examples

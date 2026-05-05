@@ -41,10 +41,11 @@ print.bibnets_network <- function(x, n = 10L, ...) {
   ct_fmt   <- as.character(d$count)
 
   w_idx <- nchar(as.character(show))
-  w_f   <- max(4L, max(nchar(from_fmt)))
-  w_t   <- max(2L, max(nchar(to_fmt)))
-  w_w   <- max(6L, max(nchar(wt_fmt)))
-  w_c   <- max(5L, max(nchar(ct_fmt)))
+  max0  <- function(x, floor) if (length(x)) max(floor, max(nchar(x))) else floor
+  w_f   <- max0(from_fmt, 4L)
+  w_t   <- max0(to_fmt,   2L)
+  w_w   <- max0(wt_fmt,   6L)
+  w_c   <- max0(ct_fmt,   5L)
 
   cat(sprintf("%*s  %-*s  %-*s  %*s  %*s\n",
               w_idx, "", w_f, "from", w_t, "to", w_w, "weight", w_c, "count"))

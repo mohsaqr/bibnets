@@ -256,7 +256,7 @@ apply_counting <- function(B, counting = "full",
     idf <- log(n_works / entity_freq)
     ## IDF weights columns only; row normalization (1/n_i × 1/n_j) is deferred
     ## to multiply_bipartite so the denominator is the product n_i × n_j, not
-    ## the geometric mean √(n_i × n_j) — Perianes-Rodriguez et al. (2016).
+    ## the geometric mean √(n_i × n_j) — Perianes-Rodríguez et al. (2016).
     B <- B %*% Matrix::Diagonal(x = sqrt(idf))
     attr(B, "row_scale") <- n_per_work
   }

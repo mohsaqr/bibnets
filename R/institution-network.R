@@ -65,7 +65,8 @@ institution_network <- function(data,
     if (!"references" %in% names(data))
       stop("Column 'references' not found. Required for type = 'coupling'.", call. = FALSE)
     agg <- aggregate_by_entity(data, entity_field = "affiliations",
-                                value_field = "references")
+                                value_field = "references",
+                                min_freq = min_occur)
     B <- build_bipartite(agg, field = "references")
     B <- apply_counting(B, counting = counting, network_type = "coupling")
     multiply_bipartite(B, mode = "rows", similarity = similarity,

@@ -1,3 +1,16 @@
+### 2026-04-25 — CRAN prep + export bug fixes + vignette overhaul
+- .Rbuildignore: Added `^sidelined$` (and `.DS_Store` patterns) — fixes the only `R CMD check --as-cran` NOTE (`Non-standard file/directory found at top level: 'sidelined'`).
+- inst/WORDLIST: New aspell word list pre-approving ~85 domain terms (BibTeX, Scopus, OpenAlex, bibliometric, Saqr, Pernas, etc.) for `devtools::spell_check()` and CRAN incoming checks.
+- R/methods.R: Hardened `print.bibnets_network()` against `max(nchar())` warnings on malformed (NULL `from`/`to`/`weight`) inputs via a `max0()` helper.
+- R/converters.R: Two bug fixes in network exports —
+  1. `to_gephi(edges)$edges` now strips the `bibnets_network` class and metadata attributes. Previously the renamed Source/Target/Weight columns kept the class, so the S3 print method looked up the now-missing `$from`/`$to`/`$weight` and rendered `0 nodes · N edges` with NA NA NA in every visible row. The CSV on disk was always correct; only the in-R display was broken.
+  2. `to_graphml()` now omits `<data>` tags entirely when the value is NA. Previously emitted literal `<data key="weight">NA</data>`, which downstream tools (Gephi, igraph::read_graph, networkx) treat as a string.
+- tests/testthat/test-converters.R: Added 5 regression tests covering the class strip, attribute strip, NA edge attributes, NA node attributes, and the print-without-NA contract.
+- vignettes/bibnets.Rmd: Full rewrite — was 250-word skeleton, now a comprehensive guide covering the workflow, the `attention` parameter (which was missing), counting comparisons, similarity normalisation, network reduction (prune / filter_top / backbone), temporal networks, historiograph, and exports.
+- vignettes/reading-data.Rmd: New vignette covering all 9 readers (Scopus, WoS plaintext + tab, OpenAlex JSON + flat CSV, BibTeX, RIS, Lens, Dimensions, Crossref), the standard schema, generic CSV reading, manual data construction, multi-source merging, troubleshooting.
+- cran-comments.md: Updated platform line and added URL-check confirmation.
+- Tests: 649 passing, 0 failing (was 644). R CMD check --as-cran: 0 errors / 0 warnings / 0 notes.
+
 ### 2026-04-19 — Author network attention + abstract_network sidelined
 - R/author-network.R: Added `attention` parameter to `author_network()` — four modes: `"proximity"` (middle authors weighted most), `"lead"` (first author dominant), `"last"` (last/PI dominant), `"none"` (full counting, no attention). Formula: `pmin(k-1, n-k) / floor(n/2)` for proximity. Demo at `tmp/gen_la_proximity.R`.
 - sidelined/: Moved `abstract_network()` and its tests out of package. Proximity-within-abstract co-occurrence produces wrong signal (boilerplate dominates over concepts). Architecture needs redesign to document-level keyphrase co-occurrence. All code preserved with notes in `sidelined/TODO.md`.
