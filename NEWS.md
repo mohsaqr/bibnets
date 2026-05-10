@@ -1,3 +1,17 @@
+# bibnets 0.4.2
+
+## Documentation
+
+- Title renamed to "Importing, Constructing, and Exporting Bibliometric
+  Networks" to reflect the full lifecycle scope.
+- Description rewritten to lead with attention-weighted networks (lead,
+  last, proximity, circular) and other differentiators (position-aware
+  counting, similarity/dissimilarity normalisations, temporal windows,
+  disparity-filter backbone, historiograph, local citation scoring),
+  dropping the enumeration of standard co-network types.
+- README intro re-leads with capabilities; numerical method counts removed.
+- Internal-comment author attributions stripped throughout.
+
 # bibnets 0.4.1
 
 ## Bug fixes

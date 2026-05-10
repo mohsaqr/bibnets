@@ -1,4 +1,4 @@
-# CRAN submission comments — bibnets 0.4.1
+# CRAN submission comments — bibnets 0.4.2
 
 ## First submission
 
