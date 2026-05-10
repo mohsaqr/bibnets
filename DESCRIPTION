@@ -1,5 +1,5 @@
 Package: bibnets
-Title: Citation, Co-Citation, and Bibliometric Network Construction
+Title: Importing, Constructing, and Exporting Bibliometric Networks
 Version: 0.4.1
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
