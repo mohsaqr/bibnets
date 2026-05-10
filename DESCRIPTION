@@ -6,13 +6,15 @@ Authors@R: c(
            comment = c(ORCID = "0000-0001-5881-3109")),
     person("Sonsoles", "López-Pernas", role = "aut",
            comment = c(ORCID = "0000-0002-9621-1392")))
-Description: Constructs bibliometric networks from scholarly data. Supports
-    co-authorship, keyword co-occurrence, co-citation, bibliographic
-    coupling, and direct citation networks with multiple counting and
-    normalisation methods. Reads 'Scopus', 'Web of Science', 'BibTeX',
-    'RIS', 'OpenAlex', 'Lens.org', and 'Dimensions' exports. Includes
-    tools for temporal analysis, backbone extraction, and export to
-    common network formats.
+Description: Imports, constructs, and exports bibliometric networks. Reads
+    scholarly metadata from 'Scopus', 'Web of Science', 'BibTeX',
+    'RIS', 'OpenAlex', 'Lens.org', 'Dimensions', and 'Crossref'
+    exports. Builds co-authorship, keyword co-occurrence, co-citation,
+    bibliographic coupling, and direct citation networks with multiple
+    counting and normalisation methods. Includes tools for temporal
+    analysis, backbone extraction, and export to 'igraph',
+    'tidygraph', 'cograph', 'Gephi', 'GraphML', and sparse matrix
+    formats.
 License: MIT + file LICENSE
 URL: https://github.com/mohsaqr/bibnets
 BugReports: https://github.com/mohsaqr/bibnets/issues
