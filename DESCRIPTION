@@ -12,9 +12,7 @@ Description: Constructs bibliometric networks from scholarly data. Supports
     normalisation methods. Reads 'Scopus', 'Web of Science', 'BibTeX',
     'RIS', 'OpenAlex', 'Lens.org', and 'Dimensions' exports. Includes
     tools for temporal analysis, backbone extraction, and export to
-    common network formats. Methods described in Perianes-Rodriguez,
-    Waltman & Van Eck (2016) <doi:10.1016/j.joi.2016.10.006> and
-    López-Pernas, Saqr & Apiola (2023) <doi:10.1007/978-3-031-25336-2_5>.
+    common network formats.
 License: MIT + file LICENSE
 URL: https://github.com/mohsaqr/bibnets
 BugReports: https://github.com/mohsaqr/bibnets/issues

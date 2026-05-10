@@ -3,17 +3,26 @@
 [![R-CMD-check](https://github.com/mohsaqr/bibnets/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/mohsaqr/bibnets/actions/workflows/R-CMD-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-`bibnets` is an R package for constructing bibliometric networks from scholarly
-metadata. It reads common export formats, converts multi-valued fields such as
-authors, references, keywords, countries, and affiliations into sparse incidence
-matrices, and returns edge lists for co-authorship, co-citation, bibliographic
-coupling, keyword co-occurrence, direct citation, historiograph, and custom
-co-occurrence analyses.
+`bibnets` is an R package for importing, constructing, and exporting
+bibliometric networks. It reads scholarly export formats from Scopus, Web of
+Science, OpenAlex, BibTeX, RIS, Lens.org, Dimensions, and Crossref; converts
+multi-valued fields such as authors, references, keywords, countries, and
+affiliations into sparse incidence matrices; returns edge lists for
+co-authorship, co-citation, bibliographic coupling, keyword co-occurrence,
+direct citation, historiograph, and custom co-occurrence analyses; and exports
+to igraph, tidygraph, cograph, Gephi CSV, GraphML, and sparse matrix formats.
 
-The package is designed to keep the computational core small and inspectable:
-the only CRAN imports are `Matrix`, `stats`, and `utils`. Optional graph and
-bibliometric packages are used only when the user explicitly requests their
-formats or runs equivalence tests.
+Beyond construction, `bibnets` supports six similarity and dissimilarity
+normalizations (association strength, cosine, Jaccard, inclusion, equivalence,
+and raw counts); thirteen counting methods including fractional, paper, and
+position-aware authorship credit (harmonic, arithmetic, geometric, adaptive
+geometric, golden-ratio, first-author, last-author, first-last, custom);
+attention-style position weights (lead, last, proximity, circular) for
+author, keyword, country, and institution networks; temporal network
+construction with fixed, sliding, and cumulative time windows; disparity-filter
+backbone extraction for multiscale weighted networks; Garfield-style
+historiograph construction over the most locally cited documents; local
+citation scoring; and threshold and top-n pruning utilities.
 
 ## Main Features
 
@@ -289,18 +298,6 @@ if (requireNamespace("igraph", quietly = TRUE)) {
 Optional converters are guarded by `requireNamespace()`, so packages such as
 `igraph`, `tidygraph`, and `cograph` are not required unless their output
 formats are requested.
-
-## Important References
-
-- Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
-  Constructing bibliometric networks: A comparison between full and
-  fractional counting. *Journal of Informetrics*, 10(4), 1178-1195.
-  doi:10.1016/j.joi.2016.10.006.
-- López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
-  concise introduction and a detailed methodology for mapping the
-  scientific field of computing education research. *Past, Present and
-  Future of Computing Education Research: A Global Perspective*, 79-99.
-  doi:10.1007/978-3-031-25336-2_5.
 
 ## Vignettes
 

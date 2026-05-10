@@ -1,7 +1,6 @@
 al
 Analytics
 analytics
-Apiola
 asi
 bibliometrix
 biblio
@@ -35,7 +34,6 @@ doi
 downweights
 Dimensions's
 Dois
-Eck
 edgelist
 edgelists
 EID
@@ -69,7 +67,6 @@ normalising
 OpenAlex
 ORCID
 ORCIDs
-Perianes
 Pernas
 plaintext
 pos
@@ -81,7 +78,6 @@ RIS
 rcrossref
 recognised
 Rmd
-Rodriguez
 roxygen
 Saqr
 Scientometrics
@@ -103,7 +99,6 @@ uppercasing
 upweighted
 vignette
 visualisations
-Waltman
 WoS
 zenodo
 arXiv

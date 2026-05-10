@@ -24,16 +24,4 @@ Constructs a sparse works x entities two-mode matrix from a data frame
 with a list-column. This is the core engine behind all network construction
 functions.
 }
-\references{
-Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
-Constructing bibliometric networks: A comparison between full and
-fractional counting. \emph{Journal of Informetrics}, 10(4), 1178--1195.
-\doi{10.1016/j.joi.2016.10.006}
-
-López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
-concise introduction and a detailed methodology for mapping the
-scientific field of computing education research. \emph{Past, Present and
-Future of Computing Education Research: A Global Perspective}, 79--99.
-\doi{10.1007/978-3-031-25336-2_5}
-}
 \keyword{internal}
