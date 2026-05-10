@@ -7,12 +7,10 @@
 #' @return An igraph graph object.
 #'
 #' @export
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("igraph", quietly = TRUE)
 #' data(biblio_data)
 #' edges <- author_network(biblio_data, "collaboration")
 #' g <- to_igraph(edges)
-#' }
 to_igraph <- function(edges, directed = FALSE) {
   if (!requireNamespace("igraph", quietly = TRUE)) {
     stop("Package 'igraph' is required. Install it with: ",
@@ -31,12 +29,10 @@ to_igraph <- function(edges, directed = FALSE) {
 #' @return A tbl_graph object (tidygraph).
 #'
 #' @export
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("tidygraph", quietly = TRUE)
 #' data(biblio_data)
 #' edges <- keyword_network(biblio_data)
 #' tg <- to_tbl_graph(edges)
-#' }
 to_tbl_graph <- function(edges, directed = FALSE) {
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
     stop("Package 'tidygraph' is required. Install it with: ",
@@ -283,20 +279,16 @@ to_graphml <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 #' @return A `cograph_network` object (S3 list with `$nodes` and `$edges`).
 #'
 #' @export
-#' @examples
-#' \dontrun{
+#' @examplesIf requireNamespace("cograph", quietly = TRUE)
 #' data(biblio_data)
 #'
 #' # Without metadata: splot() accepts bibnets edges directly
 #' edges <- author_network(biblio_data, "collaboration")
-#' cograph::splot(edges)
 #'
 #' # With metadata: document network + local citation scores as node size
 #' edges <- document_network(biblio_data, type = "coupling")
 #' nodes <- local_citations(biblio_data)   # keyed by document id
 #' net   <- to_cograph(edges, nodes = nodes)
-#' cograph::splot(net, node_size = "lcs", labels = TRUE)
-#' }
 to_cograph <- function(edges, nodes = NULL, directed = FALSE) {
   if (!requireNamespace("cograph", quietly = TRUE)) {
     stop("Package 'cograph' is required. Install it with: ",

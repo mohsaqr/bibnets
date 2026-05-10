@@ -61,12 +61,15 @@ read_scopus <- function(file, encoding = "UTF-8") {
                paste0("S", seq_len(nrow(raw))),
                eid)
 
+  doi_col <- get_col(col_map$doi)
+  doi_col[!is.na(doi_col) & nchar(doi_col) == 0] <- NA_character_
+
   result <- data.frame(
     id = id,
     title = get_col(col_map$title),
     year = as.integer(get_col(col_map$year, NA_integer_)),
     journal = get_col(col_map$journal),
-    doi = get_col(col_map$doi),
+    doi = doi_col,
     cited_by_count = as.integer(get_col(col_map$cited_by, 0L)),
     abstract = get_col(col_map$abstract),
     type = get_col(col_map$type),

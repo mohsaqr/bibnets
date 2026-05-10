@@ -390,8 +390,7 @@ nrow(filter_top(edges, n = 50))
 `filter_top(n = k)` first selects the most connected nodes, then keeps edges
 among them.
 
-`backbone()` applies the disparity filter proposed by Serrano, Boguñá, and
-Vespignani:
+`backbone()` applies the disparity filter for multiscale weighted networks:
 
 ```{r}
 bb <- backbone(edges, alpha = 0.05)
@@ -545,27 +544,12 @@ The implementation and terminology follow standard bibliometric network
 construction work, especially sparse two-mode network multiplication,
 co-citation, normalization, fractional counting, and backbone filtering:
 
-- Batagelj, V., & Cerinšek, M. (2013). On bibliographic networks.
-  *Scientometrics*, 96(3), 845-864. doi:10.1007/s11192-012-0940-1.
-- Hagen, N. T. (2008). Harmonic allocation of authorship credit:
-  Source-level correction of bibliometric bias assures accurate publication
-  and citation analysis. *PLOS ONE*, 3(12), e4021.
-  doi:10.1371/journal.pone.0004021.
-- Liu, X. Z., & Fang, H. (2023). A geometric counting method adaptive to the
-  author number. *Journal of Informetrics*, 17(2), 101404.
-  doi:10.1016/j.joi.2023.101404.
-- Perianes-Rodríguez, A., Waltman, L., & van Eck, N. J. (2016).
+- Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
   Constructing bibliometric networks: A comparison between full and
   fractional counting. *Journal of Informetrics*, 10(4), 1178-1195.
   doi:10.1016/j.joi.2016.10.006.
-- Serrano, M. Á., Boguñá, M., & Vespignani, A. (2009). Extracting the
-  multiscale backbone of complex weighted networks. *Proceedings of the
-  National Academy of Sciences*, 106(16), 6483-6488.
-  doi:10.1073/pnas.0808904106.
-- Small, H. (1973). Co-citation in the scientific literature: A new measure
-  of the relationship between two documents. *Journal of the American Society
-  for Information Science*, 24(4), 265-269. doi:10.1002/asi.4630240406.
-- van Eck, N. J., & Waltman, L. (2009). How to normalize co-occurrence data?
-  An analysis of some well-known similarity measures. *Journal of the
-  American Society for Information Science and Technology*, 60(8), 1635-1651.
-  doi:10.1002/asi.21075.
+- López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
+  concise introduction and a detailed methodology for mapping the
+  scientific field of computing education research. *Past, Present and
+  Future of Computing Education Research: A Global Perspective*, 79-99.
+  doi:10.1007/978-3-031-25336-2_5.

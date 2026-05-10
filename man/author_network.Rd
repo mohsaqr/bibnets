@@ -104,12 +104,14 @@ author_network(biblio_data, "collaboration", counting = "geometric",
                similarity = "association")
 }
 \references{
-Hagen, N. T. (2008). Harmonic allocation of authorship credit:
-Source-level correction of bibliometric bias assures accurate publication
-and citation analysis. \emph{PLOS ONE}, 3(12), e4021.
-\doi{10.1371/journal.pone.0004021}
+Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
+Constructing bibliometric networks: A comparison between full and
+fractional counting. \emph{Journal of Informetrics}, 10(4), 1178--1195.
+\doi{10.1016/j.joi.2016.10.006}
 
-Liu, X. Z., & Fang, H. (2023). A geometric counting method adaptive to the
-author number. \emph{Journal of Informetrics}, 17(2), 101404.
-\doi{10.1016/j.joi.2023.101404}
+López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
+concise introduction and a detailed methodology for mapping the
+scientific field of computing education research. \emph{Past, Present and
+Future of Computing Education Research: A Global Perspective}, 79--99.
+\doi{10.1007/978-3-031-25336-2_5}
 }

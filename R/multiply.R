@@ -19,7 +19,7 @@ multiply_bipartite <- function(B, mode = "columns",
                                threshold = 0,
                                top_n = NULL,
                                self_loops = FALSE) {
-  ## Perianes-Rodríguez strength: deferred row-normalization from apply_counting.
+  ## Coupling-strength: deferred row-normalization from apply_counting.
   ## This denominator is defined for row-mode projections (e.g., document
   ## coupling). In column-mode projections, edge indices refer to column nodes,
   ## so applying a row-level denominator would be dimensionally wrong.
@@ -79,7 +79,7 @@ multiply_bipartite <- function(B, mode = "columns",
     ))
   }
 
-  ## Perianes-Rodríguez strength: divide by n_refs_i × n_refs_j
+  ## Coupling-strength: divide by n_refs_i × n_refs_j
   if (!is.null(row_scale) && mode == "rows" && similarity == "none") {
     x <- x / (row_scale[i] * row_scale[j])
   }

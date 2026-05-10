@@ -18,9 +18,9 @@ A tbl_graph object (tidygraph).
 Convert edge data frame to tbl_graph
 }
 \examples{
-\dontrun{
+\dontshow{if (requireNamespace("tidygraph", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 data(biblio_data)
 edges <- keyword_network(biblio_data)
 tg <- to_tbl_graph(edges)
-}
+\dontshow{\}) # examplesIf}
 }

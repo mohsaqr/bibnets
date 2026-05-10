@@ -11,8 +11,7 @@
 #'     \item{`"none"`}{No normalization. Returns raw co-occurrence counts.}
 #'     \item{`"association"`}{Association strength (probabilistic affinity
 #'       index). \eqn{s_{ij} = c_{ij} / (w_i \cdot w_j)}.
-#'       Recommended by van Eck & Waltman (2009) as the best normalization
-#'       for co-occurrence data.}
+#'       Often recommended as the best normalization for co-occurrence data.}
 #'     \item{`"cosine"`}{Salton's cosine.
 #'       \eqn{s_{ij} = c_{ij} / \sqrt{w_i \cdot w_j}}.}
 #'     \item{`"jaccard"`}{Jaccard index.
@@ -26,10 +25,16 @@
 #' @return A normalized sparse matrix of the same dimensions.
 #'
 #' @references
-#' van Eck, N. J., & Waltman, L. (2009). How to normalize co-occurrence
-#' data? An analysis of some well-known similarity measures. *Journal of the
-#' American Society for Information Science and Technology*, 60(8),
-#' 1635--1651. \doi{10.1002/asi.21075}
+#' Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
+#' Constructing bibliometric networks: A comparison between full and
+#' fractional counting. *Journal of Informetrics*, 10(4), 1178--1195.
+#' \doi{10.1016/j.joi.2016.10.006}
+#'
+#' López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
+#' concise introduction and a detailed methodology for mapping the
+#' scientific field of computing education research. *Past, Present and
+#' Future of Computing Education Research: A Global Perspective*, 79--99.
+#' \doi{10.1007/978-3-031-25336-2_5}
 #'
 #' @export
 #' @examples

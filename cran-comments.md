@@ -1,4 +1,4 @@
-# CRAN submission comments — bibnets 0.3.0
+# CRAN submission comments — bibnets 0.4.1
 
 ## First submission
 
@@ -8,8 +8,11 @@
 
 Tested on:
 - macOS Tahoe 26.3.1 (aarch64), R 4.5.2 — `R CMD check --as-cran`: OK
-- win-builder (R-devel) — pending
-- All 6 URLs validated via `urlchecker::url_check()`
+- macbuilder R-release 4.6.0 (aarch64) — `Status: OK`
+- win-builder (R-devel and R-release) — submitted
+- All URLs validated via `urlchecker::url_check()`
+- Tests: 1268 passing, 0 failing
+- Package line coverage: 92.5%
 
 ## Notes
 

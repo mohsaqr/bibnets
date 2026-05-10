@@ -67,8 +67,14 @@ reference_network(biblio_data)
 reference_network(biblio_data, similarity = "association")
 }
 \references{
-Small, H. (1973). Co-citation in the scientific literature.
-A new measure of the relationship between two documents.
-\emph{Journal of the American Society for Information Science}, 24(4),
-265--269. \doi{10.1002/asi.4630240406}
+Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
+Constructing bibliometric networks: A comparison between full and
+fractional counting. \emph{Journal of Informetrics}, 10(4), 1178--1195.
+\doi{10.1016/j.joi.2016.10.006}
+
+López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
+concise introduction and a detailed methodology for mapping the
+scientific field of computing education research. \emph{Past, Present and
+Future of Computing Education Research: A Global Perspective}, 79--99.
+\doi{10.1007/978-3-031-25336-2_5}
 }

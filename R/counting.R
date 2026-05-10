@@ -30,7 +30,7 @@ author_weights <- function(n, counting = "fractional",
 
     ## --- Position-dependent ---
     harmonic = {
-      ## Hagen (2008): weight_i = (1/i) / H_n
+      ## Harmonic allocation: weight_i = (1/i) / H_n
       raw <- 1 / pos
       raw / sum(raw)
     },
@@ -48,7 +48,7 @@ author_weights <- function(n, counting = "fractional",
     },
 
     adaptive_geometric = {
-      ## Liu & Fang (2023): ratio of first to last = n
+      ## Adaptive geometric: ratio of first to last weight equals n.
       ## r = n^(1/(n-1)), weight_i = r^(n-i) / sum(r^(n-j))
       if (n == 2) {
         c(2/3, 1/3)
@@ -60,7 +60,7 @@ author_weights <- function(n, counting = "fractional",
     },
 
     golden = {
-      ## Abbas (2011): golden ratio phi = (1+sqrt(5))/2
+      ## Golden ratio decay: phi = (1+sqrt(5))/2
       phi <- (1 + sqrt(5)) / 2
       raw <- phi^(n - pos)
       raw / sum(raw)
@@ -256,7 +256,7 @@ apply_counting <- function(B, counting = "full",
     idf <- log(n_works / entity_freq)
     ## IDF weights columns only; row normalization (1/n_i × 1/n_j) is deferred
     ## to multiply_bipartite so the denominator is the product n_i × n_j, not
-    ## the geometric mean √(n_i × n_j) — Perianes-Rodríguez et al. (2016).
+    ## the geometric mean √(n_i × n_j).
     B <- B %*% Matrix::Diagonal(x = sqrt(idf))
     attr(B, "row_scale") <- n_per_work
   }

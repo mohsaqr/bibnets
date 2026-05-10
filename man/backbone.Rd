@@ -17,9 +17,9 @@ The filtered edge data frame with an added \code{alpha} column (the
 minimum alpha from the two endpoints).
 }
 \description{
-Applies the Serrano et al. (2009) disparity filter to a weighted edge list.
-For each edge, it computes an alpha (p-value) from both endpoints and keeps
-the edge if it is statistically significant from at least one endpoint.
+Applies the disparity filter to a weighted edge list. For each edge, it
+computes an alpha (p-value) from both endpoints and keeps the edge if it
+is statistically significant from at least one endpoint.
 }
 \details{
 The null model asks: given that node \eqn{i} has total strength \eqn{s_i}
@@ -39,7 +39,14 @@ edges <- data.frame(
 backbone(edges, alpha = 0.05)
 }
 \references{
-Serrano, M. Á., Boguñá, M., & Vespignani, A. (2009). Extracting the
-multiscale backbone of complex weighted networks. \emph{PNAS}, 106(16),
-6483–6488. \doi{10.1073/pnas.0808904106}
+Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
+Constructing bibliometric networks: A comparison between full and
+fractional counting. \emph{Journal of Informetrics}, 10(4), 1178--1195.
+\doi{10.1016/j.joi.2016.10.006}
+
+López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
+concise introduction and a detailed methodology for mapping the
+scientific field of computing education research. \emph{Past, Present and
+Future of Computing Education Research: A Global Perspective}, 79--99.
+\doi{10.1007/978-3-031-25336-2_5}
 }

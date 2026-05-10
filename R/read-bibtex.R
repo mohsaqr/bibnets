@@ -15,9 +15,19 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' data <- read_bibtex("references.bib")
-#' }
+#' # Write a minimal BibTeX entry to a temp file, then read it
+#' bib <- '@article{smith2020,
+#'   title  = {Bibliometric networks},
+#'   author = {Smith, J. and Jones, K.},
+#'   journal = {Test Journal},
+#'   year   = {2020},
+#'   doi    = {10.1000/test}
+#' }'
+#' f <- tempfile(fileext = ".bib")
+#' writeLines(bib, f)
+#' data <- read_bibtex(f)
+#' data[, c("id", "title", "year", "journal", "doi")]
+#' unlink(f)
 read_bibtex <- function(file, encoding = "UTF-8") {
   check_file(file)
 

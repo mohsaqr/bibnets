@@ -19,9 +19,9 @@ An igraph graph object.
 Convert edge data frame to igraph
 }
 \examples{
-\dontrun{
+\dontshow{if (requireNamespace("igraph", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 data(biblio_data)
 edges <- author_network(biblio_data, "collaboration")
 g <- to_igraph(edges)
-}
+\dontshow{\}) # examplesIf}
 }

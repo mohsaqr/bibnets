@@ -38,11 +38,11 @@ read_crossref <- function(data) {
 
   ## Year: from issued field (may be nested or string)
   issued <- safe_col("issued")
-  year <- vapply(issued, function(x) {
+  year <- unname(vapply(issued, function(x) {
     if (is.na(x)) return(NA_integer_)
     m <- regmatches(as.character(x), regexpr("\\d{4}", as.character(x)))
     if (length(m) > 0) as.integer(m[1]) else NA_integer_
-  }, integer(1))
+  }, integer(1)))
 
   result <- data.frame(
     id = id,

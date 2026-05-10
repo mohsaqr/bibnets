@@ -24,7 +24,17 @@ Note: standard BibTeX does not contain cited references, so the
 non-standard \code{cited-references} or \code{note} field with reference data.
 }
 \examples{
-\dontrun{
-data <- read_bibtex("references.bib")
-}
+# Write a minimal BibTeX entry to a temp file, then read it
+bib <- '@article{smith2020,
+  title  = {Bibliometric networks},
+  author = {Smith, J. and Jones, K.},
+  journal = {Test Journal},
+  year   = {2020},
+  doi    = {10.1000/test}
+}'
+f <- tempfile(fileext = ".bib")
+writeLines(bib, f)
+data <- read_bibtex(f)
+data[, c("id", "title", "year", "journal", "doi")]
+unlink(f)
 }

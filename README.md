@@ -212,7 +212,7 @@ normalization controls how pair-level totals are rescaled after projection.
 | `"full"` | all networks | Each observed co-occurrence contributes 1. |
 | `"fractional"` | all networks | Contribution is scaled by list size so large teams or long reference lists do not dominate. |
 | `"paper"` | co-occurrence networks | Each paper contributes a fixed total amount spread across pairs. |
-| `"strength"` | coupling networks | Uses reference-frequency weighting and row-list-size normalization for Perianes-Rodríguez-style coupling strength. |
+| `"strength"` | coupling networks | Uses reference-frequency weighting and row-list-size normalization for coupling-strength weighting. |
 | `"harmonic"` | author collaboration | Authorship credit decreases by harmonic rank and sums to 1 per paper. |
 | `"arithmetic"` | author collaboration | Authorship credit decreases linearly by position. |
 | `"geometric"` | author collaboration | Authorship credit decays geometrically by position. |
@@ -253,8 +253,8 @@ Use:
 - `prune(threshold = x)` for an absolute edge-weight cutoff.
 - `prune(top_n = k)` to retain locally strong edges for each node.
 - `filter_top(n = k)` to keep only the most connected nodes.
-- `backbone(alpha = x)` to apply the Serrano-Boguñá-Vespignani disparity
-  filter for multiscale weighted networks.
+- `backbone(alpha = x)` to apply the disparity filter for multiscale
+  weighted networks.
 
 ## Temporal Networks and Historiographs
 
@@ -292,34 +292,15 @@ formats are requested.
 
 ## Important References
 
-- Batagelj, V., & Cerinšek, M. (2013). On bibliographic networks.
-  *Scientometrics*, 96(3), 845-864. doi:10.1007/s11192-012-0940-1.
-- Campos, R., Mangaravite, V., Pasquali, A., Jorge, A. M., Nunes, C., &
-  Jatowt, A. (2020). YAKE! Keyword extraction from single documents using
-  multiple local features. *Information Sciences*, 509, 257-289.
-  doi:10.1016/j.ins.2019.09.013.
-- Hagen, N. T. (2008). Harmonic allocation of authorship credit:
-  Source-level correction of bibliometric bias assures accurate publication
-  and citation analysis. *PLOS ONE*, 3(12), e4021.
-  doi:10.1371/journal.pone.0004021.
-- Liu, X. Z., & Fang, H. (2023). A geometric counting method adaptive to the
-  author number. *Journal of Informetrics*, 17(2), 101404.
-  doi:10.1016/j.joi.2023.101404.
-- Perianes-Rodríguez, A., Waltman, L., & van Eck, N. J. (2016).
+- Perianes-Rodriguez, A., Waltman, L., & Van Eck, N. J. (2016).
   Constructing bibliometric networks: A comparison between full and
   fractional counting. *Journal of Informetrics*, 10(4), 1178-1195.
   doi:10.1016/j.joi.2016.10.006.
-- Serrano, M. Á., Boguñá, M., & Vespignani, A. (2009). Extracting the
-  multiscale backbone of complex weighted networks. *Proceedings of the
-  National Academy of Sciences*, 106(16), 6483-6488.
-  doi:10.1073/pnas.0808904106.
-- Small, H. (1973). Co-citation in the scientific literature: A new measure
-  of the relationship between two documents. *Journal of the American Society
-  for Information Science*, 24(4), 265-269. doi:10.1002/asi.4630240406.
-- van Eck, N. J., & Waltman, L. (2009). How to normalize co-occurrence data?
-  An analysis of some well-known similarity measures. *Journal of the
-  American Society for Information Science and Technology*, 60(8), 1635-1651.
-  doi:10.1002/asi.21075.
+- López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: a
+  concise introduction and a detailed methodology for mapping the
+  scientific field of computing education research. *Past, Present and
+  Future of Computing Education Research: A Global Perspective*, 79-99.
+  doi:10.1007/978-3-031-25336-2_5.
 
 ## Vignettes
 

@@ -29,20 +29,18 @@
 #'
 #' @export
 #' @examples
+#' # Auto-detect format from file content (here: a bundled OpenAlex CSV)
+#' f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
+#' data <- read_biblio(f)
+#' head(data[, c("id", "title", "year", "journal")])
 #' \dontrun{
-#' # Auto-detect single file
-#' data <- read_biblio("export.csv")
-#'
-#' # Read entire folder (merges all files)
+#' # Read an entire folder (merges all files)
 #' data <- read_biblio("scopus_exports/")
 #'
 #' # Multiple files
 #' data <- read_biblio(c("scopus1.csv", "scopus2.csv"))
 #'
-#' # Explicit format
-#' data <- read_biblio("file.csv", format = "scopus")
-#'
-#' # Generic CSV with custom columns
+#' # Explicit format and generic-CSV mode
 #' data <- read_biblio("my_data.csv", format = "generic",
 #'                     id = "doc_id",
 #'                     actors = c("Authors", "Keywords"),

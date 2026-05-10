@@ -208,5 +208,6 @@ empty_biblio_df <- function() {
   result$authors <- list()
   result$references <- list()
   result$keywords <- list()
+  result$keywords_plus <- list()
   result
 }

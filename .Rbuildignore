@@ -21,3 +21,5 @@
 ^sidelined$
 ^\.DS_Store$
 ^.*\.DS_Store$
+^audit$
+^\.\.Rcheck$

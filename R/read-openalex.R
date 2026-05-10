@@ -27,8 +27,8 @@ read_openalex <- function(data) {
 
   ## Helper: safely get column
   safe_col <- function(name, default = NA_character_) {
-    if (name %in% names(data)) data[[name]]
-    else rep(default, n)
+    if (name %in% names(data)) return(data[[name]])
+    if (length(default) == n) default else rep(default, length.out = n)
   }
 
   ## ID: OpenAlex work ID

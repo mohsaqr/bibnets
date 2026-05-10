@@ -31,17 +31,15 @@ by \code{cograph::splot()} without conversion. This function is only needed
 when you want to attach node-level metadata.
 }
 \examples{
-\dontrun{
+\dontshow{if (requireNamespace("cograph", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 data(biblio_data)
 
 # Without metadata: splot() accepts bibnets edges directly
 edges <- author_network(biblio_data, "collaboration")
-cograph::splot(edges)
 
 # With metadata: document network + local citation scores as node size
 edges <- document_network(biblio_data, type = "coupling")
 nodes <- local_citations(biblio_data)   # keyed by document id
 net   <- to_cograph(edges, nodes = nodes)
-cograph::splot(net, node_size = "lcs", labels = TRUE)
-}
+\dontshow{\}) # examplesIf}
 }

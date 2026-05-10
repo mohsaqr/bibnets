@@ -1,6 +1,6 @@
 Package: bibnets
 Title: Citation, Co-Citation, and Bibliometric Network Construction
-Version: 0.3.0
+Version: 0.4.1
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
@@ -12,9 +12,9 @@ Description: Constructs bibliometric networks from scholarly data. Supports
     normalisation methods. Reads 'Scopus', 'Web of Science', 'BibTeX',
     'RIS', 'OpenAlex', 'Lens.org', and 'Dimensions' exports. Includes
     tools for temporal analysis, backbone extraction, and export to
-    common network formats. Methods described in López-Pernas, Saqr
-    & Apiola (2023) <doi:10.1007/978-3-031-25336-2_5> and Apiola,
-    Saqr & López-Pernas (2023) <doi:10.1007/978-3-031-25336-2_6>.
+    common network formats. Methods described in Perianes-Rodriguez,
+    Waltman & Van Eck (2016) <doi:10.1016/j.joi.2016.10.006> and
+    López-Pernas, Saqr & Apiola (2023) <doi:10.1007/978-3-031-25336-2_5>.
 License: MIT + file LICENSE
 URL: https://github.com/mohsaqr/bibnets
 BugReports: https://github.com/mohsaqr/bibnets/issues

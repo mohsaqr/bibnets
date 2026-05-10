@@ -1,3 +1,38 @@
+# bibnets 0.4.1
+
+## Bug fixes
+
+- `read_lens()` no longer inflates output to `n^2` rows when neither
+  `Lens ID` nor `ID` columns are present.
+- `read_openalex()` no longer inflates output to `n^2` rows when the `id`
+  column is absent.
+- `read_scopus()` now normalises empty-string DOIs to `NA`, so
+  `is.na(doi)` deduplication checks behave as expected.
+- `read_wos()` empty-file return now includes the `keywords_plus`
+  list-column to match the non-empty schema.
+- `read_crossref()` no longer crashes with "row names contain missing
+  values" when the `issued` column has `NA` entries.
+
+## Documentation
+
+- Converter examples (`to_igraph()`, `to_tbl_graph()`, `to_cograph()`) now
+  use `@examplesIf requireNamespace(...)` so they execute when the
+  suggested package is installed instead of being silently skipped.
+- `read_biblio()`, `read_bibtex()`, and `read_ris()` now ship runnable
+  examples backed by either the bundled `extdata/openalex_works.csv`
+  fixture or a `tempfile()`-based minimal record.
+- Reference list streamlined across DESCRIPTION, README, vignette, and
+  Rd files.
+
+## Testing
+
+- Added eight new test files covering `read_scopus()`, `read_wos()`,
+  `read_ris()`, `read_lens()`, `read_dimensions()`, `read_crossref()`,
+  `read_biblio()`, `read_openalex()`, plus dedicated coverage for
+  `R/edgelist.R` and `build_bipartite_long()`.
+- Suite size: 1268 tests (was 499). Package line coverage: 92.5%
+  (was 61.8%).
+
 # bibnets 0.3.0
 
 ## New functions
@@ -7,8 +42,8 @@
 - `historiograph()` — Garfield-style chronological citation network among the
   most locally cited documents.
 - `local_citations()` — counts within-dataset citations (Local Citation Score).
-- `backbone()` — Serrano et al. (2009) disparity filter for extracting
-  statistically significant edges from dense weighted networks.
+- `backbone()` — disparity filter for extracting statistically significant
+  edges from dense weighted networks.
 - `prune()` — threshold and top-n edge pruning.
 - `read_biblio()` — universal reader with auto-format detection (Scopus, WoS,
   BibTeX, RIS, Dimensions, Lens.org).

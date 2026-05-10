@@ -27,7 +27,7 @@ read_lens <- function(file, encoding = "UTF-8") {
     for (nm in names_vec) {
       if (nm %in% names(raw)) return(raw[[nm]])
     }
-    rep(default, n)
+    if (length(default) == n) default else rep(default, length.out = n)
   }
 
   id <- get_col(c("Lens ID", "ID"), paste0("LENS", seq_len(n)))

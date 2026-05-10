@@ -22,7 +22,18 @@ Parses a \code{.ris} file into a standardized bibliometric data frame.
 Like BibTeX, standard RIS does not include cited references.
 }
 \examples{
-\dontrun{
-data <- read_ris("export.ris")
-}
+# Write a minimal RIS record to a temp file, then read it
+ris <- "TY  - JOUR
+AU  - Smith, J.
+AU  - Jones, K.
+TI  - Bibliometric networks
+JO  - Test Journal
+PY  - 2020
+DO  - 10.1000/test
+ER  - "
+f <- tempfile(fileext = ".ris")
+writeLines(ris, f)
+data <- read_ris(f)
+data[, c("id", "title", "year", "journal", "doi")]
+unlink(f)
 }
