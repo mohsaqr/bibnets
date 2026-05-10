@@ -12,9 +12,9 @@ co-authorship, co-citation, bibliographic coupling, keyword co-occurrence,
 direct citation, historiograph, and custom co-occurrence analyses; and exports
 to igraph, tidygraph, cograph, Gephi CSV, GraphML, and sparse matrix formats.
 
-Beyond construction, `bibnets` supports six similarity and dissimilarity
+Beyond construction, `bibnets` supports similarity and dissimilarity
 normalizations (association strength, cosine, Jaccard, inclusion, equivalence,
-and raw counts); thirteen counting methods including fractional, paper, and
+and raw counts); counting methods including fractional, paper, and
 position-aware authorship credit (harmonic, arithmetic, geometric, adaptive
 geometric, golden-ratio, first-author, last-author, first-last, custom);
 attention-style position weights (lead, last, proximity, circular) for
@@ -26,7 +26,7 @@ citation scoring; and threshold and top-n pruning utilities.
 
 ## Main Features
 
-- **8 dedicated network builders plus one generic builder**:
+- **Dedicated network builders plus a generic builder**:
   `author_network()`, `document_network()`, `reference_network()`,
   `keyword_network()`, `source_network()`, `institution_network()`,
   `country_network()`, `historiograph()`, and `conetwork()`.
@@ -37,7 +37,7 @@ citation scoring; and threshold and top-n pruning utilities.
 - **Attention-style position weights** through `attention = "lead"`, `"last"`,
   `"proximity"`, or `"circular"` for author, keyword, country, and institution
   networks.
-- **6 similarity measures**: none, association strength, cosine, Jaccard,
+- **Similarity measures**: none, association strength, cosine, Jaccard,
   inclusion, and equivalence.
 - **Readers for scholarly exports**: Scopus, Web of Science, OpenAlex nested
   data, OpenAlex flat CSV, BibTeX, RIS, Lens.org, Dimensions, Crossref, and
