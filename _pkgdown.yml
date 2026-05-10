@@ -1,0 +1,95 @@
+url: https://saqr.me/bibnets
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+
+home:
+  title: "bibnets — Bibliometric Network Construction for R"
+  description: >
+    Import scholarly exports, construct co-authorship, co-citation,
+    bibliographic coupling, keyword, and temporal networks, and export
+    to igraph, tidygraph, cograph, Gephi, and GraphML.
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [github]
+  components:
+    github:
+      icon: fab fa-github
+      href: https://github.com/mohsaqr/bibnets
+
+reference:
+  - title: "Read scholarly data"
+    desc: >
+      Import metadata from Scopus, Web of Science, OpenAlex, BibTeX, RIS,
+      Lens.org, Dimensions, Crossref, and generic CSV files.
+    contents:
+      - read_biblio
+      - read_scopus
+      - read_wos
+      - read_openalex
+      - read_openalex_csv
+      - read_bibtex
+      - read_ris
+      - read_lens
+      - read_dimensions
+      - read_crossref
+
+  - title: "Build networks"
+    desc: >
+      Construct co-authorship, co-citation, bibliographic coupling, keyword
+      co-occurrence, source, country, institution, and custom co-networks.
+    contents:
+      - author_network
+      - document_network
+      - reference_network
+      - keyword_network
+      - source_network
+      - institution_network
+      - country_network
+      - conetwork
+
+  - title: "Temporal and historical analysis"
+    desc: >
+      Sliding, fixed, and cumulative temporal windows; Garfield historiographs;
+      local citation scoring.
+    contents:
+      - temporal_network
+      - historiograph
+      - local_citations
+
+  - title: "Reduce and filter networks"
+    desc: >
+      Backbone extraction, edge thresholding, and top-node filtering.
+    contents:
+      - backbone
+      - prune
+      - filter_top
+
+  - title: "Normalize edge weights"
+    contents:
+      - normalize
+
+  - title: "Export networks"
+    desc: >
+      Convert edge lists to igraph, tidygraph, cograph, Gephi CSV,
+      GraphML, and sparse matrices.
+    contents:
+      - to_gephi
+      - to_graphml
+      - to_igraph
+      - to_tbl_graph
+      - to_matrix
+      - to_cograph
+
+  - title: "Utilities"
+    contents:
+      - split_field
+
+articles:
+  - title: "Vignettes"
+    contents:
+      - bibnets
+      - reading-data
