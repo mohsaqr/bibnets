@@ -6,15 +6,17 @@ Authors@R: c(
            comment = c(ORCID = "0000-0001-5881-3109")),
     person("Sonsoles", "López-Pernas", role = "aut",
            comment = c(ORCID = "0000-0002-9621-1392")))
-Description: Imports, constructs, and exports bibliometric networks. Reads
-    scholarly metadata from 'Scopus', 'Web of Science', 'BibTeX',
+Description: Imports, constructs, and exports bibliometric networks from
+    scholarly metadata. Reads 'Scopus', 'Web of Science', 'BibTeX',
     'RIS', 'OpenAlex', 'Lens.org', 'Dimensions', and 'Crossref'
-    exports. Builds co-authorship, keyword co-occurrence, co-citation,
-    bibliographic coupling, and direct citation networks with multiple
-    counting and normalisation methods. Includes tools for temporal
-    analysis, backbone extraction, and export to 'igraph',
-    'tidygraph', 'cograph', 'Gephi', 'GraphML', and sparse matrix
-    formats.
+    exports. Goes beyond standard co-networks with attention-weighted
+    networks (lead, last, proximity, circular position weights),
+    position-aware counting (harmonic, arithmetic, geometric,
+    golden-ratio), similarity and dissimilarity normalisations,
+    temporal networks with fixed, sliding, and cumulative windows,
+    disparity-filter backbone extraction, historiograph construction,
+    and local citation scoring. Methods described in López-Pernas,
+    Saqr & Apiola (2023) <doi:10.1007/978-3-031-25336-2_5>.
 License: MIT + file LICENSE
 URL: https://github.com/mohsaqr/bibnets
 BugReports: https://github.com/mohsaqr/bibnets/issues
