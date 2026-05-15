@@ -23,7 +23,7 @@ Parses a Web of Science export file (plaintext or tab-delimited) into a
 standardized bibliometric data frame.
 }
 \examples{
-\dontrun{
-data <- read_wos("savedrecs.txt")
-}
+f <- system.file("extdata", "wos_sample.txt", package = "bibnets")
+data <- read_wos(f)
+head(data[, c("id", "title", "year", "journal")])
 }

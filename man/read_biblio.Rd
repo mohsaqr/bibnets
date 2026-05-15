@@ -46,17 +46,28 @@ generic CSV input. Accepts a single file, multiple files, or a directory.
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 data <- read_biblio(f)
 head(data[, c("id", "title", "year", "journal")])
-\dontrun{
-# Read an entire folder (merges all files)
-data <- read_biblio("scopus_exports/")
 
-# Multiple files
-data <- read_biblio(c("scopus1.csv", "scopus2.csv"))
+# Read multiple files at once; auto-detects each format
+f_scopus <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
+f_wos    <- system.file("extdata", "wos_sample.txt",  package = "bibnets")
+combined <- read_biblio(c(f_scopus, f_wos))
+head(combined[, c("id", "title", "year", "journal")])
 
-# Explicit format and generic-CSV mode
-data <- read_biblio("my_data.csv", format = "generic",
-                    id = "doc_id",
-                    actors = c("Authors", "Keywords"),
-                    sep = ";")
-}
+# Read every supported export in a directory (here: the bundled extdata)
+folder <- system.file("extdata", package = "bibnets")
+all_data <- read_biblio(folder)
+nrow(all_data)
+
+# Generic CSV: point read_biblio at any CSV and name the list-column fields
+tmp <- tempfile(fileext = ".csv")
+write.csv(data.frame(
+  doc_id  = c("a", "b"),
+  Authors = c("Smith J; Jones A", "Davis M"),
+  Keywords = c("networks; bibliometrics", "analytics")
+), tmp, row.names = FALSE)
+generic <- read_biblio(tmp, format = "generic",
+                       id = "doc_id",
+                       actors = c("Authors", "Keywords"),
+                       sep = ";")
+head(generic)
 }

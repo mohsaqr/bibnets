@@ -23,7 +23,7 @@ Parses a CSV file exported from Scopus into a standardized bibliometric
 data frame with list-columns for multi-valued fields.
 }
 \examples{
-\dontrun{
-data <- read_scopus("scopus_export.csv")
-}
+f <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
+data <- read_scopus(f)
+head(data[, c("id", "title", "year", "journal")])
 }

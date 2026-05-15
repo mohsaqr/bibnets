@@ -12,9 +12,9 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' data <- read_lens("lens_export.csv")
-#' }
+#' f <- system.file("extdata", "lens_sample.csv", package = "bibnets")
+#' data <- read_lens(f)
+#' head(data[, c("id", "title", "year", "journal")])
 read_lens <- function(file, encoding = "UTF-8") {
   check_file(file)
 

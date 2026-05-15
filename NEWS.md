@@ -1,3 +1,19 @@
+# bibnets 0.4.3
+
+## CRAN reviewer requests
+
+- All no-run wrappers in reader examples replaced with runnable
+  examples, per CRAN reviewer guidance. File-based readers
+  (`read_scopus`, `read_wos`, `read_dimensions`, `read_lens`) now use
+  small bundled fixtures under `inst/extdata/`, reached via
+  `system.file()`. API-wrapper readers (`read_openalex`, `read_crossref`)
+  use an inline data frame matching the upstream column shape so the
+  conversion path runs without a network call. `read_biblio` examples
+  now demonstrate multi-file, directory, and generic-CSV modes against
+  the bundled fixtures.
+- New fixtures: `inst/extdata/scopus_sample.csv`, `wos_sample.txt`,
+  `dimensions_sample.csv`, `lens_sample.csv` (2 records each).
+
 # bibnets 0.4.2
 
 ## Documentation

@@ -19,9 +19,23 @@ Takes the output of \code{rcrossref::cr_works()} (the \verb{$data} tibble/data f
 and converts it to the standardized bibnets format.
 }
 \examples{
-\dontrun{
-library(rcrossref)
-raw <- cr_works(query = "bibliometric networks")
-data <- read_crossref(raw$data)
-}
+# Construct a minimal data frame matching the structure of
+# rcrossref::cr_works(...)$data. In practice, pass that data frame directly.
+raw <- data.frame(
+  doi = c("10.1/a", "10.2/b"),
+  title = c("First paper", "Second paper"),
+  issued = c("2022-01-01", "2021-06-15"),
+  container.title = c("Journal A", "Journal B"),
+  is.referenced.by.count = c("3", "9"),
+  type = c("journal-article", "journal-article"),
+  stringsAsFactors = FALSE
+)
+raw$author <- list(
+  data.frame(given = c("Jane", "Anne"),
+             family = c("Smith", "Jones"),
+             stringsAsFactors = FALSE),
+  data.frame(given = "Mark", family = "Davis", stringsAsFactors = FALSE)
+)
+data <- read_crossref(raw)
+head(data[, c("id", "title", "year", "journal")])
 }

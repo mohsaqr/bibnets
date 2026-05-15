@@ -1,0 +1,35 @@
+FN Clarivate Analytics Web of Science
+VR 1.0
+PT J
+AU Smith, J
+   Jones, A
+TI Bibliometric networks in education research
+SO Journal of Scientometrics
+PY 2022
+DI 10.1000/jos.2022.001
+DE bibliometrics; networks; education
+ID SCIENTOMETRICS; CO-CITATION
+TC 12
+AB An overview of bibliometric networks applied to education.
+DT Article
+CR Brown T, 2018, J EDUC RES, V10, P55; Lee K, 2020, SCI LETT, V5, P12
+UT WOS:000000000000001
+ER
+
+PT J
+AU Davis, M
+   Lee, K
+TI Co-citation analysis of learning analytics
+SO Learning Analytics
+PY 2021
+DI 10.1000/la.2021.077
+DE learning analytics; co-citation
+ID ANALYTICS
+TC 8
+AB Co-citation patterns in learning analytics literature.
+DT Article
+CR Smith J, 2022, J SCI, V12, P1
+UT WOS:000000000000002
+ER
+
+EF

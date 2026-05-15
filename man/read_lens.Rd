@@ -21,7 +21,7 @@ Parses a CSV file exported from Lens.org into a standardized bibliometric
 data frame.
 }
 \examples{
-\dontrun{
-data <- read_lens("lens_export.csv")
-}
+f <- system.file("extdata", "lens_sample.csv", package = "bibnets")
+data <- read_lens(f)
+head(data[, c("id", "title", "year", "journal")])
 }

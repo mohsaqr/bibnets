@@ -23,7 +23,7 @@ Parses a CSV file exported from Dimensions into a standardized
 bibliometric data frame.
 }
 \examples{
-\dontrun{
-data <- read_dimensions("dimensions_export.csv")
-}
+f <- system.file("extdata", "dimensions_sample.csv", package = "bibnets")
+data <- read_dimensions(f)
+head(data[, c("id", "title", "year", "journal")])
 }
