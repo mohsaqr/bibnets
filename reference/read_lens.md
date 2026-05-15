@@ -28,7 +28,13 @@ list-columns `authors`, `references`, and `keywords`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data <- read_lens("lens_export.csv")
-} # }
+f <- system.file("extdata", "lens_sample.csv", package = "bibnets")
+data <- read_lens(f)
+head(data[, c("id", "title", "year", "journal")])
+#>            id                                       title year
+#> 1 000-111-222 Bibliometric networks in education research 2022
+#> 2 000-333-444  Co-citation analysis of learning analytics 2021
+#>                     journal
+#> 1 Journal of Scientometrics
+#> 2        Learning Analytics
 ```

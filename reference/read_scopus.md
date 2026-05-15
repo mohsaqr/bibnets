@@ -30,7 +30,13 @@ extras: `index_keywords` (list-column), `affiliations` (character),
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data <- read_scopus("scopus_export.csv")
-} # }
+f <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
+data <- read_scopus(f)
+head(data[, c("id", "title", "year", "journal")])
+#>           id                                       title year
+#> 1 2-s2.0-001 Bibliometric networks in education research 2022
+#> 2 2-s2.0-002  Co-citation analysis of learning analytics 2021
+#>                     journal
+#> 1 Journal of Scientometrics
+#> 2        Learning Analytics
 ```

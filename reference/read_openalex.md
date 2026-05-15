@@ -29,10 +29,27 @@ list-columns `authors`, `references`, and `keywords`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-library(openalexR)
-raw <- oa_fetch(entity = "works", search = "bibliometric networks",
-                count_only = FALSE)
+# Construct a minimal data frame matching the structure returned by
+# openalexR::oa_fetch(entity = "works", ...). In practice, pass the
+# result of oa_fetch() directly.
+raw <- data.frame(
+  id = c("W123", "W456"),
+  display_name = c("First paper", "Second paper"),
+  publication_year = c(2022L, 2021L),
+  so = c("Journal A", "Journal B"),
+  doi = c("https://doi.org/10.1/a", "https://doi.org/10.2/b"),
+  cited_by_count = c(5L, 12L),
+  stringsAsFactors = FALSE
+)
+raw$author <- list(
+  data.frame(au_display_name = c("Smith J", "Jones A"),
+             stringsAsFactors = FALSE),
+  data.frame(au_display_name = "Davis M", stringsAsFactors = FALSE)
+)
+raw$referenced_works <- list(c("W100", "W200"), "W123")
 data <- read_openalex(raw)
-} # }
+head(data[, c("id", "title", "year", "journal", "doi")])
+#>     id        title year   journal    doi
+#> 1 W123  First paper 2022 Journal A 10.1/a
+#> 2 W456 Second paper 2021 Journal B 10.2/b
 ```

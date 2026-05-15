@@ -30,7 +30,13 @@ extra: `keywords_plus` (list-column).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data <- read_wos("savedrecs.txt")
-} # }
+f <- system.file("extdata", "wos_sample.txt", package = "bibnets")
+data <- read_wos(f)
+head(data[, c("id", "title", "year", "journal")])
+#>                    id                                       title year
+#> 1 WOS:000000000000001 Bibliometric networks in education research 2022
+#> 2 WOS:000000000000002  Co-citation analysis of learning analytics 2021
+#>                     journal
+#> 1 Journal of Scientometrics
+#> 2        Learning Analytics
 ```

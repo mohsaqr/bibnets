@@ -9,7 +9,7 @@ and converts it to the standardized bibnets format with list-columns."></head><b
 
     <a class="navbar-brand me-2" href="../index.html">bibnets</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,12 +64,29 @@ plus list-columns <code>authors</code>, <code>references</code>, and <code>keywo
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR" class="external-link">openalexR</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">oa_fetch</a></span><span class="op">(</span>entity <span class="op">=</span> <span class="st">"works"</span>, search <span class="op">=</span> <span class="st">"bibliometric networks"</span>,</span></span>
-<span class="r-in"><span>                count_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Construct a minimal data frame matching the structure returned by</span></span></span>
+<span class="r-in"><span><span class="co"># openalexR::oa_fetch(entity = "works", ...). In practice, pass the</span></span></span>
+<span class="r-in"><span><span class="co"># result of oa_fetch() directly.</span></span></span>
+<span class="r-in"><span><span class="va">raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W123"</span>, <span class="st">"W456"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  display_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"First paper"</span>, <span class="st">"Second paper"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  publication_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2022L</span>, <span class="fl">2021L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  so <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Journal A"</span>, <span class="st">"Journal B"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  doi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://doi.org/10.1/a"</span>, <span class="st">"https://doi.org/10.2/b"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  cited_by_count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5L</span>, <span class="fl">12L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">raw</span><span class="op">$</span><span class="va">author</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>au_display_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smith J"</span>, <span class="st">"Jones A"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>             stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>au_display_name <span class="op">=</span> <span class="st">"Davis M"</span>, stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">raw</span><span class="op">$</span><span class="va">referenced_works</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W100"</span>, <span class="st">"W200"</span><span class="op">)</span>, <span class="st">"W123"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">read_openalex</span><span class="op">(</span><span class="va">raw</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">data</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"title"</span>, <span class="st">"year"</span>, <span class="st">"journal"</span>, <span class="st">"doi"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     id        title year   journal    doi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 W123  First paper 2022 Journal A 10.1/a</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 W456 Second paper 2021 Journal B 10.2/b</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

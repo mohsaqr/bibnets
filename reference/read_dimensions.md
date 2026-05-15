@@ -30,7 +30,13 @@ Dimensions-specific extras: `affiliations` (list-column), `countries`
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data <- read_dimensions("dimensions_export.csv")
-} # }
+f <- system.file("extdata", "dimensions_sample.csv", package = "bibnets")
+data <- read_dimensions(f)
+head(data[, c("id", "title", "year", "journal")])
+#>         id                                       title year
+#> 1 pub.1001 Bibliometric networks in education research 2022
+#> 2 pub.1002  Co-citation analysis of learning analytics 2021
+#>                     journal
+#> 1 Journal of Scientometrics
+#> 2        Learning Analytics
 ```

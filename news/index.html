@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bibnets</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,14 @@
       <small>Source: <a href="https://github.com/mohsaqr/bibnets/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.3" id="bibnets-043">bibnets 0.4.3<a class="anchor" aria-label="anchor" href="#bibnets-043"></a></h2>
+<div class="section level3">
+<h3 id="cran-reviewer-requests-0-4-3">CRAN reviewer requests<a class="anchor" aria-label="anchor" href="#cran-reviewer-requests-0-4-3"></a></h3>
+<ul><li>All no-run wrappers in reader examples replaced with runnable examples, per CRAN reviewer guidance. File-based readers (<code>read_scopus</code>, <code>read_wos</code>, <code>read_dimensions</code>, <code>read_lens</code>) now use small bundled fixtures under <code>inst/extdata/</code>, reached via <code><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file()</a></code>. API-wrapper readers (<code>read_openalex</code>, <code>read_crossref</code>) use an inline data frame matching the upstream column shape so the conversion path runs without a network call. <code>read_biblio</code> examples now demonstrate multi-file, directory, and generic-CSV modes against the bundled fixtures.</li>
+<li>New fixtures: <code>inst/extdata/scopus_sample.csv</code>, <code>wos_sample.txt</code>, <code>dimensions_sample.csv</code>, <code>lens_sample.csv</code> (2 records each).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.2" id="bibnets-042">bibnets 0.4.2<a class="anchor" aria-label="anchor" href="#bibnets-042"></a></h2>
 <div class="section level3">
