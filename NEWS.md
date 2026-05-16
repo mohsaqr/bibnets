@@ -1,3 +1,26 @@
+# bibnets (development version)
+
+## New features
+
+- `parse_names()`: optional, standalone utility that reorders author
+  names to `"First Last"` and parses each into
+  `first`/`last`/`particle`/`suffix` components (attached as the
+  `"parts"` attribute). Handles three conventions: `"Last, First"`
+  (comma), the Scopus / bibnets `"SURNAME Initials"` label form
+  (`"WANG Y"`, `"AYALA-ROMERO JA"`), and `"First Last"`. The
+  `surname_first` argument (`"auto"`/`"yes"`/`"no"`, default `"auto"`)
+  controls comma-less interpretation, with auto-detection biased toward
+  the bibnets/Scopus convention so native bibnets labels parse without
+  extra arguments. Case-insensitive (recognises particles in bibnets'
+  uppercased labels). `format` argument selects output style:
+  `"first_last"` (default), `"last_initials"` (`"Saqr M."`), or `"last"`
+  (`"Saqr"`). Detects group/corporate authors and leaves them, `NA`,
+  and empty strings unchanged. Not called by any reader or network
+  builder — entity labels are still matched verbatim unless you apply
+  this yourself. Base R only; no new dependencies. Documented in
+  detail in `?parse_names` and the new vignette
+  `vignette("parsing-author-names")`.
+
 # bibnets 0.4.4
 
 ## CRAN pre-test fix
