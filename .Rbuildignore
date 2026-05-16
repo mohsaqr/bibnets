@@ -19,6 +19,7 @@
 ^codex$
 ^DESCRIPTION\.orig$
 ^sidelined$
+^local_testing_and_equivalence$
 ^\.DS_Store$
 ^.*\.DS_Store$
 ^audit$

@@ -1,3 +1,20 @@
+# bibnets 0.4.4
+
+## CRAN pre-test fix
+
+- The four `test-equiv-*.R` equivalence suites (vs `bibliometrix` and
+  `biblionetwork`) have been moved out of the package into a local-only
+  `local_testing_and_equivalence/` directory. These developer checks
+  pulled in `data.table`/`biblionetwork`, whose OpenMP parallelism caused
+  the "CPU time 4 times elapsed time" NOTE on the Debian r-devel
+  pre-test. They remain runnable locally but are no longer part of
+  `R CMD check`.
+- `bibliometrix`, `biblionetwork`, and `data.table` removed from
+  `Suggests` — they were used only by the relocated equivalence tests.
+- `tests/testthat.R` keeps a 2-thread BLAS/OpenMP cap as defence for
+  `crossprod()` / `tcrossprod()` in `multiply_bipartite()`.
+- No user-facing code changes.
+
 # bibnets 0.4.3
 
 ## CRAN reviewer requests
