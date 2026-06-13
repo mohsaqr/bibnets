@@ -15,12 +15,16 @@ institution_network(
   top_n = NULL,
   self_loops = FALSE,
   deduplicate = TRUE,
-  format = "edgelist"
+  format = "edgelist",
+  affiliations = "affiliations",
+  sep = ";",
+  references_sep = ";",
+  strip_quotes = TRUE
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and \code{affiliations} (list-column of
-institution names). For coupling, also needs \code{references}.}
+\item{data}{A data frame with \code{id} and an affiliation column (list-column
+or delimited string). For coupling, also needs \code{references}.}
 
 \item{type}{Character. \code{"collaboration"} (default), \code{"coupling"}, or
 \code{"equivalence"}.}
@@ -60,6 +64,21 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{\code{"cograph"}}{A cograph_network object (requires cograph).}
 \item{\code{"matrix"}}{A sparse adjacency matrix.}
 }}
+
+\item{affiliations}{Character. Name of the column containing institutions.
+Default \code{"affiliations"}.}
+
+\item{sep}{Character. Separator used to split the entity column when it
+is a plain character column rather than a list-column, e.g. \code{sep = ","}
+or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
+applies only to the author column; the references column uses
+\code{references_sep}.}
+
+\item{references_sep}{Character. Separator for the \code{references} column in
+\code{type = "coupling"}. Default \code{";"}.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each entity.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),

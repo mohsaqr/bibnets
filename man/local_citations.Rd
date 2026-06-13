@@ -4,11 +4,26 @@
 \alias{local_citations}
 \title{Compute local citation scores}
 \usage{
-local_citations(data)
+local_citations(
+  data,
+  references = "references",
+  sep = ";",
+  strip_quotes = TRUE
+)
 }
 \arguments{
-\item{data}{A data frame with \code{id} and \code{references} (list-column).
-Optionally \code{year}, \code{title}, \code{journal}, \code{doi}, \code{cited_by_count}.}
+\item{data}{A data frame with \code{id} and a references column (list-column
+or delimited string). Optionally \code{year}, \code{title}, \code{journal}, \code{doi},
+\code{cited_by_count}.}
+
+\item{references}{Character. Name of the column containing cited references.
+Default \code{"references"}.}
+
+\item{sep}{Character. Separator used to split the references column when it is a plain
+character column. Default \code{";"}.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each reference.}
 }
 \value{
 A data frame with columns:

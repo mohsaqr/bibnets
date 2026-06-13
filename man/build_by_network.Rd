@@ -14,7 +14,8 @@ build_by_network(
   min_occur,
   top_n = NULL,
   self_loops = FALSE,
-  deduplicate = TRUE
+  deduplicate = TRUE,
+  strip_quotes = TRUE
 )
 }
 \description{

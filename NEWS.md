@@ -1,6 +1,36 @@
-# bibnets (development version)
+# bibnets 0.5.0
 
 ## New features
+
+- **Custom data sets, any column name, any separator.** Every network
+  builder now takes a self-describing column argument plus `sep`, so a
+  non-standard CSV works in a single call without renaming columns or
+  pre-splitting strings:
+  - `author_network(d, authors = "Author Names", sep = ",")`
+  - `keyword_network(d, keywords = "Tags", sep = ",")`
+  - `reference_network(d, references = "Cited Refs", sep = ",")`
+  - `document_network(d, references = "Cited Refs", sep = ",")`
+  - `source_network(d, journal = "Source title")`
+  - `country_network(d, countries = "Nations", sep = ",")`
+  - `institution_network(d, affiliations = "Orgs", sep = ",")`
+  - `local_citations()` and `historiograph()` gain `references` + `sep`.
+
+  `sep` accepts any delimiter (`","`, `"|"`, `" and "`, ...) and applies
+  to the named entity column. The new arguments sit at the end of each
+  signature, so existing positional calls are unaffected.
+
+- **`references_sep`** — `author_network()`, `country_network()`,
+  `institution_network()`, and `source_network()` gain a `references_sep`
+  argument (default `";"`) so the references column used for coupling can
+  have its own separator, independent of the entity `sep`. (Reference
+  strings often contain internal commas, which is why it is separate.)
+
+- **`strip_quotes`** — every builder gains a `strip_quotes` argument
+  (default `TRUE`) that removes surrounding quote characters (straight
+  `"`, doubled `""`, and curly quotes) from each entity, so a quoted CSV
+  value like `"Alice"` or `""Alice""` is treated as `Alice`. Set
+  `strip_quotes = FALSE` to keep quotes as part of the label. Applies to
+  both freshly-split strings and entities supplied in a list-column.
 
 - `parse_names()`: optional, standalone utility that reorders author
   names to `"First Last"` and parses each into
@@ -20,6 +50,33 @@
   this yourself. Base R only; no new dependencies. Documented in
   detail in `?parse_names` and the new vignette
   `vignette("parsing-author-names")`.
+
+## Bug fixes
+
+- Positional counting (`"harmonic"`, `"first"`, etc.) on a plain
+  character author column now splits correctly. Previously a delimited
+  string was treated as a single author, silently producing a wrong
+  network.
+- `author_network(type = "co_citation", self_loops = TRUE)` now honors
+  `self_loops` (previously ignored).
+- `author_network(type = "equivalence")` now forwards `deduplicate`
+  (previously ignored).
+- A wrong separator (split yields no multi-entry rows, yet most values
+  contain a structural delimiter `";"`, `"|"`, or tab) now emits a
+  warning instead of silently building a degenerate network. The
+  heuristic deliberately ignores commas and `" and "`, which occur
+  inside valid single labels (`"Last, First"` names, reference strings,
+  `"Smith and Sons"`), so correct data is never warned about.
+- `read_biblio(format = "generic")` now warns, listing the available
+  columns, when an `actors` column is not found (previously skipped
+  silently).
+
+## Deprecations
+
+- `keyword_network(field = )` is deprecated in favor of
+  `keyword_network(keywords = )`. The old argument still works (with a
+  warning) and stays in its original second position, so
+  `keyword_network(d, "author_keywords")` is unchanged.
 
 # bibnets 0.4.4
 

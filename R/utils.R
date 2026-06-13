@@ -96,6 +96,27 @@ split_field <- function(x, sep = ";") {
 }
 
 
+#' Strip surrounding quote characters from entity labels
+#'
+#' Removes leading/trailing double-quote characters (straight `"`, the CSV
+#' doubled `""`, and curly quotes) plus surrounding whitespace, so quoted
+#' values such as `"Alice"` or `""Bob""` become `Alice` / `Bob`. Quotes
+#' inside a label (e.g. an apostrophe in `O'Brien`) are left untouched.
+#'
+#' @param x Character vector.
+#' @return Character vector with surrounding quotes/whitespace removed.
+#' @keywords internal
+strip_surrounding_quotes <- function(x) {
+  if (!length(x)) return(x)
+  ## Straight ("), left curly (U+201C), right curly (U+201D) double quotes.
+  q <- "[\"\u201c\u201d]+"
+  x <- trimws(x)
+  x <- sub(paste0("^", q), "", x)
+  x <- sub(paste0(q, "$"), "", x)
+  trimws(x)
+}
+
+
 #' Standardize author names
 #'
 #' Uppercase, whitespace normalisation, and dot removal from initials

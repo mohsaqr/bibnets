@@ -165,6 +165,14 @@ read_generic <- function(file, id = NULL, actors = NULL, sep = ";") {
 
   ## Split actor columns into list-columns
   if (!is.null(actors)) {
+    missing <- setdiff(actors, names(data))
+    if (length(missing) > 0) {
+      warning("Actor column(s) not found in file and skipped: ",
+              paste0("'", missing, "'", collapse = ", "),
+              ". Available columns: ",
+              paste0("'", names(data), "'", collapse = ", "),
+              call. = FALSE)
+    }
     cols <- intersect(actors, names(data))
     data[cols] <- lapply(data[cols], split_field, sep = sep)
   }

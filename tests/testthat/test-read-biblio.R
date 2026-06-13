@@ -217,11 +217,15 @@ test_that("read_biblio with format='generic' invokes read_generic correctly", {
   expect_equal(d$id, c("D1", "D2", "D3"))
 })
 
-test_that("read_biblio generic: actors not in file are silently skipped", {
+test_that("read_biblio generic: actors not in file warn and are skipped", {
   f <- make_generic_file()
-  d <- read_biblio(f, format = "generic", actors = c("Authors", "NonExistent"))
+  expect_warning(
+    d <- read_biblio(f, format = "generic",
+                     actors = c("Authors", "NonExistent")),
+    "NonExistent"
+  )
   expect_true(is.list(d$Authors))
-  ## "NonExistent" is absent — no error, not added as list col
+  ## "NonExistent" is absent — warned, not added as list col
   expect_false("NonExistent" %in% names(d))
 })
 

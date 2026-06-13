@@ -56,18 +56,20 @@ conetwork <- function(data,
                        top_n = NULL,
                        self_loops = FALSE,
                        deduplicate = TRUE,
-                       format = "edgelist") {
+                       format = "edgelist",
+                       strip_quotes = TRUE) {
   check_data(data, c("id", field))
   check_choice(counting, position_independent_counts(), "counting")
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)
 
-  data <- ensure_list_column(data, field, sep)
+  data <- ensure_list_column(data, field, sep, strip_quotes)
 
   result <- if (is.null(by)) {
     ## Co-occurrence within one field (same document)
-    B <- build_bipartite(data, field = field, min_freq = min_occur, deduplicate = deduplicate)
+    B <- build_bipartite(data, field = field, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     B <- apply_counting(B, counting = counting, network_type = "symmetric")
     multiply_bipartite(B, mode = "columns", similarity = similarity,
                        threshold = threshold, top_n = top_n,
@@ -76,12 +78,12 @@ conetwork <- function(data,
     ## Entities linked by shared values from `by` field
     if (!by %in% names(data))
       stop("Column '", by, "' not found in data.", call. = FALSE)
-    data <- ensure_list_column(data, by, sep)
+    data <- ensure_list_column(data, by, sep, strip_quotes)
     build_by_network(data, field = field, by = by,
                      counting = counting, similarity = similarity,
                      threshold = threshold, min_occur = min_occur,
                      top_n = top_n, self_loops = self_loops,
-                     deduplicate = deduplicate)
+                     deduplicate = deduplicate, strip_quotes = strip_quotes)
   }
 
   net_type <- if (is.null(by)) {
@@ -99,7 +101,8 @@ conetwork <- function(data,
 #' @keywords internal
 build_by_network <- function(data, field, by, counting, similarity,
                               threshold, min_occur, top_n = NULL,
-                              self_loops = FALSE, deduplicate = TRUE) {
+                              self_loops = FALSE, deduplicate = TRUE,
+                              strip_quotes = TRUE) {
   field_col <- data[[field]]
   by_col <- data[[by]]
 
@@ -157,7 +160,8 @@ build_by_network <- function(data, field, by, counting, similarity,
   agg_df[["values"]] <- agg$by_val
 
   ## Build bipartite: entities × by_values, then project to entity × entity
-  B <- build_bipartite(agg_df, field = "values", min_freq = 1L, deduplicate = deduplicate)
+  B <- build_bipartite(agg_df, field = "values", min_freq = 1L,
+                       deduplicate = deduplicate, strip_quotes = strip_quotes)
   B <- apply_counting(B, counting = counting, network_type = "symmetric")
   multiply_bipartite(B, mode = "rows", similarity = similarity,
                      threshold = threshold, top_n = top_n,
@@ -166,13 +170,60 @@ build_by_network <- function(data, field, by, counting, similarity,
 
 
 #' Ensure a column is a list-column, splitting if needed
+#'
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters and whitespace are removed from every entity (e.g. a
+#'   quoted CSV value `"Alice"` becomes `Alice`). See
+#'   [strip_surrounding_quotes()].
 #' @keywords internal
-ensure_list_column <- function(data, field, sep = ";") {
+ensure_list_column <- function(data, field, sep = ";", strip_quotes = TRUE) {
   col <- data[[field]]
   if (!is.list(col) && !is.null(sep)) {
-    data[[field]] <- split_field(col, sep = sep)
+    parts <- split_field(col, sep = sep)
+    warn_if_sep_mismatch(col, parts, field = field, sep = sep)
+    data[[field]] <- parts
   } else if (!is.list(col)) {
     data[[field]] <- as.list(as.character(col))
   }
+  if (strip_quotes) {
+    data[[field]] <- lapply(data[[field]], strip_surrounding_quotes)
+  }
   data
+}
+
+
+#' Warn when a separator likely failed to split a multi-entity column
+#'
+#' Splitting with the wrong separator silently yields one "entity" per row
+#' (e.g., a whole author byline as a single node). Heuristic: no row split
+#' into more than one entity, yet most non-empty strings contain a common
+#' *structural* delimiter.
+#'
+#' Only structural delimiters (`";"`, `"|"`, tab) are considered, because
+#' they essentially never occur inside a single legitimate label. Commas
+#' and `" and "` are deliberately excluded: they appear inside valid
+#' single values (e.g. `"Last, First"` author names, one-reference-per-row
+#' citation strings, or organisations like `"Smith and Sons"`), so warning
+#' on them would mislead users with correct data.
+#' @keywords internal
+warn_if_sep_mismatch <- function(col, parts, field, sep) {
+  if (any(lengths(parts) > 1L)) return(invisible(NULL))
+  strings <- as.character(col)
+  strings <- strings[!is.na(strings) & nchar(trimws(strings)) > 0]
+  if (length(strings) < 2L) return(invisible(NULL))
+  candidates <- setdiff(c(";", "|", "\t"), sep)
+  if (length(candidates) == 0L) return(invisible(NULL))
+  hits <- vapply(candidates, function(s) {
+    mean(grepl(s, strings, fixed = TRUE))
+  }, numeric(1))
+  if (any(hits >= 0.5)) {
+    alt <- candidates[which.max(hits)]
+    alt_label <- if (alt == "\t") "\\t" else alt
+    warning(sprintf(
+      paste0("Splitting column '%s' on sep = \"%s\" produced no ",
+             "multi-entry rows, but most values contain \"%s\". ",
+             "If entries are separated by \"%s\", pass that as sep."),
+      field, sep, alt_label, alt_label), call. = FALSE)
+  }
+  invisible(NULL)
 }

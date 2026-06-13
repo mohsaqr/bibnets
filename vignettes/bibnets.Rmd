@@ -120,6 +120,20 @@ data <- read_biblio(
 )
 ```
 
+You do not even need a reader for a plain data frame: every builder takes a
+column argument named after its entity (`authors`, `keywords`, `references`,
+`journal`, `countries`, `affiliations`) plus a `sep`, so a custom column with
+its own delimiter works in one call:
+
+```{r, eval = FALSE}
+author_network(my_df, authors = "Author Names", sep = ",")
+keyword_network(my_df, keywords = "Tags", sep = ",")
+```
+
+Surrounding quotes are stripped by default (`strip_quotes = TRUE`), and the
+references column in a coupling network takes its own `references_sep`. See
+`vignette("reading-data")`, section 12, for the full treatment.
+
 Readers return a common schema where possible:
 
 ```{r}

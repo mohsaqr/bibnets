@@ -16,7 +16,8 @@ conetwork(
   top_n = NULL,
   self_loops = FALSE,
   deduplicate = TRUE,
-  format = "edgelist"
+  format = "edgelist",
+  strip_quotes = TRUE
 )
 }
 \arguments{
@@ -60,6 +61,11 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{\code{"cograph"}}{A cograph_network object (requires cograph).}
 \item{\code{"matrix"}}{A sparse adjacency matrix.}
 }}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each entity, so a quoted CSV value such as
+\code{"Alice"} or \verb{""Alice""} is treated as \code{Alice}. Set \code{FALSE} to keep
+quotes as part of the label.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),

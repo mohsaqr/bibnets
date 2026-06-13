@@ -14,7 +14,11 @@ source_network(
   top_n = NULL,
   self_loops = FALSE,
   deduplicate = TRUE,
-  format = "edgelist"
+  format = "edgelist",
+  journal = "journal",
+  sep = ";",
+  references_sep = ";",
+  strip_quotes = TRUE
 )
 }
 \arguments{
@@ -54,6 +58,22 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{\code{"cograph"}}{A cograph_network object (requires cograph).}
 \item{\code{"matrix"}}{A sparse adjacency matrix.}
 }}
+
+\item{journal}{Character. Name of the column containing the publication
+source. Default \code{"journal"}. Use this to point at any column of a
+custom data set, e.g. \code{journal = "Source title"}.}
+
+\item{sep}{Character. Separator used to split the entity column when it
+is a plain character column rather than a list-column, e.g. \code{sep = ","}
+or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
+applies only to the author column; the references column uses
+\code{references_sep}.}
+
+\item{references_sep}{Character. Separator for the \code{references} column in
+\code{type = "coupling"}. Default \code{";"}.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each entity.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),

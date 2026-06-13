@@ -4,8 +4,25 @@
 #' and any of 13 counting methods, including 9 position-dependent methods
 #' that respect author byline order.
 #'
-#' @param data A data frame with at least `id` and `authors` (list-column,
-#'   order preserved). For coupling/co-citation, also needs `references`.
+#' @param data A data frame with at least `id` and an author column
+#'   (list-column or delimited string, order preserved). For
+#'   coupling/co-citation, also needs `references`.
+#' @param authors Character. Name of the column containing authors. Default
+#'   `"authors"`. Use this to point at any column of a custom data set,
+#'   e.g. `authors = "Author Names"`.
+#' @param sep Character. Separator used to split the entity column when it
+#'   is a plain character column rather than a list-column, e.g. `sep = ","`
+#'   or `sep = " and "`. Default `";"`. Ignored for list-columns. `sep`
+#'   applies only to the author column; the references column uses
+#'   `references_sep`.
+#' @param references_sep Character. Separator for the `references` column in
+#'   `type = "coupling"`. Default `";"` (reference strings usually contain
+#'   internal commas, so this is kept independent of `sep`). Set it when
+#'   your references are delimited differently.
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters are removed from each entity, so a quoted CSV value such as
+#'   `"Alice"` or `""Alice""` is treated as `Alice`. Set `FALSE` to keep
+#'   quotes as part of the label.
 #' @param type Character. Relationship type:
 #'   \describe{
 #'     \item{`"collaboration"`}{Co-authorship: authors linked when they
@@ -68,6 +85,12 @@
 #' author_network(biblio_data, "collaboration", counting = "harmonic")
 #' author_network(biblio_data, "collaboration", counting = "geometric",
 #'                similarity = "association")
+#'
+#' # Custom CSV: any column name, any separator
+#' d <- data.frame(id = 1:3,
+#'                 Researchers = c("Smith J, Doe A", "Smith J, Lee K",
+#'                                 "Doe A, Lee K"))
+#' author_network(d, authors = "Researchers", sep = ",")
 author_network <- function(data,
                            type = "collaboration",
                            counting = "full",
@@ -80,17 +103,23 @@ author_network <- function(data,
                            top_n = NULL,
                            self_loops = FALSE,
                            deduplicate = TRUE,
-                           format = "edgelist") {
-  check_data(data, c("id", "authors"))
+                           format = "edgelist",
+                           authors = "authors",
+                           sep = ";",
+                           references_sep = ";",
+                           strip_quotes = TRUE) {
+  check_data(data, c("id", authors))
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)
+  data <- ensure_list_column(data, authors, sep, strip_quotes)
 
   if (!is.null(attention)) {
     check_choice(attention, all_attention_methods(), "attention")
-    B <- build_author_bipartite(data, field = "authors",
+    B <- build_author_bipartite(data, field = authors,
                                 counting = paste0("attention_", attention),
-                                deduplicate = deduplicate)
+                                deduplicate = deduplicate,
+                                strip_quotes = strip_quotes)
     result <- multiply_bipartite(B, mode = "columns", similarity = similarity,
                                  threshold = threshold, top_n = top_n,
                                  self_loops = self_loops)
@@ -107,17 +136,17 @@ author_network <- function(data,
   result <- if (type == "collaboration") {
     if (is_positional) {
       B <- build_author_bipartite(
-        data, counting = counting,
+        data, field = authors, counting = counting,
         position_weights = position_weights,
         first_last_weight = first_last_weight,
-        deduplicate = deduplicate
+        deduplicate = deduplicate, strip_quotes = strip_quotes
       )
-      m <- if (type == "equivalence") "cosine" else similarity
-      multiply_bipartite(B, mode = "columns", similarity = m,
+      multiply_bipartite(B, mode = "columns", similarity = similarity,
                          threshold = threshold, top_n = top_n,
                          self_loops = self_loops)
     } else {
-      B <- build_bipartite(data, field = "authors", min_freq = min_occur, deduplicate = deduplicate)
+      B <- build_bipartite(data, field = authors, min_freq = min_occur,
+                           deduplicate = deduplicate, strip_quotes = strip_quotes)
       B <- apply_counting(B, counting = counting, network_type = "symmetric")
       multiply_bipartite(B, mode = "columns", similarity = similarity,
                          threshold = threshold, top_n = top_n,
@@ -126,10 +155,11 @@ author_network <- function(data,
 
   } else if (type == "coupling") {
     check_data(data, "references")
-    agg <- aggregate_by_entity(data, entity_field = "authors",
+    data <- ensure_list_column(data, "references", references_sep, strip_quotes)
+    agg <- aggregate_by_entity(data, entity_field = authors,
                                 value_field = "references",
                                 min_freq = min_occur)
-    B <- build_bipartite(agg, field = "references")
+    B <- build_bipartite(agg, field = "references", strip_quotes = strip_quotes)
     ct <- if (is_positional) "full" else counting
     B <- apply_counting(B, counting = ct, network_type = "coupling")
     multiply_bipartite(B, mode = "rows", similarity = similarity,
@@ -137,21 +167,24 @@ author_network <- function(data,
                        self_loops = self_loops)
 
   } else if (type == "co_citation") {
-    field <- if ("cited_first_authors" %in% names(data)) {
+    cc_field <- if ("cited_first_authors" %in% names(data)) {
       "cited_first_authors"
     } else {
       stop("Column 'cited_first_authors' not found. ",
            "Parse reference strings to extract cited authors first.",
            call. = FALSE)
     }
-    B <- build_bipartite(data, field = field, min_freq = min_occur, deduplicate = deduplicate)
+    B <- build_bipartite(data, field = cc_field, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     ct <- if (is_positional) "full" else counting
     B <- apply_counting(B, counting = ct, network_type = "symmetric")
     multiply_bipartite(B, mode = "columns", similarity = similarity,
-                       threshold = threshold, top_n = top_n)
+                       threshold = threshold, top_n = top_n,
+                       self_loops = self_loops)
 
   } else {
-    B <- build_bipartite(data, field = "authors", min_freq = min_occur)
+    B <- build_bipartite(data, field = authors, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     multiply_bipartite(B, mode = "columns", similarity = "cosine",
                        threshold = threshold, top_n = top_n,
                        self_loops = self_loops)

@@ -10,7 +10,9 @@ build_author_bipartite(
   counting = "full",
   position_weights = c(1, 0.8, 0.6, 0.4),
   first_last_weight = 2,
-  deduplicate = TRUE
+  deduplicate = TRUE,
+  sep = ";",
+  strip_quotes = TRUE
 )
 }
 \arguments{

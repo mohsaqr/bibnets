@@ -4,7 +4,13 @@
 \alias{ensure_list_column}
 \title{Ensure a column is a list-column, splitting if needed}
 \usage{
-ensure_list_column(data, field, sep = ";")
+ensure_list_column(data, field, sep = ";", strip_quotes = TRUE)
+}
+\arguments{
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters and whitespace are removed from every entity (e.g. a
+quoted CSV value \code{"Alice"} becomes \code{Alice}). See
+\code{\link[=strip_surrounding_quotes]{strip_surrounding_quotes()}}.}
 }
 \description{
 Ensure a column is a list-column, splitting if needed

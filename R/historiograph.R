@@ -3,8 +3,15 @@
 #' Counts how many times each document is cited by other documents
 #' within the dataset.
 #'
-#' @param data A data frame with `id` and `references` (list-column).
-#'   Optionally `year`, `title`, `journal`, `doi`, `cited_by_count`.
+#' @param data A data frame with `id` and a references column (list-column
+#'   or delimited string). Optionally `year`, `title`, `journal`, `doi`,
+#'   `cited_by_count`.
+#' @param references Character. Name of the column containing cited references.
+#'   Default `"references"`.
+#' @param sep Character. Separator used to split the references column when it is a plain
+#'   character column. Default `";"`.
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters are removed from each reference.
 #'
 #' @return A data frame with columns:
 #'   \describe{
@@ -19,13 +26,15 @@
 #' @examples
 #' data(biblio_data)
 #' local_citations(biblio_data)
-local_citations <- function(data) {
-  check_data(data, c("id", "references"))
+local_citations <- function(data, references = "references", sep = ";",
+                            strip_quotes = TRUE) {
+  check_data(data, c("id", references))
+  data <- ensure_list_column(data, references, sep, strip_quotes)
 
   ids <- as.character(data[["id"]])
 
   ## Expand all references
-  all_refs <- unlist(data[["references"]], use.names = FALSE)
+  all_refs <- unlist(data[[references]], use.names = FALSE)
   all_refs <- all_refs[!is.na(all_refs)]
 
   ## Count how many times each dataset ID appears as a reference
@@ -65,12 +74,14 @@ local_citations <- function(data) {
 #' Constructs a Garfield-style historiograph: a directed citation network
 #' among the most locally cited documents, laid out chronologically.
 #'
-#' @param data A data frame with `id`, `references` (list-column), and
-#'   `year`. Optionally `title`, `journal`, `doi`, `cited_by_count`.
+#' @param data A data frame with `id`, a references column (list-column or
+#'   delimited string), and `year`. Optionally `title`, `journal`, `doi`,
+#'   `cited_by_count`.
 #' @param n Integer. Number of top locally cited documents to include.
 #'   Default 30.
 #' @param min_lcs Integer. Minimum local citation score for inclusion.
 #'   Default 1.
+#' @inheritParams local_citations
 #'
 #' @return A list with:
 #'   \describe{
@@ -86,11 +97,16 @@ local_citations <- function(data) {
 #' h <- historiograph(biblio_data, n = 5)
 #' h$nodes
 #' h$edges
-historiograph <- function(data, n = 30, min_lcs = 1) {
-  check_data(data, c("id", "references", "year"))
+historiograph <- function(data, n = 30, min_lcs = 1,
+                          references = "references", sep = ";",
+                          strip_quotes = TRUE) {
+  check_data(data, c("id", references, "year"))
+  data <- ensure_list_column(data, references, sep, strip_quotes)
 
-  ## Compute local citations
-  lcs_df <- local_citations(data)
+  ## Compute local citations (data already split/stripped above; forward
+  ## strip_quotes so node selection matches the edge-building labels below)
+  lcs_df <- local_citations(data, references = references,
+                            strip_quotes = strip_quotes)
 
   ## Filter by min_lcs
   lcs_df <- lcs_df[lcs_df$lcs >= min_lcs, ]
@@ -125,7 +141,7 @@ historiograph <- function(data, n = 30, min_lcs = 1) {
 
   ## Build directed citation edges among included nodes
   ids <- as.character(data[["id"]])
-  refs_list <- data[["references"]]
+  refs_list <- data[[references]]
   years <- data[["year"]]
 
   ## Year lookup

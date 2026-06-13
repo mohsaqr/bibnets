@@ -5,6 +5,13 @@
 #' @param data A data frame with `id` and `journal` (character column).
 #'   For coupling, also needs `references`. For co-citation, needs a
 #'   `cited_journals` list-column.
+#' @param journal Character. Name of the column containing the publication
+#'   source. Default `"journal"`. Use this to point at any column of a
+#'   custom data set, e.g. `journal = "Source title"`.
+#' @param references_sep Character. Separator for the `references` column in
+#'   `type = "coupling"`. Default `";"`.
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters are removed from each entity.
 #' @param type Character. `"coupling"` (default), `"co_citation"`, or
 #'   `"equivalence"`.
 #' @param counting Character. Counting method. Default `"full"`.
@@ -32,7 +39,11 @@ source_network <- function(data,
                            top_n = NULL,
                            self_loops = FALSE,
                            deduplicate = TRUE,
-                           format = "edgelist") {
+                           format = "edgelist",
+                           journal = "journal",
+                           sep = ";",
+                           references_sep = ";",
+                           strip_quotes = TRUE) {
   check_data(data, "id")
   check_choice(type, c("coupling", "co_citation", "equivalence"), "type")
   check_choice(counting, position_independent_counts(), "counting")
@@ -40,37 +51,46 @@ source_network <- function(data,
                               "inclusion", "equivalence"), "similarity")
   check_format(format)
 
+  ## `journal` is a scalar (one source per paper); strip its quotes inline
+  ## since it does not flow through ensure_list_column.
+  if (strip_quotes && journal %in% names(data) && !is.list(data[[journal]])) {
+    data[[journal]] <- strip_surrounding_quotes(as.character(data[[journal]]))
+  }
+
   result <- if (type == "coupling") {
-    check_data(data, c("journal", "references"))
-    agg <- aggregate_by_entity(data, entity_field = "journal",
+    check_data(data, c(journal, "references"))
+    data <- ensure_list_column(data, "references", references_sep, strip_quotes)
+    agg <- aggregate_by_entity(data, entity_field = journal,
                                 value_field = "references",
                                 min_freq = min_occur)
-    B <- build_bipartite(agg, field = "references")
+    B <- build_bipartite(agg, field = "references", strip_quotes = strip_quotes)
     B <- apply_counting(B, counting = counting, network_type = "coupling")
     multiply_bipartite(B, mode = "rows", similarity = similarity,
                        threshold = threshold, top_n = top_n,
                        self_loops = self_loops)
 
   } else if (type == "co_citation") {
-    field <- if ("cited_journals" %in% names(data)) {
+    cc_field <- if ("cited_journals" %in% names(data)) {
       "cited_journals"
     } else {
       stop("Column 'cited_journals' not found. ",
            "Parse reference strings to extract cited journals first.",
            call. = FALSE)
     }
-    B <- build_bipartite(data, field = field, min_freq = min_occur, deduplicate = deduplicate)
+    B <- build_bipartite(data, field = cc_field, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     B <- apply_counting(B, counting = counting, network_type = "symmetric")
     multiply_bipartite(B, mode = "columns", similarity = similarity,
                        threshold = threshold, top_n = top_n,
                        self_loops = self_loops)
 
   } else {
-    check_data(data, c("journal", "references"))
-    agg <- aggregate_by_entity(data, entity_field = "journal",
+    check_data(data, c(journal, "references"))
+    data <- ensure_list_column(data, "references", references_sep, strip_quotes)
+    agg <- aggregate_by_entity(data, entity_field = journal,
                                 value_field = "references",
                                 min_freq = min_occur)
-    B <- build_bipartite(agg, field = "references")
+    B <- build_bipartite(agg, field = "references", strip_quotes = strip_quotes)
     multiply_bipartite(B, mode = "rows", similarity = "cosine",
                        threshold = threshold, top_n = top_n,
                        self_loops = self_loops)

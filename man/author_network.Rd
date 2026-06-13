@@ -17,12 +17,17 @@ author_network(
   top_n = NULL,
   self_loops = FALSE,
   deduplicate = TRUE,
-  format = "edgelist"
+  format = "edgelist",
+  authors = "authors",
+  sep = ";",
+  references_sep = ";",
+  strip_quotes = TRUE
 )
 }
 \arguments{
-\item{data}{A data frame with at least \code{id} and \code{authors} (list-column,
-order preserved). For coupling/co-citation, also needs \code{references}.}
+\item{data}{A data frame with at least \code{id} and an author column
+(list-column or delimited string, order preserved). For
+coupling/co-citation, also needs \code{references}.}
 
 \item{type}{Character. Relationship type:
 \describe{
@@ -85,6 +90,26 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{\code{"cograph"}}{A cograph_network object (requires cograph).}
 \item{\code{"matrix"}}{A sparse adjacency matrix.}
 }}
+
+\item{authors}{Character. Name of the column containing authors. Default
+\code{"authors"}. Use this to point at any column of a custom data set,
+e.g. \code{authors = "Author Names"}.}
+
+\item{sep}{Character. Separator used to split the entity column when it
+is a plain character column rather than a list-column, e.g. \code{sep = ","}
+or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
+applies only to the author column; the references column uses
+\code{references_sep}.}
+
+\item{references_sep}{Character. Separator for the \code{references} column in
+\code{type = "coupling"}. Default \code{";"} (reference strings usually contain
+internal commas, so this is kept independent of \code{sep}). Set it when
+your references are delimited differently.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each entity, so a quoted CSV value such as
+\code{"Alice"} or \verb{""Alice""} is treated as \code{Alice}. Set \code{FALSE} to keep
+quotes as part of the label.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),
@@ -102,4 +127,10 @@ author_network(biblio_data, "collaboration")
 author_network(biblio_data, "collaboration", counting = "harmonic")
 author_network(biblio_data, "collaboration", counting = "geometric",
                similarity = "association")
+
+# Custom CSV: any column name, any separator
+d <- data.frame(id = 1:3,
+                Researchers = c("Smith J, Doe A", "Smith J, Lee K",
+                                "Doe A, Lee K"))
+author_network(d, authors = "Researchers", sep = ",")
 }

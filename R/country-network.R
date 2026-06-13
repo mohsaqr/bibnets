@@ -2,8 +2,14 @@
 #'
 #' Constructs a network between countries based on collaboration or coupling.
 #'
-#' @param data A data frame with `id` and `countries` (list-column of
-#'   country names). For coupling, also needs `references`.
+#' @param data A data frame with `id` and a country column (list-column or
+#'   delimited string). For coupling, also needs `references`.
+#' @param countries Character. Name of the column containing countries.
+#'   Default `"countries"`.
+#' @param references_sep Character. Separator for the `references` column in
+#'   `type = "coupling"`. Default `";"`.
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters are removed from each entity.
 #' @param type Character. `"collaboration"` (default), `"coupling"`, or
 #'   `"equivalence"`.
 #' @param counting Character. Counting method. Default `"full"`.
@@ -32,17 +38,23 @@ country_network <- function(data,
                             top_n = NULL,
                             self_loops = FALSE,
                             deduplicate = TRUE,
-                            format = "edgelist") {
-  check_data(data, c("id", "countries"))
+                            format = "edgelist",
+                            countries = "countries",
+                            sep = ";",
+                            references_sep = ";",
+                            strip_quotes = TRUE) {
+  check_data(data, c("id", countries))
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)
+  data <- ensure_list_column(data, countries, sep, strip_quotes)
 
   if (!is.null(attention)) {
     check_choice(attention, all_attention_methods(), "attention")
-    B <- build_author_bipartite(data, field = "countries",
+    B <- build_author_bipartite(data, field = countries,
                                 counting = paste0("attention_", attention),
-                                deduplicate = deduplicate)
+                                deduplicate = deduplicate,
+                                strip_quotes = strip_quotes)
     result <- multiply_bipartite(B, mode = "columns", similarity = similarity,
                                  threshold = threshold, top_n = top_n,
                                  self_loops = self_loops)
@@ -55,7 +67,8 @@ country_network <- function(data,
   check_choice(counting, position_independent_counts(), "counting")
 
   result <- if (type == "collaboration") {
-    B <- build_bipartite(data, field = "countries", min_freq = min_occur, deduplicate = deduplicate)
+    B <- build_bipartite(data, field = countries, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     B <- apply_counting(B, counting = counting, network_type = "symmetric")
     multiply_bipartite(B, mode = "columns", similarity = similarity,
                        threshold = threshold, top_n = top_n,
@@ -64,17 +77,19 @@ country_network <- function(data,
   } else if (type == "coupling") {
     if (!"references" %in% names(data))
       stop("Column 'references' not found. Required for type = 'coupling'.", call. = FALSE)
-    agg <- aggregate_by_entity(data, entity_field = "countries",
+    data <- ensure_list_column(data, "references", references_sep, strip_quotes)
+    agg <- aggregate_by_entity(data, entity_field = countries,
                                 value_field = "references",
                                 min_freq = min_occur)
-    B <- build_bipartite(agg, field = "references")
+    B <- build_bipartite(agg, field = "references", strip_quotes = strip_quotes)
     B <- apply_counting(B, counting = counting, network_type = "coupling")
     multiply_bipartite(B, mode = "rows", similarity = similarity,
                        threshold = threshold, top_n = top_n,
                        self_loops = self_loops)
 
   } else {
-    B <- build_bipartite(data, field = "countries", min_freq = min_occur, deduplicate = deduplicate)
+    B <- build_bipartite(data, field = countries, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     multiply_bipartite(B, mode = "columns", similarity = "cosine",
                        threshold = threshold, top_n = top_n,
                        self_loops = self_loops)

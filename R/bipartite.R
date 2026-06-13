@@ -9,14 +9,19 @@
 #'   (e.g., `"authors"`, `"references"`, `"keywords"`).
 #' @param min_freq Integer. Minimum number of occurrences for an entity to be
 #'   included. Default 1 (no filtering).
+#' @param sep Character. Separator used to split `field` when it is a plain
+#'   character column. Default `";"`.
+#' @param strip_quotes Logical. Strip surrounding quote characters from
+#'   entities. Default `TRUE`.
 #'
 #' @return A sparse `dgCMatrix` with rows = works (named by `id`) and
 #'   columns = unique entities.
 #'
 #' @keywords internal
-build_bipartite <- function(data, field, min_freq = 1L, deduplicate = TRUE) {
+build_bipartite <- function(data, field, min_freq = 1L, deduplicate = TRUE,
+                            sep = ";", strip_quotes = TRUE) {
   check_data(data, c("id", field))
-  data <- ensure_list_column(data, field)
+  data <- ensure_list_column(data, field, sep, strip_quotes)
 
   ids <- as.character(data[["id"]])
   entities_list <- data[[field]]

@@ -153,7 +153,10 @@ build_author_bipartite <- function(data, field = "authors",
                                    counting = "full",
                                    position_weights = c(1, 0.8, 0.6, 0.4),
                                    first_last_weight = 2,
-                                   deduplicate = TRUE) {
+                                   deduplicate = TRUE,
+                                   sep = ";",
+                                   strip_quotes = TRUE) {
+  data <- ensure_list_column(data, field, sep, strip_quotes)
   ids <- as.character(data[["id"]])
   authors_list <- data[[field]]
 

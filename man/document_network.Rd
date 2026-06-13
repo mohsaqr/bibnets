@@ -14,11 +14,15 @@ document_network(
   top_n = NULL,
   self_loops = FALSE,
   deduplicate = TRUE,
-  format = "edgelist"
+  format = "edgelist",
+  references = "references",
+  sep = ";",
+  strip_quotes = TRUE
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and \code{references} (list-column).}
+\item{data}{A data frame with \code{id} and a references column (list-column
+or delimited string).}
 
 \item{type}{Character. Relationship type:
 \describe{
@@ -61,6 +65,18 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{\code{"cograph"}}{A cograph_network object (requires cograph).}
 \item{\code{"matrix"}}{A sparse adjacency matrix.}
 }}
+
+\item{references}{Character. Name of the column containing cited references.
+Default \code{"references"}.}
+
+\item{sep}{Character. Separator used to split the entity column when it
+is a plain character column rather than a list-column, e.g. \code{sep = ","}
+or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
+applies only to the author column; the references column uses
+\code{references_sep}.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each reference.}
 }
 \value{
 Depends on \code{format}. For \code{type = "citation"}, edges are directed

@@ -2,7 +2,12 @@
 #'
 #' Constructs a network between documents (papers) in the dataset.
 #'
-#' @param data A data frame with `id` and `references` (list-column).
+#' @param data A data frame with `id` and a references column (list-column
+#'   or delimited string).
+#' @param references Character. Name of the column containing cited references.
+#'   Default `"references"`.
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters are removed from each reference.
 #' @param type Character. Relationship type:
 #'   \describe{
 #'     \item{`"coupling"`}{Bibliographic coupling: documents linked when they
@@ -39,16 +44,20 @@ document_network <- function(data,
                              top_n = NULL,
                              self_loops = FALSE,
                              deduplicate = TRUE,
-                             format = "edgelist") {
-  check_data(data, c("id", "references"))
+                             format = "edgelist",
+                             references = "references",
+                             sep = ";",
+                             strip_quotes = TRUE) {
+  check_data(data, c("id", references))
   check_choice(type, c("coupling", "citation", "co_citation", "equivalence"), "type")
   check_choice(counting, position_independent_counts(), "counting")
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)
+  data <- ensure_list_column(data, references, sep, strip_quotes)
 
   result <- if (type == "citation") {
-    edges <- build_direct_citation(data)
+    edges <- build_direct_citation(data, field = references)
     if (!is.null(top_n) && nrow(edges) > 0) {
       freq <- sort(table(c(edges$from, edges$to)), decreasing = TRUE)
       top_nodes <- names(freq)[seq_len(min(top_n, length(freq)))]
@@ -56,7 +65,8 @@ document_network <- function(data,
     }
     edges
   } else {
-    B <- build_bipartite(data, field = "references", min_freq = min_occur, deduplicate = deduplicate)
+    B <- build_bipartite(data, field = references, min_freq = min_occur,
+                         deduplicate = deduplicate, strip_quotes = strip_quotes)
     if (type == "coupling") {
       B <- apply_counting(B, counting = counting, network_type = "coupling")
       multiply_bipartite(B, mode = "rows", similarity = similarity,
@@ -82,9 +92,9 @@ document_network <- function(data,
 
 
 #' @keywords internal
-build_direct_citation <- function(data) {
+build_direct_citation <- function(data, field = "references") {
   ids <- as.character(data[["id"]])
-  refs_list <- data[["references"]]
+  refs_list <- data[[field]]
 
   citing <- rep(ids, lengths(refs_list))
   cited <- unlist(refs_list, use.names = FALSE)

@@ -4,9 +4,12 @@
 #' together in the same document.
 #'
 #' @param data A data frame with `id` and a keyword list-column.
-#' @param field Character. Name of the keyword list-column. Default
-#'   `"keywords"`. Alternatives: `"author_keywords"`, `"index_keywords"`,
-#'   `"keywords_plus"`.
+#' @param keywords Character. Name of the keyword column (list-column or
+#'   delimited string). Default `"keywords"`. Any column of a custom data
+#'   set works, e.g. `keywords = "Tags"`.
+#' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
+#'   characters are removed from each keyword.
+#' @param field Deprecated. Use `keywords` instead.
 #' @param counting Character. Counting method. Default `"full"`.
 #' @param similarity Character. Similarity measure. Default `"none"`.
 #' @param threshold Numeric. Minimum edge weight. Default 0.
@@ -24,8 +27,12 @@
 #' data(biblio_data)
 #' keyword_network(biblio_data)
 #' keyword_network(biblio_data, similarity = "association")
+#'
+#' # Custom CSV: any column name, any separator
+#' d <- data.frame(id = 1:3, Tags = c("ml, ai", "ml, nlp", "ai, nlp"))
+#' keyword_network(d, keywords = "Tags", sep = ",")
 keyword_network <- function(data,
-                            field = "keywords",
+                            keywords = "keywords",
                             counting = "full",
                             similarity = "none",
                             threshold = 0,
@@ -34,18 +41,27 @@ keyword_network <- function(data,
                             top_n = NULL,
                             self_loops = FALSE,
                             deduplicate = TRUE,
-                            format = "edgelist") {
-  check_data(data, c("id", field))
-  data <- ensure_list_column(data, field)
+                            format = "edgelist",
+                            sep = ";",
+                            strip_quotes = TRUE,
+                            field = NULL) {
+  if (!is.null(field)) {
+    warning("Argument 'field' is deprecated; use 'keywords' instead.",
+            call. = FALSE)
+    keywords <- field
+  }
+  check_data(data, c("id", keywords))
+  data <- ensure_list_column(data, keywords, sep, strip_quotes)
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)
 
   if (!is.null(attention)) {
     check_choice(attention, all_attention_methods(), "attention")
-    B <- build_author_bipartite(data, field = field,
+    B <- build_author_bipartite(data, field = keywords,
                                 counting = paste0("attention_", attention),
-                                deduplicate = deduplicate)
+                                deduplicate = deduplicate,
+                                strip_quotes = strip_quotes)
     result <- multiply_bipartite(B, mode = "columns", similarity = similarity,
                                  threshold = threshold, top_n = top_n,
                                  self_loops = self_loops)
@@ -55,7 +71,8 @@ keyword_network <- function(data,
   }
 
   check_choice(counting, position_independent_counts(), "counting")
-  B <- build_bipartite(data, field = field, min_freq = min_occur, deduplicate = deduplicate)
+  B <- build_bipartite(data, field = keywords, min_freq = min_occur,
+                       deduplicate = deduplicate, strip_quotes = strip_quotes)
   B <- apply_counting(B, counting = counting, network_type = "symmetric")
   result <- multiply_bipartite(B, mode = "columns", similarity = similarity,
                                threshold = threshold, top_n = top_n,

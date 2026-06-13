@@ -6,7 +6,7 @@
 \usage{
 keyword_network(
   data,
-  field = "keywords",
+  keywords = "keywords",
   counting = "full",
   similarity = "none",
   threshold = 0,
@@ -15,15 +15,18 @@ keyword_network(
   top_n = NULL,
   self_loops = FALSE,
   deduplicate = TRUE,
-  format = "edgelist"
+  format = "edgelist",
+  sep = ";",
+  strip_quotes = TRUE,
+  field = NULL
 )
 }
 \arguments{
 \item{data}{A data frame with \code{id} and a keyword list-column.}
 
-\item{field}{Character. Name of the keyword list-column. Default
-\code{"keywords"}. Alternatives: \code{"author_keywords"}, \code{"index_keywords"},
-\code{"keywords_plus"}.}
+\item{keywords}{Character. Name of the keyword column (list-column or
+delimited string). Default \code{"keywords"}. Any column of a custom data
+set works, e.g. \code{keywords = "Tags"}.}
 
 \item{counting}{Character. Counting method. Default \code{"full"}.}
 
@@ -60,6 +63,17 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{\code{"cograph"}}{A cograph_network object (requires cograph).}
 \item{\code{"matrix"}}{A sparse adjacency matrix.}
 }}
+
+\item{sep}{Character. Separator used to split the entity column when it
+is a plain character column rather than a list-column, e.g. \code{sep = ","}
+or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
+applies only to the author column; the references column uses
+\code{references_sep}.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each keyword.}
+
+\item{field}{Deprecated. Use \code{keywords} instead.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),
@@ -74,4 +88,8 @@ together in the same document.
 data(biblio_data)
 keyword_network(biblio_data)
 keyword_network(biblio_data, similarity = "association")
+
+# Custom CSV: any column name, any separator
+d <- data.frame(id = 1:3, Tags = c("ml, ai", "ml, nlp", "ai, nlp"))
+keyword_network(d, keywords = "Tags", sep = ",")
 }

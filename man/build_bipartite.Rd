@@ -4,7 +4,14 @@
 \alias{build_bipartite}
 \title{Build a bipartite incidence matrix from bibliometric data}
 \usage{
-build_bipartite(data, field, min_freq = 1L, deduplicate = TRUE)
+build_bipartite(
+  data,
+  field,
+  min_freq = 1L,
+  deduplicate = TRUE,
+  sep = ";",
+  strip_quotes = TRUE
+)
 }
 \arguments{
 \item{data}{A data frame with at least columns \code{id} and the field specified.}
@@ -14,6 +21,12 @@ build_bipartite(data, field, min_freq = 1L, deduplicate = TRUE)
 
 \item{min_freq}{Integer. Minimum number of occurrences for an entity to be
 included. Default 1 (no filtering).}
+
+\item{sep}{Character. Separator used to split \code{field} when it is a plain
+character column. Default \code{";"}.}
+
+\item{strip_quotes}{Logical. Strip surrounding quote characters from
+entities. Default \code{TRUE}.}
 }
 \value{
 A sparse \code{dgCMatrix} with rows = works (named by \code{id}) and

@@ -4,17 +4,34 @@
 \alias{historiograph}
 \title{Build a historiograph (chronological citation network)}
 \usage{
-historiograph(data, n = 30, min_lcs = 1)
+historiograph(
+  data,
+  n = 30,
+  min_lcs = 1,
+  references = "references",
+  sep = ";",
+  strip_quotes = TRUE
+)
 }
 \arguments{
-\item{data}{A data frame with \code{id}, \code{references} (list-column), and
-\code{year}. Optionally \code{title}, \code{journal}, \code{doi}, \code{cited_by_count}.}
+\item{data}{A data frame with \code{id}, a references column (list-column or
+delimited string), and \code{year}. Optionally \code{title}, \code{journal}, \code{doi},
+\code{cited_by_count}.}
 
 \item{n}{Integer. Number of top locally cited documents to include.
 Default 30.}
 
 \item{min_lcs}{Integer. Minimum local citation score for inclusion.
 Default 1.}
+
+\item{references}{Character. Name of the column containing cited references.
+Default \code{"references"}.}
+
+\item{sep}{Character. Separator used to split the references column when it is a plain
+character column. Default \code{";"}.}
+
+\item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
+characters are removed from each reference.}
 }
 \value{
 A list with:
