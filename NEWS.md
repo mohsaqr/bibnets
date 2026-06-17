@@ -1,3 +1,16 @@
+# bibnets 0.5.1
+
+## Documentation
+
+- The README now documents the custom column/separator network-builder
+  arguments introduced in 0.5.0: a "Custom Columns and Separators" section
+  covers the entity-named column arguments (`authors`, `keywords`,
+  `references`, `journal`, `countries`, `affiliations`), `sep`,
+  `references_sep`, and `strip_quotes`, with a per-builder
+  default-argument table. The deprecated `keyword_network(field = )`
+  example was updated to the `keywords = ` form.
+- No user-facing code changes.
+
 # bibnets 0.5.0
 
 ## New features
