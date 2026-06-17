@@ -11,7 +11,7 @@ by field across documents."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">bibnets</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@ by field across documents."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Build a co-occurrence network from any field</h1>
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/bibnets/blob/main/R/co-network.R" class="external-link"><code>R/co-network.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/bibnets/blob/HEAD/R/co-network.R" class="external-link"><code>R/co-network.R</code></a></small>
       <div class="d-none name"><code>conetwork.Rd</code></div>
     </div>
 
@@ -56,7 +56,9 @@ document. With <code>by</code>, entities are linked when they share values of th
 <span>  top_n <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  self_loops <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  deduplicate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  format <span class="op">=</span> <span class="st">"edgelist"</span></span>
+<span>  format <span class="op">=</span> <span class="st">"edgelist"</span>,</span>
+<span>  strip_quotes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  id <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -136,6 +138,19 @@ columns <code>from</code>, <code>to</code>, <code>weight</code>, <code>count</co
 
 
 </dl></dd>
+
+
+<dt id="arg-strip-quotes">strip_quotes<a class="anchor" aria-label="anchor" href="#arg-strip-quotes"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (default), surrounding quote
+characters are removed from each entity, so a quoted CSV value such as
+<code>"Alice"</code> or <code>""Alice""</code> is treated as <code>Alice</code>. Set <code>FALSE</code> to keep
+quotes as part of the label.</p></dd>
+
+
+<dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
+<dd><p>Optional. Name of the column to use as the work identifier
+(the matrix-row dimension). If <code>NULL</code> (default), an existing <code>id</code>
+column is used when present, otherwise row numbers are used.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -234,7 +249,7 @@ delimiters (auto-split via <code>sep</code>).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

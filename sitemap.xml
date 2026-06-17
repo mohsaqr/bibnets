@@ -1,9 +1,15 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://saqr.me/bibnets-pkg/404.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/AGENTS.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/CHANGES.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/CLAUDE.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/HANDOFF.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/LEARNINGS.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/LICENSE-text.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/LICENSE.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/articles/bibnets.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/articles/index.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/articles/parsing-author-names.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/articles/reading-data.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/authors.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/index.html</loc></url>
@@ -36,6 +42,7 @@
 <url><loc>https://saqr.me/bibnets-pkg/reference/multiply_bipartite.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/normalize.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/open_alex_gold_open_access_learning_analytics.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/reference/parse_names.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/position_independent_counts.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/print.bibnets_network.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/prune.html</loc></url>
@@ -52,11 +59,13 @@
 <url><loc>https://saqr.me/bibnets-pkg/reference/read_single_biblio.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/read_wos.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/reference_network.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/reference/resolve_id.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/resolve_paths.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/scopus_quantum_cloud.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/source_network.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/split_field.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/standardize_authors.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/reference/strip_surrounding_quotes.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/summary.bibnets_network.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/temporal_network.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/to_cograph.html</loc></url>
@@ -65,5 +74,6 @@
 <url><loc>https://saqr.me/bibnets-pkg/reference/to_igraph.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/to_matrix.html</loc></url>
 <url><loc>https://saqr.me/bibnets-pkg/reference/to_tbl_graph.html</loc></url>
+<url><loc>https://saqr.me/bibnets-pkg/reference/warn_if_sep_mismatch.html</loc></url>
 </urlset>
 

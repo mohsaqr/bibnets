@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bibnets</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,9 +28,102 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/mohsaqr/bibnets/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/mohsaqr/bibnets/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="bibnets-060">bibnets 0.6.0<a class="anchor" aria-label="anchor" href="#bibnets-060"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-6-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-6-0"></a></h3>
+<ul><li>
+<strong><code>id</code> argument on every network builder.</strong> <code><a href="../reference/author_network.html">author_network()</a></code>, <code><a href="../reference/keyword_network.html">keyword_network()</a></code>, <code><a href="../reference/reference_network.html">reference_network()</a></code>, <code><a href="../reference/document_network.html">document_network()</a></code>, <code><a href="../reference/source_network.html">source_network()</a></code>, <code><a href="../reference/country_network.html">country_network()</a></code>, <code><a href="../reference/institution_network.html">institution_network()</a></code>, <code><a href="../reference/conetwork.html">conetwork()</a></code>, <code><a href="../reference/local_citations.html">local_citations()</a></code>, and <code><a href="../reference/historiograph.html">historiograph()</a></code> gain an <code>id</code> argument that names the work-identifier column (the rows of the <code>works x entities</code> matrix). This completes the custom-column workflow introduced in 0.5.0, which had given every <em>entity</em> field a self-naming argument but still required the <em>works</em> column to be named <code>id</code>.
+<ul><li>
+<code>id = NULL</code> (default): use an existing <code>id</code> column when present, otherwise fall back to row numbers (each row is one document). A custom data frame with no identifier column now builds without error.</li>
+<li>
+<code>id = "paper_id"</code>: use any named column as the identifier.</li>
+</ul>
+The new argument sits at the end of each signature, so existing positional calls are unaffected. If <code>id</code> names a column other than <code>"id"</code> while the data already has a distinct <code>"id"</code> column, the call errors rather than silently overwriting that column (which might itself be an entity field).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-6-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-0"></a></h3>
+<ul><li>
+<code><a href="../reference/split_field.html">split_field()</a></code> (and therefore every builder) now coerces a <code>factor</code> entity column to character before splitting, instead of failing with “non-character argument”. Hand-built data frames with <code>stringsAsFactors = TRUE</code> now work like character columns.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="generic-reader-map-columns-by-entity-name-0-6-0">Generic reader: map columns by entity name<a class="anchor" aria-label="anchor" href="#generic-reader-map-columns-by-entity-name-0-6-0"></a></h3>
+<ul><li>
+<p><code>read_biblio(format = "generic", ...)</code> now takes entity-named arguments — <code>authors</code>, <code>keywords</code>, <code>references</code>, <code>countries</code>, <code>affiliations</code>, and <code>journal</code> — each naming the source column to map onto that standard field. Multi-valued fields are split on <code>sep</code> into the standard list-column; <code>journal</code> is kept scalar. This mirrors the network-builder vocabulary, so the same field names are used end to end:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"my.csv"</span>, format <span class="op">=</span> <span class="st">"generic"</span>, id <span class="op">=</span> <span class="st">"paper_id"</span>,</span>
+<span>            authors <span class="op">=</span> <span class="st">"Author Names"</span>, keywords <span class="op">=</span> <span class="st">"Tags"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span></code></pre></div>
+<p><code>list_cols</code> is retained for splitting any further columns in place (keeping their original names). Naming any of these columns (or <code>id</code>) implies <code>format = "generic"</code>, so passing <code>format</code> is optional:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"my.csv"</span>, id <span class="op">=</span> <span class="st">"paper_id"</span>, authors <span class="op">=</span> <span class="st">"Author Names"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span></code></pre></div>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="deprecations-0-6-0">Deprecations<a class="anchor" aria-label="anchor" href="#deprecations-0-6-0"></a></h3>
+<ul><li>The generic reader’s <code>actors</code> argument is deprecated — the columns it named were never only “actors”. Use the entity arguments above (or <code>list_cols</code> for arbitrary columns). <code>actors</code> still works, mapped to <code>list_cols</code>, with a deprecation warning.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.1" id="bibnets-051">bibnets 0.5.1<a class="anchor" aria-label="anchor" href="#bibnets-051"></a></h2>
+<div class="section level3">
+<h3 id="documentation-0-5-1">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-5-1"></a></h3>
+<ul><li>The README now documents the custom column/separator network-builder arguments introduced in 0.5.0: a “Custom Columns and Separators” section covers the entity-named column arguments (<code>authors</code>, <code>keywords</code>, <code>references</code>, <code>journal</code>, <code>countries</code>, <code>affiliations</code>), <code>sep</code>, <code>references_sep</code>, and <code>strip_quotes</code>, with a per-builder default-argument table. The deprecated <code>keyword_network(field = )</code> example was updated to the <code>keywords =</code> form.</li>
+<li>No user-facing code changes.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="bibnets-050">bibnets 0.5.0<a class="anchor" aria-label="anchor" href="#bibnets-050"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
+<ul><li>
+<p><strong>Custom data sets, any column name, any separator.</strong> Every network builder now takes a self-describing column argument plus <code>sep</code>, so a non-standard CSV works in a single call without renaming columns or pre-splitting strings:</p>
+<ul><li><code>author_network(d, authors = "Author Names", sep = ",")</code></li>
+<li><code>keyword_network(d, keywords = "Tags", sep = ",")</code></li>
+<li><code>reference_network(d, references = "Cited Refs", sep = ",")</code></li>
+<li><code>document_network(d, references = "Cited Refs", sep = ",")</code></li>
+<li><code>source_network(d, journal = "Source title")</code></li>
+<li><code>country_network(d, countries = "Nations", sep = ",")</code></li>
+<li><code>institution_network(d, affiliations = "Orgs", sep = ",")</code></li>
+<li>
+<code><a href="../reference/local_citations.html">local_citations()</a></code> and <code><a href="../reference/historiograph.html">historiograph()</a></code> gain <code>references</code> + <code>sep</code>.</li>
+</ul><p><code>sep</code> accepts any delimiter (<code>","</code>, <code>"|"</code>, <code>" and "</code>, …) and applies to the named entity column. The new arguments sit at the end of each signature, so existing positional calls are unaffected.</p>
+</li>
+<li><p><strong><code>references_sep</code></strong> — <code><a href="../reference/author_network.html">author_network()</a></code>, <code><a href="../reference/country_network.html">country_network()</a></code>, <code><a href="../reference/institution_network.html">institution_network()</a></code>, and <code><a href="../reference/source_network.html">source_network()</a></code> gain a <code>references_sep</code> argument (default <code>";"</code>) so the references column used for coupling can have its own separator, independent of the entity <code>sep</code>. (Reference strings often contain internal commas, which is why it is separate.)</p></li>
+<li><p><strong><code>strip_quotes</code></strong> — every builder gains a <code>strip_quotes</code> argument (default <code>TRUE</code>) that removes surrounding quote characters (straight <code>"</code>, doubled <code>""</code>, and curly quotes) from each entity, so a quoted CSV value like <code>"Alice"</code> or <code>""Alice""</code> is treated as <code>Alice</code>. Set <code>strip_quotes = FALSE</code> to keep quotes as part of the label. Applies to both freshly-split strings and entities supplied in a list-column.</p></li>
+<li><p><code><a href="../reference/parse_names.html">parse_names()</a></code>: optional, standalone utility that reorders author names to <code>"First Last"</code> and parses each into <code>first</code>/<code>last</code>/<code>particle</code>/<code>suffix</code> components (attached as the <code>"parts"</code> attribute). Handles three conventions: <code>"Last, First"</code> (comma), the Scopus / bibnets <code>"SURNAME Initials"</code> label form (<code>"WANG Y"</code>, <code>"AYALA-ROMERO JA"</code>), and <code>"First Last"</code>. The <code>surname_first</code> argument (<code>"auto"</code>/<code>"yes"</code>/<code>"no"</code>, default <code>"auto"</code>) controls comma-less interpretation, with auto-detection biased toward the bibnets/Scopus convention so native bibnets labels parse without extra arguments. Case-insensitive (recognises particles in bibnets’ uppercased labels). <code>format</code> argument selects output style: <code>"first_last"</code> (default), <code>"last_initials"</code> (<code>"Saqr M."</code>), or <code>"last"</code> (<code>"Saqr"</code>). Detects group/corporate authors and leaves them, <code>NA</code>, and empty strings unchanged. Not called by any reader or network builder — entity labels are still matched verbatim unless you apply this yourself. Base R only; no new dependencies. Documented in detail in <code><a href="../reference/parse_names.html">?parse_names</a></code> and the new vignette <code><a href="../articles/parsing-author-names.html">vignette("parsing-author-names")</a></code>.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-5-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-0"></a></h3>
+<ul><li>Positional counting (<code>"harmonic"</code>, <code>"first"</code>, etc.) on a plain character author column now splits correctly. Previously a delimited string was treated as a single author, silently producing a wrong network.</li>
+<li>
+<code>author_network(type = "co_citation", self_loops = TRUE)</code> now honors <code>self_loops</code> (previously ignored).</li>
+<li>
+<code>author_network(type = "equivalence")</code> now forwards <code>deduplicate</code> (previously ignored).</li>
+<li>A wrong separator (split yields no multi-entry rows, yet most values contain a structural delimiter <code>";"</code>, <code>"|"</code>, or tab) now emits a warning instead of silently building a degenerate network. The heuristic deliberately ignores commas and <code>" and "</code>, which occur inside valid single labels (<code>"Last, First"</code> names, reference strings, <code>"Smith and Sons"</code>), so correct data is never warned about.</li>
+<li>
+<code>read_biblio(format = "generic")</code> now warns, listing the available columns, when an <code>actors</code> column is not found (previously skipped silently).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="deprecations-0-5-0">Deprecations<a class="anchor" aria-label="anchor" href="#deprecations-0-5-0"></a></h3>
+<ul><li>
+<code>keyword_network(field = )</code> is deprecated in favor of <code>keyword_network(keywords = )</code>. The old argument still works (with a warning) and stays in its original second position, so <code>keyword_network(d, "author_keywords")</code> is unchanged.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.4" id="bibnets-044">bibnets 0.4.4<a class="anchor" aria-label="anchor" href="#bibnets-044"></a></h2><p class="text-muted">CRAN release: 2026-05-20</p>
+<div class="section level3">
+<h3 id="cran-pre-test-fix-0-4-4">CRAN pre-test fix<a class="anchor" aria-label="anchor" href="#cran-pre-test-fix-0-4-4"></a></h3>
+<ul><li>The four <code>test-equiv-*.R</code> equivalence suites (vs <code>bibliometrix</code> and <code>biblionetwork</code>) have been moved out of the package into a local-only <code>local_testing_and_equivalence/</code> directory. These developer checks pulled in <code>data.table</code>/<code>biblionetwork</code>, whose OpenMP parallelism caused the “CPU time 4 times elapsed time” NOTE on the Debian r-devel pre-test. They remain runnable locally but are no longer part of <code>R CMD check</code>.</li>
+<li>
+<code>bibliometrix</code>, <code>biblionetwork</code>, and <code>data.table</code> removed from <code>Suggests</code> — they were used only by the relocated equivalence tests.</li>
+<li>
+<code>tests/testthat.R</code> keeps a 2-thread BLAS/OpenMP cap as defence for <code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">crossprod()</a></code> / <code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">tcrossprod()</a></code> in <code><a href="../reference/multiply_bipartite.html">multiply_bipartite()</a></code>.</li>
+<li>No user-facing code changes.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="bibnets-043">bibnets 0.4.3<a class="anchor" aria-label="anchor" href="#bibnets-043"></a></h2>
 <div class="section level3">
@@ -157,7 +250,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

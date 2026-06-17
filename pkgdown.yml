@@ -1,10 +1,11 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   bibnets: bibnets.html
+  parsing-author-names: parsing-author-names.html
   reading-data: reading-data.html
-last_built: 2026-05-15T14:07Z
+last_built: 2026-06-17T19:08Z
 urls:
   reference: https://saqr.me/bibnets-pkg/reference
   article: https://saqr.me/bibnets-pkg/articles
