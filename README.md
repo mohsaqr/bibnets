@@ -42,6 +42,11 @@ citation scoring; and threshold and top-n pruning utilities.
 - **Readers for scholarly exports**: Scopus, Web of Science, OpenAlex nested
   data, OpenAlex flat CSV, BibTeX, RIS, Lens.org, Dimensions, Crossref, and
   generic CSV files.
+- **Custom columns and separators**: every builder accepts an entity-named
+  column argument (`authors`, `keywords`, `references`, `journal`, `countries`,
+  `affiliations`) plus `sep`, `references_sep`, and `strip_quotes`, so a plain
+  data frame with its own column names and delimiter works in one call — no
+  reader and no pre-splitting required.
 - **Network reduction and export**: `backbone()`, `prune()`, `filter_top()`,
   `to_gephi()`, `to_graphml()`, `to_igraph()`, `to_tbl_graph()`,
   `to_matrix()`, and `to_cograph()`.
@@ -133,6 +138,73 @@ All readers try to return the same core columns: `id`, `title`, `year`,
 `affiliations`, `index_keywords`, and `keywords_plus` are preserved when
 available.
 
+## Custom Columns and Separators (no reader needed)
+
+When data is already a plain data frame or CSV with its own column names and
+delimiter, you do not have to coerce it into the standard schema first. Every
+network builder accepts a column argument named after the entity it builds
+(`authors`, `keywords`, `references`, `journal`, `countries`, `affiliations`)
+plus a `sep` to split a delimited character column. The builder splits,
+normalizes, and projects in a single call:
+
+```r
+papers <- data.frame(
+  id            = 1:4,
+  `Author Names`= c("Smith J, Doe A, Lee K", "Smith J, Lee K",
+                    "Doe A, Lee K", "Smith J, Doe A"),
+  Tags          = c("ml, ai", "ml, nlp", "ai, nlp", "ml, ai"),
+  check.names   = FALSE
+)
+
+# Point the builder at the column and give it the delimiter — no renaming.
+author_network(papers, authors = "Author Names", sep = ",")
+keyword_network(papers, keywords = "Tags", sep = ",")
+```
+
+`sep` is any literal delimiter, so BibTeX-style `" and "` or pipe-delimited
+exports work too:
+
+```r
+author_network(bib, authors = "creators", sep = " and ")
+country_network(data, countries = "Country List", sep = "|")
+```
+
+The defaults match the standard schema, so calls on data already in that schema
+need no extra arguments:
+
+| Builder | Column argument (default) |
+|---|---|
+| `author_network()` | `authors = "authors"` |
+| `keyword_network()` | `keywords = "keywords"` |
+| `reference_network()` | `references = "references"` |
+| `document_network()` | `references = "references"` |
+| `source_network()` | `journal = "journal"` |
+| `country_network()` | `countries = "countries"` |
+| `institution_network()` | `affiliations = "affiliations"` |
+
+A few related controls:
+
+- **`references_sep`** — coupling builders (`author_network`, `source_network`,
+  `country_network`, `institution_network`) split the references column with its
+  own delimiter (default `";"`), independent of `sep`. Reference strings often
+  contain internal commas (`"Smith J, 2020, Journal"`), so the two delimiters
+  are kept separate.
+- **`strip_quotes`** (default `TRUE`) — surrounding quote characters (`"Alice"`,
+  or the CSV doubled form `""Alice""`) are removed so a quoted label and its
+  bare form collapse to one node. Internal apostrophes (`O'Brien`) are left
+  alone. Set `strip_quotes = FALSE` to keep the quotes.
+- **Wrong-delimiter safety net** — if `sep` does not actually split the column
+  and the values still contain a structural delimiter (`";"`, `"|"`, or a tab),
+  the builder warns instead of silently treating each whole cell as one entity.
+  The check is quiet for commas and `" and "`, which appear inside valid single
+  labels.
+
+> The `field =` argument of `keyword_network()` is deprecated in favor of
+> `keywords =`; the old argument still works (with a warning).
+
+See `vignette("reading-data", package = "bibnets")`, section 12, for the full
+treatment.
+
 ## Network Builders
 
 ### Co-authorship
@@ -189,7 +261,7 @@ returns directed within-corpus citation edges from citing paper to cited paper.
 ### Keywords, Sources, Countries, and Institutions
 
 ```r
-keyword_network(data, field = "keywords")
+keyword_network(data, keywords = "keywords")
 source_network(data, type = "coupling", min_occur = 2)
 country_network(data, type = "collaboration", counting = "fractional")
 institution_network(data, type = "collaboration", counting = "fractional")
