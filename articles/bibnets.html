@@ -60,27 +60,117 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mohsaqr/bibnets" class="external-link">bibnets</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="what-bibnets-builds">What bibnets Builds<a class="anchor" aria-label="anchor" href="#what-bibnets-builds"></a>
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Bibliometric data usually arrives as a table of papers. Each paper
-has fields such as authors, references, keywords, countries,
-institutions, source title, and year. Most bibliometric networks are
-projections of those fields.</p>
-<p>The core idea is simple:</p>
-<ol style="list-style-type: decimal">
-<li>Build a sparse <code>papers x entities</code> matrix.</li>
-<li>Weight the matrix with a counting method.</li>
-<li>Multiply the matrix to obtain entity-entity or paper-paper
-links.</li>
-<li>Return a standard edge list.</li>
-</ol>
-<p>Internally, this is the package pipeline:</p>
-<pre><code>build_bipartite()
-  -&gt; apply_counting()
-  -&gt; multiply_bipartite()
-  -&gt; as_bibnets_network()</code></pre>
-<p>The exported builders wrap that pipeline for common bibliometric
-questions:</p>
+<p><code>bibnets</code> imports scholarly metadata and constructs
+bibliometric networks from works, authors, references, keywords,
+sources, countries, and institutions. It represents co-authorship,
+co-citation, bibliographic coupling, keyword co-occurrence, direct
+citation, historiograph, and custom co-occurrence analyses as network
+edge lists.</p>
+<div class="section level3">
+<h3 id="input-and-imports">Input and imports<a class="anchor" aria-label="anchor" href="#input-and-imports"></a>
+</h3>
+<p><code><a href="../reference/read_biblio.html">read_biblio()</a></code> is the entry point for file-based input.
+It accepts a file, a set of files, or a directory, detects supported
+file exports when <code>format = "auto"</code>, and dispatches to the
+corresponding reader. The file readers cover Scopus CSV with
+<code><a href="../reference/read_scopus.html">read_scopus()</a></code>, Web of Science plain-text and tab-delimited
+exports with <code><a href="../reference/read_wos.html">read_wos()</a></code>, flat OpenAlex CSV with
+<code><a href="../reference/read_openalex_csv.html">read_openalex_csv()</a></code>, BibTeX with
+<code><a href="../reference/read_bibtex.html">read_bibtex()</a></code>, RIS with <code><a href="../reference/read_ris.html">read_ris()</a></code>, Lens.org
+CSV with <code><a href="../reference/read_lens.html">read_lens()</a></code>, Dimensions CSV with
+<code><a href="../reference/read_dimensions.html">read_dimensions()</a></code>, and generic CSV input through
+<code>read_biblio(format = "generic")</code> or inferred generic input
+when source columns are mapped by name. OpenAlex records returned by
+<code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">openalexR::oa_fetch()</a></code> are converted with
+<code><a href="../reference/read_openalex.html">read_openalex()</a></code>. Crossref records returned by
+<code><a href="https://docs.ropensci.org/rcrossref/reference/cr_works.html" class="external-link">rcrossref::cr_works()</a></code> are converted with
+<code><a href="../reference/read_crossref.html">read_crossref()</a></code>.</p>
+<p>The source-specific readers return a common data frame with
+<code>id</code>, <code>title</code>, <code>year</code>,
+<code>journal</code>, <code>doi</code>, <code>cited_by_count</code>,
+<code>abstract</code>, <code>type</code>, and list-columns such as
+<code>authors</code>, <code>references</code>, and
+<code>keywords</code>. Source-specific fields, including
+<code>countries</code>, <code>affiliations</code>,
+<code>index_keywords</code>, and <code>keywords_plus</code>, are kept
+when present.</p>
+</div>
+<div class="section level3">
+<h3 id="network-construction">Network construction<a class="anchor" aria-label="anchor" href="#network-construction"></a>
+</h3>
+<p>Network construction follows the same matrix path across builders. A
+works-by-entities bipartite matrix is created by
+<code><a href="../reference/build_bipartite.html">build_bipartite()</a></code> or, for position-dependent weighting, by
+<code><a href="../reference/build_author_bipartite.html">build_author_bipartite()</a></code>. The matrix is weighted by
+<code><a href="../reference/apply_counting.html">apply_counting()</a></code> or by positional weights, projected by
+<code><a href="../reference/multiply_bipartite.html">multiply_bipartite()</a></code>, and returned by
+<code>as_bibnets_network()</code>.</p>
+<p>The counting methods are <code>"full"</code>,
+<code>"fractional"</code>, <code>"paper"</code>,
+<code>"strength"</code>, <code>"harmonic"</code>,
+<code>"arithmetic"</code>, <code>"geometric"</code>,
+<code>"adaptive_geometric"</code>, <code>"golden"</code>,
+<code>"first"</code>, <code>"last"</code>, <code>"first_last"</code>,
+and <code>"position_weighted"</code>. The attention profiles are
+<code>"lead"</code>, <code>"last"</code>, <code>"proximity"</code>, and
+<code>"circular"</code>; in the implementation these map to
+<code>"attention_lead"</code>, <code>"attention_last"</code>,
+<code>"attention_proximity"</code>, and
+<code>"attention_circular"</code> positional weights. Attention
+weighting is available for author, keyword, country, and institution
+networks.</p>
+<p>Projected matrices can be returned as raw counts with
+<code>"none"</code> or normalized with <code>"cosine"</code>,
+<code>"association"</code>, <code>"jaccard"</code>,
+<code>"inclusion"</code>, or <code>"equivalence"</code>. The same
+similarity names are accepted by <code><a href="../reference/normalize.html">normalize()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="speed">Speed<a class="anchor" aria-label="anchor" href="#speed"></a>
+</h3>
+<p>The incidence matrix is stored as a sparse <code>dgCMatrix</code>.
+Projection uses <code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">crossprod()</a></code> for column-mode networks and
+<code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">tcrossprod()</a></code> for row-mode networks, and edge extraction is
+performed from the sparse projected matrix without materializing a dense
+matrix. Memory use follows the number of non-zero matrix entries and
+retained edges rather than the size of a dense node-by-node matrix. The
+hard dependencies are Matrix, stats, and utils.</p>
+</div>
+<div class="section level3">
+<h3 id="exports">Exports<a class="anchor" aria-label="anchor" href="#exports"></a>
+</h3>
+<p>The default return value is an edge list. Export and conversion
+functions are <code><a href="../reference/to_igraph.html">to_igraph()</a></code>, <code><a href="../reference/to_tbl_graph.html">to_tbl_graph()</a></code>,
+<code><a href="../reference/to_cograph.html">to_cograph()</a></code>, <code><a href="../reference/to_gephi.html">to_gephi()</a></code>,
+<code><a href="../reference/to_graphml.html">to_graphml()</a></code>, and <code><a href="../reference/to_matrix.html">to_matrix()</a></code>.
+<code><a href="../reference/to_gephi.html">to_gephi()</a></code> writes or returns Gephi-ready node and edge CSV
+tables. <code><a href="../reference/to_graphml.html">to_graphml()</a></code> writes or returns GraphML.
+<code><a href="../reference/to_matrix.html">to_matrix()</a></code> returns a sparse adjacency matrix.</p>
+</div>
+<div class="section level3">
+<h3 id="output">Output<a class="anchor" aria-label="anchor" href="#output"></a>
+</h3>
+<p>Every builder returns a
+<strong><code>bibnets_network</code></strong>: a tidy data frame with
+four columns —</p>
+<ul>
+<li>
+<code>from</code>, <code>to</code> — the two endpoints of an
+edge,</li>
+<li>
+<code>count</code> — the raw binary co-occurrence count for that
+pair,</li>
+<li>
+<code>weight</code> — the analytical weight after counting and
+optional similarity normalization.</li>
+</ul>
+<p>With <code>counting = "full"</code> and
+<code>similarity = "none"</code>, <code>weight</code> equals
+<code>count</code>. They diverge once fractional counting or a
+similarity measure is applied.</p>
+<p>The builders, at a glance:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -90,18 +180,18 @@ questions:</p>
 <thead><tr class="header">
 <th>Function</th>
 <th>Nodes</th>
-<th>Link means</th>
+<th>An edge means</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td><code><a href="../reference/author_network.html">author_network()</a></code></td>
 <td>authors</td>
-<td>co-authorship, author coupling, or author co-citation</td>
+<td>co-authorship, author coupling, or co-citation</td>
 </tr>
 <tr class="even">
 <td><code><a href="../reference/reference_network.html">reference_network()</a></code></td>
 <td>cited references</td>
-<td>references are cited together</td>
+<td>two references cited together</td>
 </tr>
 <tr class="odd">
 <td><code><a href="../reference/document_network.html">document_network()</a></code></td>
@@ -111,11 +201,11 @@ questions:</p>
 <tr class="even">
 <td><code><a href="../reference/keyword_network.html">keyword_network()</a></code></td>
 <td>keywords</td>
-<td>keywords appear together in papers</td>
+<td>two keywords appear together</td>
 </tr>
 <tr class="odd">
 <td><code><a href="../reference/source_network.html">source_network()</a></code></td>
-<td>journals/sources</td>
+<td>journals</td>
 <td>sources share references or are co-cited</td>
 </tr>
 <tr class="even">
@@ -131,147 +221,160 @@ questions:</p>
 <tr class="even">
 <td><code><a href="../reference/conetwork.html">conetwork()</a></code></td>
 <td>any field</td>
-<td>entities co-occur or share values of another field</td>
+<td>entities co-occur, or share values of another field</td>
 </tr>
 <tr class="odd">
 <td><code><a href="../reference/local_citations.html">local_citations()</a></code></td>
 <td>documents</td>
-<td>local citation counts inside the corpus</td>
+<td>within-corpus citation counts</td>
 </tr>
 <tr class="even">
 <td><code><a href="../reference/historiograph.html">historiograph()</a></code></td>
 <td>documents</td>
-<td>directed citation history among locally cited papers</td>
+<td>directed citation history among top-cited papers</td>
 </tr>
 <tr class="odd">
 <td><code><a href="../reference/temporal_network.html">temporal_network()</a></code></td>
 <td>any builder’s nodes</td>
-<td>the same network repeated over time windows</td>
+<td>the same network over time windows</td>
 </tr>
 </tbody>
 </table>
-<p>Every network builder returns a <code>bibnets_network</code>: a data
-frame with columns <code>from</code>, <code>to</code>,
-<code>weight</code>, and <code>count</code>.</p>
-<p><code>count</code> is the raw binary co-occurrence.
-<code>weight</code> is the analytical weight after counting and optional
-similarity normalization.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="data-used-in-this-vignette">Data Used in This Vignette<a class="anchor" aria-label="anchor" href="#data-used-in-this-vignette"></a>
+<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>The package includes small and medium example datasets:</p>
+<p>You do <strong>not</strong> need a special reader. Any data frame
+with one row per paper works — point a builder at the column that holds
+the entity and tell it the delimiter:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  `Author Names` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smith J, Doe A, Lee K"</span>, <span class="st">"Smith J, Lee K"</span>,</span>
+<span>                     <span class="st">"Doe A, Lee K"</span>, <span class="st">"Smith J, Doe A"</span><span class="op">)</span>,</span>
+<span>  check.names <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">papers</span>, authors <span class="op">=</span> <span class="st">"Author Names"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from   to       weight  count</span></span>
+<span><span class="co">#&gt; 1  DOE A  LEE K         2      2</span></span>
+<span><span class="co">#&gt; 2  DOE A  SMITH J       2      2</span></span>
+<span><span class="co">#&gt; 3  LEE K  SMITH J       2      2</span></span></code></pre></div>
+<p>If your data is a scholarly export instead, read it first — the
+format is detected from the file content — then build with the
+defaults:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">biblio_data</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">scopus_quantum_cloud</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">open_alex_gold_open_access_learning_analytics</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">small</span> <span class="op">&lt;-</span> <span class="va">biblio_data</span></span>
-<span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="va">scopus_quantum_cloud</span></span>
-<span><span class="va">oa</span> <span class="op">&lt;-</span> <span class="va">open_alex_gold_open_access_learning_analytics</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">small</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 10</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">sc</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 499</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">oa</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1508</span></span></code></pre></div>
-<p><code>biblio_data</code> is a tiny synthetic dataset.
-<code>scopus_quantum_cloud</code> contains 499 Scopus records.
-<code>open_alex_gold_open_access_learning_analytics</code> contains
-1,508 OpenAlex records with authors, countries, institutions, and
-primary topics.</p>
+<code class="sourceCode R"><span><span class="va">data</span>    <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"scopus.csv"</span><span class="op">)</span></span>
+<span><span class="va">authors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">data</span>, type <span class="op">=</span> <span class="st">"collaboration"</span><span class="op">)</span></span></code></pre></div>
+<p>Either way the result is the same four-column edge list, ready to
+inspect, prune, or export.</p>
 </div>
 <div class="section level2">
-<h2 id="reading-your-own-data">Reading Your Own Data<a class="anchor" aria-label="anchor" href="#reading-your-own-data"></a>
+<h2 id="reading-your-own-data">Reading your own data<a class="anchor" aria-label="anchor" href="#reading-your-own-data"></a>
 </h2>
-<p>For files, use <code><a href="../reference/read_biblio.html">read_biblio()</a></code>:</p>
+<div class="section level3">
+<h3 id="scholarly-exports">Scholarly exports<a class="anchor" aria-label="anchor" href="#scholarly-exports"></a>
+</h3>
+<p><code><a href="../reference/read_biblio.html">read_biblio()</a></code> accepts a file, a folder, or several
+files, and detects Scopus, Web of Science, OpenAlex, BibTeX, RIS,
+Lens.org, and Dimensions from the content:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"export.csv"</span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"folder_with_exports/"</span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"part_1.csv"</span>, <span class="st">"part_2.csv"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/read_biblio.html">read_biblio()</a></code> detects common formats from file content.
-You can also call a reader directly:</p>
+<p>The format-specific readers can also be called directly
+(<code><a href="../reference/read_scopus.html">read_scopus()</a></code>, <code><a href="../reference/read_wos.html">read_wos()</a></code>,
+<code><a href="../reference/read_openalex_csv.html">read_openalex_csv()</a></code>, <code><a href="../reference/read_dimensions.html">read_dimensions()</a></code>,
+<code><a href="../reference/read_lens.html">read_lens()</a></code>, <code><a href="../reference/read_bibtex.html">read_bibtex()</a></code>,
+<code><a href="../reference/read_ris.html">read_ris()</a></code>).</p>
+</div>
+<div class="section level3">
+<h3 id="a-custom-csv">A custom CSV<a class="anchor" aria-label="anchor" href="#a-custom-csv"></a>
+</h3>
+<p>For a CSV that matches no known export, map each source column onto a
+standard field <strong>by name</strong> — <code>authors</code>,
+<code>keywords</code>, <code>references</code>, <code>countries</code>,
+<code>affiliations</code>, or <code>journal</code>. Naming any of them
+reads the file as a generic CSV, so you do not pass <code>format</code>
+yourself:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/read_scopus.html">read_scopus</a></span><span class="op">(</span><span class="st">"scopus.csv"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/read_wos.html">read_wos</a></span><span class="op">(</span><span class="st">"savedrecs.txt"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/read_openalex_csv.html">read_openalex_csv</a></span><span class="op">(</span><span class="st">"openalex_works.csv"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/read_dimensions.html">read_dimensions</a></span><span class="op">(</span><span class="st">"dimensions.csv"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/read_lens.html">read_lens</a></span><span class="op">(</span><span class="st">"lens.csv"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/read_bibtex.html">read_bibtex</a></span><span class="op">(</span><span class="st">"library.bib"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/read_ris.html">read_ris</a></span><span class="op">(</span><span class="st">"library.ris"</span><span class="op">)</span></span></code></pre></div>
-<p>For a custom CSV, map each source column onto a standard field by
-name (<code>authors</code>, <code>keywords</code>,
-<code>references</code>, <code>countries</code>,
-<code>affiliations</code>, <code>journal</code>):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span></span>
 <span>  <span class="st">"custom.csv"</span>,</span>
 <span>  id       <span class="op">=</span> <span class="st">"paper_id"</span>,</span>
-<span>  authors  <span class="op">=</span> <span class="st">"Authors"</span>,</span>
-<span>  keywords <span class="op">=</span> <span class="st">"Keywords"</span>,</span>
-<span>  sep      <span class="op">=</span> <span class="st">";"</span></span>
+<span>  authors  <span class="op">=</span> <span class="st">"Author Names"</span>,</span>
+<span>  keywords <span class="op">=</span> <span class="st">"Tags"</span>,</span>
+<span>  sep      <span class="op">=</span> <span class="st">","</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>You do not even need a reader for a plain data frame: every builder
-takes a column argument named after its entity (<code>authors</code>,
-<code>keywords</code>, <code>references</code>, <code>journal</code>,
-<code>countries</code>, <code>affiliations</code>) plus a
-<code>sep</code>, so a custom column with its own delimiter works in one
-call:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Each mapped column is split on <code>sep</code> into the standard
+list-column, so afterwards every builder works with its defaults.</p>
+</div>
+<div class="section level3">
+<h3 id="a-plain-data-frame-directly">A plain data frame, directly<a class="anchor" aria-label="anchor" href="#a-plain-data-frame-directly"></a>
+</h3>
+<p>As the quick start showed, you can skip the reader entirely and let
+the builder split a column for you. The same column arguments are
+available on every builder:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">my_df</span>, authors <span class="op">=</span> <span class="st">"Author Names"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">my_df</span>, keywords <span class="op">=</span> <span class="st">"Tags"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span></code></pre></div>
-<p>You can also point <code>id</code> at a custom work-identifier
-column; when no <code>id</code> column is present each row is treated as
-one document. Surrounding quotes are stripped by default
-(<code>strip_quotes = TRUE</code>), and the references column in a
-coupling network takes its own <code>references_sep</code>. See the
-“Custom columns and separators” section of
-<code><a href="../articles/reading-data.html">vignette("reading-data")</a></code> for the full treatment.</p>
-<p>Readers return a common schema where possible:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sc</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span></span>
+<span><span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">my_df</span>, keywords <span class="op">=</span> <span class="st">"Tags"</span>,       sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span></code></pre></div>
+<p>The work identifier is the <code>id</code> column. You need not
+supply one: when no <code>id</code> column is present each row is
+treated as one document; pass <code>id = "paper_id"</code> to use a
+differently-named column. Surrounding quotes are stripped by default
+(<code>strip_quotes = TRUE</code>), and in a coupling network the
+references column takes its own <code>references_sep</code>. The
+companion <code><a href="../articles/reading-data.html">vignette("reading-data")</a></code> covers every reader and
+these options in full.</p>
+</div>
+<div class="section level3">
+<h3 id="the-standard-schema">The standard schema<a class="anchor" aria-label="anchor" href="#the-standard-schema"></a>
+</h3>
+<p>Readers return a common set of columns:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">scopus_quantum_cloud</span><span class="op">)</span></span>
+<span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="va">scopus_quantum_cloud</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sc</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span></span>
 <span><span class="co">#&gt;  [1] "id"             "title"          "year"           "journal"       </span></span>
 <span><span class="co">#&gt;  [5] "doi"            "cited_by_count" "abstract"       "type"          </span></span>
 <span><span class="co">#&gt;  [9] "authors"        "references"     "keywords"       "affiliations"</span></span></code></pre></div>
-<p>The most important columns for network construction are:</p>
-<ul>
-<li>
-<code>id</code>: the document identifier.</li>
-<li>
-<code>authors</code>: a list-column of author names.</li>
-<li>
-<code>references</code>: a list-column of cited references or cited
-work IDs.</li>
-<li>
-<code>keywords</code>: a list-column of author/index/topic
-keywords.</li>
-<li>
-<code>year</code>: the time variable used by
-<code><a href="../reference/temporal_network.html">temporal_network()</a></code>.</li>
-</ul>
-<p>Source-specific columns such as <code>countries</code>,
-<code>affiliations</code>, <code>index_keywords</code>, and
-<code>keywords_plus</code> are preserved when available.</p>
+<p>The columns that matter for network construction are <code>id</code>,
+the list-columns <code>authors</code> / <code>references</code> /
+<code>keywords</code>, and <code>year</code> (used by
+<code><a href="../reference/temporal_network.html">temporal_network()</a></code>). Source-specific extras such as
+<code>countries</code>, <code>affiliations</code>, and
+<code>keywords_plus</code> are kept when available.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="author-collaboration">Author Collaboration<a class="anchor" aria-label="anchor" href="#author-collaboration"></a>
+<h2 id="datasets-used-here">Datasets used here<a class="anchor" aria-label="anchor" href="#datasets-used-here"></a>
 </h2>
-<p>The simplest author network links two authors when they appear on the
-same paper:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">biblio_data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">learning_analytics</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">small</span> <span class="op">&lt;-</span> <span class="va">biblio_data</span>            <span class="co"># tiny, synthetic</span></span>
+<span><span class="va">oa</span>    <span class="op">&lt;-</span> <span class="va">learning_analytics</span>     <span class="co"># 1,508 OpenAlex records on learning analytics</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>small <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">small</span><span class="op">)</span>, scopus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">sc</span><span class="op">)</span>, openalex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">oa</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    small   scopus openalex </span></span>
+<span><span class="co">#&gt;       10      499     1508</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="author-collaboration">Author collaboration<a class="anchor" aria-label="anchor" href="#author-collaboration"></a>
+</h2>
+<p>Two authors are linked when they appear on the same paper:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">authors_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, type <span class="op">=</span> <span class="st">"collaboration"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">authors_full</span>, <span class="fl">5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">authors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, type <span class="op">=</span> <span class="st">"collaboration"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">authors</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: author_collaboration | 9 nodes · 5 edges | counting: full </span></span>
 <span><span class="co">#&gt;    from                        to                          weight  count</span></span>
 <span><span class="co">#&gt; 1  MOHAMMED SAQR               SONSOLES LÓPEZ‐PERNAS        19     19</span></span>
 <span><span class="co">#&gt; 2  CRISTIAN CECHINEL           ROBERTO MUÑOZ                  11     11</span></span>
 <span><span class="co">#&gt; 3  DRAGAN GAŠEVIĆ            ROBERTO MARTÍNEZ‐MALDONADO      10     10</span></span>
 <span><span class="co">#&gt; 4  ROBERTO MARTÍNEZ‐MALDONADO  VANESSA ECHEVERRÍA             10     10</span></span>
-<span><span class="co">#&gt; 5  FERNANDA PIRES              MARCELA PESSOA                   8      8</span></span></code></pre></div>
-<p>The printed result has the standard schema:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">authors_full</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 5  FERNANDA PIRES              MARCELA PESSOA                   8      8</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">authors</span><span class="op">)</span></span>
 <span><span class="co">#&gt; bibnets network</span></span>
 <span><span class="co">#&gt; ------------------------------</span></span>
 <span><span class="co">#&gt; Type       : author_collaboration</span></span>
@@ -282,98 +385,73 @@ same paper:</p>
 <span><span class="co">#&gt; Density    : 0.0015</span></span>
 <span><span class="co">#&gt; Weight     : min 1  median 1  max 19</span></span>
 <span><span class="co">#&gt; Top nodes  : DRAGAN GAŠEVIĆ(89), ARI KORHONEN(60), CLAUDIA SZABO(60), JUDY SHEARD(60), PAUL DENNY(56)</span></span></code></pre></div>
-<p>Use <code>min_occur</code> to remove very rare authors before
+<p>Use <code>min_occur</code> to drop rare authors before
 projection:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">authors_core</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, <span class="st">"collaboration"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">authors_full</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, type <span class="op">=</span> <span class="st">"collaboration"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 12270</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">authors_core</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, type <span class="op">=</span> <span class="st">"collaboration"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1362</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="counting-methods">Counting Methods<a class="anchor" aria-label="anchor" href="#counting-methods"></a>
-</h2>
-<p>Counting determines how much a paper contributes to edge weights.</p>
-<p>Full counting gives every observed co-occurrence a weight of 1:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 5 nodes · 5 edges | counting: full </span></span>
+<div class="section level3">
+<h3 id="counting-methods">Counting methods<a class="anchor" aria-label="anchor" href="#counting-methods"></a>
+</h3>
+<p><code>counting</code> controls how much each paper contributes to an
+edge:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, type <span class="op">=</span> <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 4 nodes · 3 edges | counting: full </span></span>
 <span><span class="co">#&gt;    from     to       weight  count</span></span>
 <span><span class="co">#&gt; 1  CHEN W   LEE K         3      3</span></span>
 <span><span class="co">#&gt; 2  BROWN M  SMITH J       3      3</span></span>
 <span><span class="co">#&gt; 3  BROWN M  LEE K         2      2</span></span>
-<span><span class="co">#&gt; 4  JONES A  LEE K         2      2</span></span>
-<span><span class="co">#&gt; 5  JONES A  SMITH J       2      2</span></span></code></pre></div>
-<p>Fractional counting reduces the influence of long author lists:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"fractional"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 5 nodes · 5 edges | counting: fractional </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, type <span class="op">=</span> <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"fractional"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 5 nodes · 3 edges | counting: fractional </span></span>
 <span><span class="co">#&gt;    from     to       weight  count</span></span>
 <span><span class="co">#&gt; 1  CHEN W   LEE K         2      3</span></span>
 <span><span class="co">#&gt; 2  BROWN M  SMITH J       2      3</span></span>
 <span><span class="co">#&gt; 3  JONES A  SMITH J     1.5      2</span></span>
-<span><span class="co">#&gt; 4  BROWN M  LEE K         1      2</span></span>
-<span><span class="co">#&gt; 5  JONES A  LEE K         1      2</span></span></code></pre></div>
-<p>Harmonic counting gives more credit to earlier byline positions while
-keeping the paper’s total credit normalized:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"harmonic"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 6 nodes · 5 edges | counting: harmonic </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, type <span class="op">=</span> <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"harmonic"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 5 nodes · 3 edges | counting: harmonic </span></span>
 <span><span class="co">#&gt;    from     to       weight  count</span></span>
 <span><span class="co">#&gt; 1  BROWN M  SMITH J  0.4702      3</span></span>
 <span><span class="co">#&gt; 2  JONES A  SMITH J   0.371      2</span></span>
 <span><span class="co">#&gt; 3  CHEN W   LEE K    0.3214      3</span></span>
-<span><span class="co">#&gt; 4  CHEN W   DAVIS R  0.2222      1</span></span>
-<span><span class="co">#&gt; 5  DAVIS R  JONES A  0.2222      1</span></span></code></pre></div>
-<p>First-last counting is useful only when the field’s authorship
-conventions make both first and last positions meaningful:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"first_last"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 6 nodes · 5 edges | counting: first_last </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, type <span class="op">=</span> <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"first_last"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 5 nodes · 3 edges | counting: first_last </span></span>
 <span><span class="co">#&gt;    from     to       weight  count</span></span>
 <span><span class="co">#&gt; 1  BROWN M  SMITH J    0.49      3</span></span>
 <span><span class="co">#&gt; 2  CHEN W   LEE K      0.41      3</span></span>
-<span><span class="co">#&gt; 3  JONES A  SMITH J    0.33      2</span></span>
-<span><span class="co">#&gt; 4  LEE K    SMITH J    0.32      2</span></span>
-<span><span class="co">#&gt; 5  CHEN W   DAVIS R    0.25      1</span></span></code></pre></div>
-<p>The correct method depends on the claim being made. Use
-<code>full</code> when the question is about observed collaboration
-events. Use <code>fractional</code> when papers with many entities
-should not dominate. Use position-dependent methods only when author
-order is analytically meaningful.</p>
+<span><span class="co">#&gt; 3  JONES A  SMITH J    0.33      2</span></span></code></pre></div>
+<ul>
+<li>
+<code>"full"</code> — every observed co-occurrence counts 1 (use for
+raw events).</li>
+<li>
+<code>"fractional"</code> — scaled by list size so large teams don’t
+dominate.</li>
+<li>
+<code>"harmonic"</code> / <code>"first_last"</code> and other
+position methods — only when author order is analytically
+meaningful.</li>
+</ul>
 </div>
-<div class="section level2">
-<h2 id="attention-style-position-weights">Attention-Style Position Weights<a class="anchor" aria-label="anchor" href="#attention-style-position-weights"></a>
-</h2>
-<p>The <code>attention</code> argument applies a smooth position
-profile. It is separate from <code>counting</code> and is available for
-author, keyword, country, and institution networks.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lead</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, attention <span class="op">=</span> <span class="st">"lead"</span><span class="op">)</span></span>
-<span><span class="va">last</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, attention <span class="op">=</span> <span class="st">"last"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lead</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_attention_lead | 5 nodes · 5 edges | counting: lead </span></span>
+<div class="section level3">
+<h3 id="attention-weights">Attention weights<a class="anchor" aria-label="anchor" href="#attention-weights"></a>
+</h3>
+<p><code>attention</code> applies a smooth positional profile instead of
+a named counting scheme (available for author, keyword, country, and
+institution networks):</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">small</span>, attention <span class="op">=</span> <span class="st">"lead"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_attention_lead | 4 nodes · 3 edges | counting: lead </span></span>
 <span><span class="co">#&gt;    from     to       weight  count</span></span>
 <span><span class="co">#&gt; 1  BROWN M  SMITH J  0.3896      3</span></span>
 <span><span class="co">#&gt; 2  JONES A  SMITH J  0.3437      2</span></span>
-<span><span class="co">#&gt; 3  JONES A  LEE K    0.2041      2</span></span>
-<span><span class="co">#&gt; 4  CHEN W   LEE K    0.2008      3</span></span>
-<span><span class="co">#&gt; 5  BROWN M  CHEN W   0.1837      1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">last</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_attention_last | 6 nodes · 5 edges | counting: last </span></span>
-<span><span class="co">#&gt;    from     to       weight  count</span></span>
-<span><span class="co">#&gt; 1  CHEN W   LEE K    0.5273      3</span></span>
-<span><span class="co">#&gt; 2  BROWN M  LEE K    0.2296      2</span></span>
-<span><span class="co">#&gt; 3  BROWN M  SMITH J  0.2263      3</span></span>
-<span><span class="co">#&gt; 4  JONES A  LEE K    0.2041      2</span></span>
-<span><span class="co">#&gt; 5  DAVIS R  SMITH J  0.1837      1</span></span></code></pre></div>
-<p>The four profiles are:</p>
+<span><span class="co">#&gt; 3  JONES A  LEE K    0.2041      2</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th><code>attention</code></th>
-<th>Highest weight</th>
+<th>Highest weight at</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -390,20 +468,17 @@ author, keyword, country, and institution networks.</p>
 </tr>
 <tr class="even">
 <td><code>"circular"</code></td>
-<td>first and last positions</td>
+<td>first and last</td>
 </tr>
 </tbody>
 </table>
-<p>Use attention weighting when the analysis needs a transparent
-positional assumption rather than a named bibliometric counting
-convention.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="reference-co-citation">Reference Co-citation<a class="anchor" aria-label="anchor" href="#reference-co-citation"></a>
+<h2 id="reference-co-citation">Reference co-citation<a class="anchor" aria-label="anchor" href="#reference-co-citation"></a>
 </h2>
-<p>Co-citation links two cited references when they are cited together
-by at least one paper:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p>Two references are linked when a paper cites both:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">refs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/reference_network.html">reference_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">refs</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: reference_co_citation | 7 nodes · 5 edges | counting: full </span></span>
@@ -413,30 +488,22 @@ by at least one paper:</p>
 <span><span class="co">#&gt; 3  HAN S., MAO H., DALLY W.J., D…  SIMONYAN K., ZISSERMAN A., VE…       8      8</span></span>
 <span><span class="co">#&gt; 4  HE K., ZHANG X., REN S., SUN …  SIMONYAN K., ZISSERMAN A., VE…       8      8</span></span>
 <span><span class="co">#&gt; 5  KRIZHEVSKY A., HINTON G., LEA…  SIMONYAN K., ZISSERMAN A., VE…       7      7</span></span></code></pre></div>
-<p>Co-citation is a column-mode projection of the
-<code>papers x references</code> matrix. The nodes are references; the
-links come from papers that cite both references.</p>
-<p>Similarity normalization can reduce the advantage of very frequently
-cited references:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">refs_cos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/reference_network.html">reference_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span>, similarity <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">refs_cos</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: reference_co_citation | 10 nodes · 5 edges | counting: full | similarity: cosine </span></span>
+<p>A similarity measure offsets the advantage of very frequently cited
+works:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/reference_network.html">reference_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span>, similarity <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: reference_co_citation | 6 nodes · 3 edges | counting: full | similarity: cosine </span></span>
 <span><span class="co">#&gt;    from                            to                              weight  count</span></span>
 <span><span class="co">#&gt; 1  ANDRI R., CAVIGELLI L., ROSSI…  CAPOTONDI A., RUSCI M., FARIS…       1      2</span></span>
 <span><span class="co">#&gt; 2  BAI Y., ZENG B., LI C., ZHANG…  CASTELLI M., CLEMENTE F.M., P…       1      2</span></span>
-<span><span class="co">#&gt; 3  CHEN K., ET AL., A DNN OPTIMI…  CHEN Y., ET AL., SAMBA: SINGL…       1      2</span></span>
-<span><span class="co">#&gt; 4  CHELLAPILLA K., PURI S., SIMA…  CHETLUR S., WOOLLEY C., VANDE…       1      2</span></span>
-<span><span class="co">#&gt; 5  ATITALLAH B.B., HU Z., BOUCHA…  CHMURSKI M., ZUBERT M., BIERZ…       1      2</span></span></code></pre></div>
+<span><span class="co">#&gt; 3  CHEN K., ET AL., A DNN OPTIMI…  CHEN Y., ET AL., SAMBA: SINGL…       1      2</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="document-coupling-and-citation">Document Coupling and Citation<a class="anchor" aria-label="anchor" href="#document-coupling-and-citation"></a>
+<h2 id="document-coupling-and-citation">Document coupling and citation<a class="anchor" aria-label="anchor" href="#document-coupling-and-citation"></a>
 </h2>
-<p>Bibliographic coupling links two documents when they share cited
-references:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">coupled_docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/document_network.html">document_network</a></span><span class="op">(</span><span class="va">sc</span>, type <span class="op">=</span> <span class="st">"coupling"</span>, similarity <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">coupled_docs</span>, <span class="fl">5</span><span class="op">)</span></span>
+<p>Coupling links two documents that share cited references:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/document_network.html">document_network</a></span><span class="op">(</span><span class="va">sc</span>, type <span class="op">=</span> <span class="st">"coupling"</span>, similarity <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: document_coupling | 10 nodes · 5 edges | counting: full | similarity: cosine </span></span>
 <span><span class="co">#&gt;    from                to                  weight  count</span></span>
 <span><span class="co">#&gt; 1  2-s2.0-85169545148  2-s2.0-85150169631  0.4671     12</span></span>
@@ -444,24 +511,17 @@ references:</p>
 <span><span class="co">#&gt; 3  2-s2.0-85131677679  2-s2.0-85172072697  0.3424      7</span></span>
 <span><span class="co">#&gt; 4  2-s2.0-85187392673  2-s2.0-85124224751   0.269     11</span></span>
 <span><span class="co">#&gt; 5  2-s2.0-85161914543  2-s2.0-85100337829  0.2443     13</span></span></code></pre></div>
-<p>Direct citation is different. It keeps direction: <code>from</code>
-is the citing document and <code>to</code> is the cited document, but
-only when both documents are inside the same corpus.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">direct_docs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/document_network.html">document_network</a></span><span class="op">(</span><span class="va">sc</span>, type <span class="op">=</span> <span class="st">"citation"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">direct_docs</span>, <span class="fl">5</span><span class="op">)</span></span>
+<p>Direct citation is directed — <code>from</code> cites <code>to</code>
+— and only within the corpus (the cited work must also be a row in the
+data):</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/document_network.html">document_network</a></span><span class="op">(</span><span class="va">sc</span>, type <span class="op">=</span> <span class="st">"citation"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: document_citation | 0 nodes · 0 edges | counting: full</span></span></code></pre></div>
-<p>Many exported datasets cite external works that are not themselves
-rows in the dataset. Those external citations support co-citation and
-coupling, but they do not become direct-citation edges unless the cited
-work is also present in <code>id</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="keyword-co-occurrence">Keyword Co-occurrence<a class="anchor" aria-label="anchor" href="#keyword-co-occurrence"></a>
+<h2 id="keyword-co-occurrence">Keyword co-occurrence<a class="anchor" aria-label="anchor" href="#keyword-co-occurrence"></a>
 </h2>
-<p>Keyword networks are often the quickest way to inspect a corpus
-thematically:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">kw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kw</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: keyword_co_occurrence | 5 nodes · 5 edges | counting: full </span></span>
@@ -471,32 +531,23 @@ thematically:</p>
 <span><span class="co">#&gt; 3  DEEP LEARNING   EDGE COMPUTING      13     13</span></span>
 <span><span class="co">#&gt; 4  DEEP LEARNING   FPGA                10     10</span></span>
 <span><span class="co">#&gt; 5  PRUNING         QUANTIZATION        10     10</span></span></code></pre></div>
-<p>Entity labels are trimmed and uppercased during matrix construction.
-This means that <code>machine learning</code>,
-<code>Machine Learning</code>, and <code>MACHINE LEARNING</code> resolve
-to the same node.</p>
-<p>Association strength is commonly useful for co-occurrence maps
-because it downweights pairs that are common only because both keywords
-are individually frequent:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">kw_assoc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span>, similarity <span class="op">=</span> <span class="st">"association"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kw_assoc</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: keyword_co_occurrence | 10 nodes · 5 edges | counting: full | similarity: association </span></span>
-<span><span class="co">#&gt;    from                     to                          weight  count</span></span>
-<span><span class="co">#&gt; 1  AIR QUALITY PREDICTION   POST-TRAINING QUANTISATION     0.5      2</span></span>
-<span><span class="co">#&gt; 2  LFSR SEED                QUANTIZATION (SIGNAL)          0.5      2</span></span>
-<span><span class="co">#&gt; 3  BOOTH MULTIPLIERS        SHIFT MULTIPLIERS              0.5      2</span></span>
-<span><span class="co">#&gt; 4  FERROELECTRIC CAPACITOR  SMALL-SIGNAL ANALYSIS          0.5      2</span></span>
-<span><span class="co">#&gt; 5  K-NEAREST NEIGHBOR       SMART LIGHTING                 0.5      2</span></span></code></pre></div>
+<p>Labels are trimmed and upper-cased during construction, so
+<code>machine learning</code>, <code>Machine Learning</code>, and
+<code>MACHINE LEARNING</code> are one node. Association strength is a
+common choice for co-occurrence maps:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span>, similarity <span class="op">=</span> <span class="st">"association"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: keyword_co_occurrence | 6 nodes · 3 edges | counting: full | similarity: association </span></span>
+<span><span class="co">#&gt;    from                    to                          weight  count</span></span>
+<span><span class="co">#&gt; 1  AIR QUALITY PREDICTION  POST-TRAINING QUANTISATION     0.5      2</span></span>
+<span><span class="co">#&gt; 2  LFSR SEED               QUANTIZATION (SIGNAL)          0.5      2</span></span>
+<span><span class="co">#&gt; 3  BOOTH MULTIPLIERS       SHIFT MULTIPLIERS              0.5      2</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="countries-institutions-and-sources">Countries, Institutions, and Sources<a class="anchor" aria-label="anchor" href="#countries-institutions-and-sources"></a>
+<h2 id="countries-institutions-and-sources">Countries, institutions, and sources<a class="anchor" aria-label="anchor" href="#countries-institutions-and-sources"></a>
 </h2>
-<p>OpenAlex-style data often contains country and institution
-list-columns:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">country_edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/country_network.html">country_network</a></span><span class="op">(</span><span class="va">oa</span>, counting <span class="op">=</span> <span class="st">"fractional"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">country_edges</span>, <span class="fl">5</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/country_network.html">country_network</a></span><span class="op">(</span><span class="va">oa</span>, counting <span class="op">=</span> <span class="st">"fractional"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: country_collaboration | 8 nodes · 5 edges | counting: fractional </span></span>
 <span><span class="co">#&gt;    from  to  weight  count</span></span>
 <span><span class="co">#&gt; 1  BR    CL     9.7     11</span></span>
@@ -504,21 +555,15 @@ list-columns:</p>
 <span><span class="co">#&gt; 3  AU    US   8.967     15</span></span>
 <span><span class="co">#&gt; 4  DE    NL   8.311     10</span></span>
 <span><span class="co">#&gt; 5  CN    US     8.2     11</span></span>
-<span></span>
-<span><span class="va">inst_edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/institution_network.html">institution_network</a></span><span class="op">(</span><span class="va">oa</span>, counting <span class="op">=</span> <span class="st">"fractional"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">inst_edges</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/institution_network.html">institution_network</a></span><span class="op">(</span><span class="va">oa</span>, counting <span class="op">=</span> <span class="st">"fractional"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: institution_collaboration | 10 nodes · 5 edges | counting: fractional </span></span>
 <span><span class="co">#&gt;    from                            to                             weight  count</span></span>
 <span><span class="co">#&gt; 1  FINLAND UNIVERSITY              UNIVERSITY OF EASTERN FINLAND   5.778     13</span></span>
 <span><span class="co">#&gt; 2  MAASTRICHT SCHOOL OF MANAGEME…  MAASTRICHT UNIVERSITY           4.833      6</span></span>
 <span><span class="co">#&gt; 3  ESCUELA SUPERIOR POLITECNICA …  MONASH UNIVERSITY               4.667      6</span></span>
 <span><span class="co">#&gt; 4  UNIVERSIDADE FEDERAL DE SANTA…  UNIVERSITY OF VALPARAÍSO       4.417     10</span></span>
-<span><span class="co">#&gt; 5  KUMAMOTO UNIVERSITY             KYUSHU UNIVERSITY                   4      4</span></span></code></pre></div>
-<p>Source networks use <code>journal</code> as the entity field.
-Coupling links sources that cite the same references:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">source_edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/source_network.html">source_network</a></span><span class="op">(</span><span class="va">sc</span>, type <span class="op">=</span> <span class="st">"coupling"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">source_edges</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 5  KUMAMOTO UNIVERSITY             KYUSHU UNIVERSITY                   4      4</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/source_network.html">source_network</a></span><span class="op">(</span><span class="va">sc</span>, type <span class="op">=</span> <span class="st">"coupling"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: source_coupling | 5 nodes · 5 edges | counting: full </span></span>
 <span><span class="co">#&gt;    from                            to                              weight  count</span></span>
 <span><span class="co">#&gt; 1  IEEE TRANSACTIONS ON CIRCUITS…  IEEE TRANSACTIONS ON COMPUTER…      48     48</span></span>
@@ -526,208 +571,109 @@ Coupling links sources that cite the same references:</p>
 <span><span class="co">#&gt; 3  IEEE TRANSACTIONS ON CIRCUITS…  IEEE TRANSACTIONS ON VERY LAR…      39     39</span></span>
 <span><span class="co">#&gt; 4  IEEE JOURNAL OF SOLID-STATE C…  IEEE TRANSACTIONS ON CIRCUITS…      31     31</span></span>
 <span><span class="co">#&gt; 5  IEEE TRANSACTIONS ON COMPUTER…  IEEE TRANSACTIONS ON VERY LAR…      29     29</span></span></code></pre></div>
-<p>For source, country, institution, and author coupling,
-<code>min_occur</code> is applied to the aggregated entity before
-building the coupling network.</p>
+<p>For coupling networks, <code>min_occur</code> is applied to the
+aggregated entity before the network is built.</p>
 </div>
 <div class="section level2">
-<h2 id="generic-co-networks">Generic Co-networks<a class="anchor" aria-label="anchor" href="#generic-co-networks"></a>
+<h2 id="generic-co-networks">Generic co-networks<a class="anchor" aria-label="anchor" href="#generic-co-networks"></a>
 </h2>
-<p>Use <code><a href="../reference/conetwork.html">conetwork()</a></code> when you want a projection not covered
-by a dedicated helper.</p>
-<p>One-field use:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/conetwork.html">conetwork</a></span><span class="op">(</span><span class="va">sc</span>, <span class="st">"keywords"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: keywords_co_occurrence | 5 nodes · 5 edges | counting: full </span></span>
+<p><code><a href="../reference/conetwork.html">conetwork()</a></code> covers projections without a dedicated
+wrapper. One field links entities that co-occur; a second field
+(<code>by</code>) links them through a shared value:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/conetwork.html">conetwork</a></span><span class="op">(</span><span class="va">sc</span>, <span class="st">"keywords"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: keywords_co_occurrence | 3 nodes · 3 edges | counting: full </span></span>
 <span><span class="co">#&gt;    from            to              weight  count</span></span>
 <span><span class="co">#&gt; 1  EDGE COMPUTING  QUANTIZATION        16     16</span></span>
 <span><span class="co">#&gt; 2  DEEP LEARNING   QUANTIZATION        14     14</span></span>
 <span><span class="co">#&gt; 3  DEEP LEARNING   EDGE COMPUTING      13     13</span></span>
-<span><span class="co">#&gt; 4  DEEP LEARNING   FPGA                10     10</span></span>
-<span><span class="co">#&gt; 5  PRUNING         QUANTIZATION        10     10</span></span></code></pre></div>
-<p>Two-field use:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/conetwork.html">conetwork</a></span><span class="op">(</span><span class="va">sc</span>, <span class="st">"authors"</span>, by <span class="op">=</span> <span class="st">"keywords"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: authors_by_keywords | 7 nodes · 5 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from               to                 weight  count</span></span>
-<span><span class="co">#&gt; 1  CAI H              LIU B                  36     36</span></span>
-<span><span class="co">#&gt; 2  WANG Y             YIN S                  30     30</span></span>
-<span><span class="co">#&gt; 3  AMROUCH H          ANAGNOSTOPOULOS I      24     24</span></span>
-<span><span class="co">#&gt; 4  AMROUCH H          HENKEL J               24     24</span></span>
-<span><span class="co">#&gt; 5  ANAGNOSTOPOULOS I  HENKEL J               24     24</span></span></code></pre></div>
-<p>The second example links authors through shared keywords. This is not
-a co-authorship network; it is a thematic-similarity network between
-authors.</p>
-<p>Delimited character columns are split automatically:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">toy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P1"</span>, <span class="st">"P2"</span>, <span class="st">"P3"</span><span class="op">)</span>,</span>
-<span>  tags <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"methods; networks"</span>, <span class="st">"networks; R"</span>, <span class="st">"methods; R"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/conetwork.html">conetwork</a></span><span class="op">(</span><span class="va">toy</span>, <span class="st">"tags"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: tags_co_occurrence | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from      to        weight  count</span></span>
-<span><span class="co">#&gt; 1  METHODS   NETWORKS       1      1</span></span>
-<span><span class="co">#&gt; 2  METHODS   R              1      1</span></span>
-<span><span class="co">#&gt; 3  NETWORKS  R              1      1</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/conetwork.html">conetwork</a></span><span class="op">(</span><span class="va">sc</span>, <span class="st">"authors"</span>, by <span class="op">=</span> <span class="st">"keywords"</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: authors_by_keywords | 6 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from       to                 weight  count</span></span>
+<span><span class="co">#&gt; 1  CAI H      LIU B                  36     36</span></span>
+<span><span class="co">#&gt; 2  WANG Y     YIN S                  30     30</span></span>
+<span><span class="co">#&gt; 3  AMROUCH H  ANAGNOSTOPOULOS I      24     24</span></span></code></pre></div>
+<p>The second result links authors through shared keywords — a thematic
+similarity network, not a co-authorship one.</p>
 </div>
 <div class="section level2">
 <h2 id="normalization">Normalization<a class="anchor" aria-label="anchor" href="#normalization"></a>
 </h2>
-<p>The same raw counts can support different similarity scores:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<p>The same raw counts support different similarity scores; only
+<code>weight</code> changes, <code>count</code> does not:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">none</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span>, similarity <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span>
 <span><span class="va">cos</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span>, similarity <span class="op">=</span> <span class="st">"cosine"</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">none</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"from"</span>, <span class="st">"to"</span>, <span class="st">"weight"</span>, <span class="st">"count"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: unknown | 3 nodes · 3 edges </span></span>
 <span><span class="co">#&gt;    from            to              weight  count</span></span>
 <span><span class="co">#&gt; 1  EDGE COMPUTING  QUANTIZATION        16     16</span></span>
 <span><span class="co">#&gt; 2  DEEP LEARNING   QUANTIZATION        14     14</span></span>
 <span><span class="co">#&gt; 3  DEEP LEARNING   EDGE COMPUTING      13     13</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cos</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"from"</span>, <span class="st">"to"</span>, <span class="st">"weight"</span>, <span class="st">"count"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cos</span><span class="op">[</span>,  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"from"</span>, <span class="st">"to"</span>, <span class="st">"weight"</span>, <span class="st">"count"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # bibnets network: unknown | 6 nodes · 3 edges </span></span>
 <span><span class="co">#&gt;    from                    to                          weight  count</span></span>
 <span><span class="co">#&gt; 1  AIR QUALITY PREDICTION  POST-TRAINING QUANTISATION       1      2</span></span>
 <span><span class="co">#&gt; 2  LFSR SEED               QUANTIZATION (SIGNAL)            1      2</span></span>
 <span><span class="co">#&gt; 3  BOOTH MULTIPLIERS       SHIFT MULTIPLIERS                1      2</span></span></code></pre></div>
-<p>Notice that <code>count</code> is unchanged. The <code>weight</code>
-column changes because normalization is applied after raw co-occurrence
-has been counted.</p>
-<p>Available methods are:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/normalize.html">normalize</a></span><span class="op">(</span><span class="fu"><a href="../reference/to_matrix.html">to_matrix</a></span><span class="op">(</span><span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">small</span><span class="op">)</span><span class="op">)</span>, <span class="st">"cosine"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 23 x 23 sparse Matrix of class "dsCMatrix"</span></span>
-<span><span class="co">#&gt;   [[ suppressing 23 column names 'AUTHOR NAMES', 'BIBLIOMETRICS', 'CITATION NETWORKS' ... ]]</span></span>
-<span><span class="co">#&gt;                                                                      </span></span>
-<span><span class="co">#&gt; AUTHOR NAMES            . . . . . . . . . . 1 . 1 . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; BIBLIOMETRICS           . . . . . . 1 1 . 1 . . . 1 1 1 1 1 1 . 1 . .</span></span>
-<span><span class="co">#&gt; CITATION NETWORKS       . . . . 1 . . . 1 . . . . . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; CITATION PATTERNS       . . . . . . . . . . . 1 . . . . . . . . . . 1</span></span>
-<span><span class="co">#&gt; CLUSTERING              . . 1 . . . . . 1 . . . . . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; CO-AUTHORSHIP           . . . . . . . . . . . . . . . . 1 . . 1 . . .</span></span>
-<span><span class="co">#&gt; CO-CITATION             . 1 . . . . . . . . . . . . . . 1 . . . . . .</span></span>
-<span><span class="co">#&gt; CO-OCCURRENCE           . 1 . . . . . . . . . . . . 1 . . 1 . . . 1 .</span></span>
-<span><span class="co">#&gt; COMMUNITY DETECTION     . . 1 . 1 . . . . . . . . . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; COUPLING                . 1 . . . . . . . . . . . . . . . . 1 . . . .</span></span>
-<span><span class="co">#&gt; DISAMBIGUATION          1 . . . . . . . . . . . 1 . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; DYNAMICS                . . . 1 . . . . . . . . . . . . . . . . . . 1</span></span>
-<span><span class="co">#&gt; ENTITY RESOLUTION       1 . . . . . . . . . 1 . . . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; FRACTIONAL COUNTING     . 1 . . . . . . . . . . . . . . . 1 . . . . .</span></span>
-<span><span class="co">#&gt; KEYWORD MAPPING         . 1 . . . . . 1 . . . . . . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; KNOWLEDGE DOMAINS       . 1 . . . . . . . . . . . . . . . . . . 1 . .</span></span>
-<span><span class="co">#&gt; NETWORK ANALYSIS        . 1 . . . 1 1 . . . . . . . . . . . . 1 . . .</span></span>
-<span><span class="co">#&gt; NORMALIZATION           . 1 . . . . . 1 . . . . . 1 . . . . . . . 1 .</span></span>
-<span><span class="co">#&gt; RESEARCH FRONTS         . 1 . . . . . . . 1 . . . . . . . . . . . . .</span></span>
-<span><span class="co">#&gt; SCHOLARLY COMMUNICATION . . . . . 1 . . . . . . . . . . 1 . . . . . .</span></span>
-<span><span class="co">#&gt; SCIENCE MAPPING         . 1 . . . . . . . . . . . . . 1 . . . . . . .</span></span>
-<span><span class="co">#&gt; SIMILARITY MEASURES     . . . . . . . 1 . . . . . . . . . 1 . . . . .</span></span>
-<span><span class="co">#&gt; TEMPORAL ANALYSIS       . . . 1 . . . . . . . 1 . . . . . . . . . . .</span></span></code></pre></div>
-<p>In practice:</p>
-<ul>
-<li>Use <code>similarity = "none"</code> for raw weighted counts.</li>
-<li>Use <code>similarity = "cosine"</code> for interpretable overlap
-scaled by marginal size.</li>
-<li>Use <code>similarity = "association"</code> when the goal is to
-emphasize pairs that co-occur more than expected from their individual
-frequencies.</li>
-<li>Use <code>jaccard</code>, <code>inclusion</code>, or
-<code>equivalence</code> when those coefficients match a downstream
-method or established reporting convention.</li>
-</ul>
+<p>Use <code>"none"</code> for raw weights, <code>"cosine"</code> for
+overlap scaled by size, <code>"association"</code> to emphasize pairs
+that co-occur more than expected, and <code>"jaccard"</code> /
+<code>"inclusion"</code> / <code>"equivalence"</code> to match a
+downstream convention.</p>
 </div>
 <div class="section level2">
-<h2 id="reducing-large-networks">Reducing Large Networks<a class="anchor" aria-label="anchor" href="#reducing-large-networks"></a>
+<h2 id="reducing-large-networks">Reducing large networks<a class="anchor" aria-label="anchor" href="#reducing-large-networks"></a>
 </h2>
-<p>Dense co-occurrence networks can be hard to inspect.
-<code>bibnets</code> provides three different reduction strategies.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, <span class="st">"collaboration"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 12270</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/prune.html">prune</a></span><span class="op">(</span><span class="va">edges</span>, threshold <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 779</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/prune.html">prune</a></span><span class="op">(</span><span class="va">edges</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 12188</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/filter_top.html">filter_top</a></span><span class="op">(</span><span class="va">edges</span>, n <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 956</span></span></code></pre></div>
-<p><code>prune(threshold = x)</code> keeps edges with weight at least
-<code>x</code>. <code>prune(top_n = k)</code> keeps locally strong edges
-for each endpoint. <code>filter_top(n = k)</code> first selects the most
-connected nodes, then keeps edges among them.</p>
-<p><code><a href="../reference/backbone.html">backbone()</a></code> applies the disparity filter for multiscale
-weighted networks:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, type <span class="op">=</span> <span class="st">"collaboration"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>all        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span>,</span>
+<span>  threshold  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/prune.html">prune</a></span><span class="op">(</span><span class="va">edges</span>, threshold <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  top_n      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/prune.html">prune</a></span><span class="op">(</span><span class="va">edges</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  top_nodes  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/filter_top.html">filter_top</a></span><span class="op">(</span><span class="va">edges</span>, n <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       all threshold     top_n top_nodes </span></span>
+<span><span class="co">#&gt;     12270       779     12188       956</span></span></code></pre></div>
+<ul>
+<li>
+<code>prune(threshold = x)</code> — absolute edge-weight
+cutoff.</li>
+<li>
+<code>prune(top_n = k)</code> — keep each node’s strongest
+edges.</li>
+<li>
+<code>filter_top(n = k)</code> — keep edges among the most-connected
+nodes.</li>
+</ul>
+<p><code><a href="../reference/backbone.html">backbone()</a></code> applies the disparity filter, which keeps
+edges that are strong relative to a node’s local strength distribution —
+not a global cutoff:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/backbone.html">backbone</a></span><span class="op">(</span><span class="va">edges</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bb</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 232</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bb</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 9 nodes · 5 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from                        to                          weight  count</span></span>
-<span><span class="co">#&gt; 1  MOHAMMED SAQR               SONSOLES LÓPEZ‐PERNAS        19     19</span></span>
-<span><span class="co">#&gt; 2  CRISTIAN CECHINEL           ROBERTO MUÑOZ                  11     11</span></span>
-<span><span class="co">#&gt; 3  DRAGAN GAŠEVIĆ            ROBERTO MARTÍNEZ‐MALDONADO      10     10</span></span>
-<span><span class="co">#&gt; 4  ROBERTO MARTÍNEZ‐MALDONADO  VANESSA ECHEVERRÍA             10     10</span></span>
-<span><span class="co">#&gt; 5  FERNANDA PIRES              MARCELA PESSOA                   8      8</span></span></code></pre></div>
-<p>The disparity filter asks whether an edge is unusually strong
-relative to at least one endpoint’s local strength distribution. This is
-different from a global weight cutoff and can preserve meaningful edges
-attached to smaller nodes.</p>
+<span><span class="co">#&gt; [1] 232</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="temporal-networks">Temporal Networks<a class="anchor" aria-label="anchor" href="#temporal-networks"></a>
+<h2 id="temporal-networks">Temporal networks<a class="anchor" aria-label="anchor" href="#temporal-networks"></a>
 </h2>
-<p><code><a href="../reference/temporal_network.html">temporal_network()</a></code> runs any network builder over time
-windows:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/temporal_network.html">temporal_network()</a></code> runs any builder over time windows
+(fixed, sliding, or cumulative):</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/temporal_network.html">temporal_network</a></span><span class="op">(</span><span class="va">oa</span>, <span class="va">author_network</span>, <span class="st">"collaboration"</span>, window <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tn</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2011-2013" "2014-2016" "2017-2019" "2020-2022" "2023-2025" "2026-2026"</span></span></code></pre></div>
-<p>Fixed windows are non-overlapping. Sliding windows overlap:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tn_slide</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/temporal_network.html">temporal_network</a></span><span class="op">(</span></span>
-<span>  <span class="va">oa</span>,</span>
-<span>  <span class="va">author_network</span>,</span>
-<span>  <span class="st">"collaboration"</span>,</span>
-<span>  window <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  step <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="st">"sliding"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tn_slide</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "2011-2013" "2012-2014" "2013-2015" "2014-2016" "2015-2017" "2016-2018"</span></span>
-<span><span class="co">#&gt;  [7] "2017-2019" "2018-2020" "2019-2021" "2020-2022" "2021-2023" "2022-2024"</span></span>
-<span><span class="co">#&gt; [13] "2023-2025" "2024-2026"</span></span></code></pre></div>
-<p>Cumulative windows always start at the first observed year and grow
-forward:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tn_cum</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/temporal_network.html">temporal_network</a></span><span class="op">(</span></span>
-<span>  <span class="va">oa</span>,</span>
-<span>  <span class="va">author_network</span>,</span>
-<span>  <span class="st">"collaboration"</span>,</span>
-<span>  window <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="st">"cumulative"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tn_cum</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "2011-2013" "2011-2014" "2011-2015" "2011-2016" "2011-2017" "2011-2018"</span></span>
-<span><span class="co">#&gt;  [7] "2011-2019" "2011-2020" "2011-2021" "2011-2022" "2011-2023" "2011-2024"</span></span>
-<span><span class="co">#&gt; [13] "2011-2025" "2011-2026"</span></span></code></pre></div>
-<p>Each returned edge list has a <code>window</code> column. Windows
-with fewer than two records or no surviving edges are omitted. If a
-builder errors inside a window, <code><a href="../reference/temporal_network.html">temporal_network()</a></code> reports
-a warning with the window label.</p>
+<p>Each window’s edge list carries a <code>window</code> column. Windows
+with fewer than two records, or no surviving edges, are dropped; a
+builder error inside a window becomes a warning labelled with that
+window.</p>
 </div>
 <div class="section level2">
-<h2 id="local-citations-and-historiographs">Local Citations and Historiographs<a class="anchor" aria-label="anchor" href="#local-citations-and-historiographs"></a>
+<h2 id="local-citations-and-historiographs">Local citations and historiographs<a class="anchor" aria-label="anchor" href="#local-citations-and-historiographs"></a>
 </h2>
 <p><code><a href="../reference/local_citations.html">local_citations()</a></code> counts how often each document is
-cited by other documents inside the same dataset:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lcs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/local_citations.html">local_citations</a></span><span class="op">(</span><span class="va">sc</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lcs</span>, <span class="fl">5</span><span class="op">)</span></span>
+cited by others in the same corpus; <code><a href="../reference/historiograph.html">historiograph()</a></code> builds
+the directed citation graph among the top-cited documents:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/local_citations.html">local_citations</a></span><span class="op">(</span><span class="va">sc</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                    id lcs gcs year</span></span>
 <span><span class="co">#&gt; 1 2-s2.0-105007159281   0   0 2025</span></span>
 <span><span class="co">#&gt; 2 2-s2.0-105006878874   0   0 2025</span></span>
@@ -751,102 +697,83 @@ cited by other documents inside the same dataset:</p>
 <span><span class="co">#&gt; 2 10.1016/j.sysarc.2025.103463</span></span>
 <span><span class="co">#&gt; 3      10.1145/3649329.3656502</span></span>
 <span><span class="co">#&gt; 4   10.1109/TVLSI.2025.3526363</span></span>
-<span><span class="co">#&gt; 5 10.1007/978-3-031-73411-3_15</span></span></code></pre></div>
-<p><code><a href="../reference/historiograph.html">historiograph()</a></code> builds a directed citation graph among
-the top locally cited documents:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/historiograph.html">historiograph</a></span><span class="op">(</span><span class="va">sc</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 5 10.1007/978-3-031-73411-3_15</span></span>
+<span></span>
+<span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/historiograph.html">historiograph</a></span><span class="op">(</span><span class="va">sc</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">h</span><span class="op">$</span><span class="va">nodes</span></span>
 <span><span class="co">#&gt; [1] id      lcs     gcs     year    title   journal doi    </span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">h</span><span class="op">$</span><span class="va">edges</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] from      to        year_from year_to  </span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre></div>
-<p>This requires reference strings or IDs to match document IDs in the
-same data frame. If the cited works are external to the corpus, local
-citation counts will be low or zero even when global citation counts are
-high.</p>
+<p>Both require reference strings or IDs to match document IDs in the
+data; if the cited works are external, local counts stay low.</p>
 </div>
 <div class="section level2">
-<h2 id="exporting-results">Exporting Results<a class="anchor" aria-label="anchor" href="#exporting-results"></a>
+<h2 id="author-name-normalization">Author-name normalization<a class="anchor" aria-label="anchor" href="#author-name-normalization"></a>
 </h2>
-<p>The default edge list is already useful for many tools:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/parse_names.html">parse_names()</a></code> reorders and splits author names (it
+recognizes <code>Last, First</code>, <code>SURNAME Initials</code>, and
+<code>First Last</code>). Because node identity is fixed when a network
+is built, normalize <em>before</em> building so that two spellings of
+one author merge:</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/parse_names.html">parse_names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Saqr, Mohammed"</span>, <span class="st">"WANG Y"</span>, <span class="st">"Mohammed Saqr"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Mohammed Saqr" "Y WANG"        "Mohammed Saqr"</span></span>
+<span><span class="co">#&gt; attr(,"parts")</span></span>
+<span><span class="co">#&gt;         original    first last particle suffix   type</span></span>
+<span><span class="co">#&gt; 1 Saqr, Mohammed Mohammed Saqr     &lt;NA&gt;   &lt;NA&gt; person</span></span>
+<span><span class="co">#&gt; 2         WANG Y        Y WANG     &lt;NA&gt;   &lt;NA&gt; person</span></span>
+<span><span class="co">#&gt; 3  Mohammed Saqr Mohammed Saqr     &lt;NA&gt;   &lt;NA&gt; person</span></span></code></pre></div>
+<p>See <code><a href="../articles/parsing-author-names.html">vignette("parsing-author-names")</a></code> for the full
+treatment.</p>
+</div>
+<div class="section level2">
+<h2 id="exporting">Exporting<a class="anchor" aria-label="anchor" href="#exporting"></a>
+</h2>
+<p>The edge list is already usable; converters cover the common
+targets:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">sc</span>, min_occur <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">edges</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: keyword_co_occurrence | 5 nodes · 5 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from            to              weight  count</span></span>
-<span><span class="co">#&gt; 1  EDGE COMPUTING  QUANTIZATION        16     16</span></span>
-<span><span class="co">#&gt; 2  DEEP LEARNING   QUANTIZATION        14     14</span></span>
-<span><span class="co">#&gt; 3  DEEP LEARNING   EDGE COMPUTING      13     13</span></span>
-<span><span class="co">#&gt; 4  DEEP LEARNING   FPGA                10     10</span></span>
-<span><span class="co">#&gt; 5  PRUNING         QUANTIZATION        10     10</span></span></code></pre></div>
-<p>Convert to a sparse matrix:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_matrix.html">to_matrix</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_matrix.html">to_matrix</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span>            <span class="co"># sparse adjacency matrix</span></span>
 <span><span class="va">m</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt; 4 x 4 sparse Matrix of class "dgCMatrix"</span></span>
 <span><span class="co">#&gt;                ACCELERATION ACCELERATOR ACCURACY AI ACCELERATOR</span></span>
 <span><span class="co">#&gt; ACCELERATION              .           .        .              .</span></span>
 <span><span class="co">#&gt; ACCELERATOR               .           .        .              .</span></span>
 <span><span class="co">#&gt; ACCURACY                  .           .        .              .</span></span>
-<span><span class="co">#&gt; AI ACCELERATOR            .           .        .              .</span></span></code></pre></div>
-<p>Prepare Gephi tables:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gephi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_gephi.html">to_gephi</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gephi</span><span class="op">$</span><span class="va">nodes</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               Id          Label</span></span>
-<span><span class="co">#&gt; 1 EDGE COMPUTING EDGE COMPUTING</span></span>
-<span><span class="co">#&gt; 2  DEEP LEARNING  DEEP LEARNING</span></span>
-<span><span class="co">#&gt; 3        PRUNING        PRUNING</span></span>
+<span><span class="co">#&gt; AI ACCELERATOR            .           .        .              .</span></span>
+<span></span>
+<span><span class="va">gephi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_gephi.html">to_gephi</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span>         <span class="co"># Gephi node/edge tables</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gephi</span><span class="op">$</span><span class="va">edges</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           Source         Target Weight       Type count</span></span>
 <span><span class="co">#&gt; 1 EDGE COMPUTING   QUANTIZATION     16 Undirected    16</span></span>
 <span><span class="co">#&gt; 2  DEEP LEARNING   QUANTIZATION     14 Undirected    14</span></span>
-<span><span class="co">#&gt; 3  DEEP LEARNING EDGE COMPUTING     13 Undirected    13</span></span></code></pre></div>
-<p>Write GraphML without adding an XML dependency:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">xml</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_graphml.html">to_graphml</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">xml</span>, <span class="fl">1</span>, <span class="fl">300</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 3  DEEP LEARNING EDGE COMPUTING     13 Undirected    13</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="fu"><a href="../reference/to_graphml.html">to_graphml</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span>, <span class="fl">1</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span>   <span class="co"># GraphML, no XML dependency</span></span>
 <span><span class="co">#&gt; &lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span>
 <span><span class="co">#&gt; &lt;graphml xmlns="http://graphml.graphdrawing.org/graphml"</span></span>
 <span><span class="co">#&gt;          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"</span></span>
-<span><span class="co">#&gt;          xsi:schemaLocation="http://graphml.graphdrawing.org/graphml</span></span>
-<span><span class="co">#&gt;          http://graphml.graphdrawing.org/graphml/1.0/graphml.xsd"&gt;</span></span>
-<span><span class="co">#&gt;   &lt;ke</span></span></code></pre></div>
-<p>Optional graph objects are available when the suggested packages are
-installed:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"igraph"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_igraph.html">to_igraph</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tidygraph"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_tbl_graph.html">to_tbl_graph</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"cograph"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/to_cograph.html">to_cograph</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span><span class="co">#&gt;          xsi:schemaLocation="http://graph</span></span></code></pre></div>
+<p><code><a href="../reference/to_igraph.html">to_igraph()</a></code>, <code><a href="../reference/to_tbl_graph.html">to_tbl_graph()</a></code>, and
+<code><a href="../reference/to_cograph.html">to_cograph()</a></code> are available when their (suggested) packages
+are installed.</p>
 </div>
 <div class="section level2">
-<h2 id="interpreting-a-bibnets_network">Interpreting a <code>bibnets_network</code><a class="anchor" aria-label="anchor" href="#interpreting-a-bibnets_network"></a>
+<h2 id="reading-a-bibnets_network">Reading a <code>bibnets_network</code><a class="anchor" aria-label="anchor" href="#reading-a-bibnets_network"></a>
 </h2>
-<p>The object stores construction metadata as attributes:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"harmonic"</span><span class="op">)</span></span>
+<p>The object records how it was built, as attributes:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">oa</span>, type <span class="op">=</span> <span class="st">"collaboration"</span>, counting <span class="op">=</span> <span class="st">"harmonic"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>type     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">edges</span>, <span class="st">"network_type"</span><span class="op">)</span>,</span>
+<span>  counting <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">edges</span>, <span class="st">"counting"</span><span class="op">)</span>,</span>
+<span>  sim      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">edges</span>, <span class="st">"similarity"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                   type               counting                    sim </span></span>
+<span><span class="co">#&gt; "author_collaboration"             "harmonic"                 "none"</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">edges</span>, <span class="st">"network_type"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "author_collaboration"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">edges</span>, <span class="st">"counting"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "harmonic"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">edges</span>, <span class="st">"similarity"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "none"</span></span></code></pre></div>
-<p>The <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method reports the network type, node count,
-edge count, counting method, and similarity method.
-<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports basic network and weight summaries:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
 <span><span class="co">#&gt; bibnets network</span></span>
 <span><span class="co">#&gt; ------------------------------</span></span>
 <span><span class="co">#&gt; Type       : author_collaboration</span></span>
@@ -857,8 +784,9 @@ edge count, counting method, and similarity method.
 <span><span class="co">#&gt; Density    : 0.0015</span></span>
 <span><span class="co">#&gt; Weight     : min 1.43e-05  median 0.0106  max 1.41</span></span>
 <span><span class="co">#&gt; Top nodes  : DRAGAN GAŠEVIĆ(89), ARI KORHONEN(60), CLAUDIA SZABO(60), JUDY SHEARD(60), PAUL DENNY(56)</span></span></code></pre></div>
-<p>These attributes are meant to make downstream output easier to audit.
-A saved edge list should still say how it was produced.</p>
+<p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> reports the network type, node and edge counts,
+and the counting and similarity methods — so a saved edge list always
+says how it was made.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

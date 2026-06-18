@@ -34,6 +34,10 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="bibnets-060">bibnets 0.6.0<a class="anchor" aria-label="anchor" href="#bibnets-060"></a></h2>
 <div class="section level3">
+<h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
+<ul><li>The example dataset <code>open_alex_gold_open_access_learning_analytics</code> is renamed to <code>learning_analytics</code>. Update <code>data(...)</code> calls accordingly.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="new-features-0-6-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-6-0"></a></h3>
 <ul><li>
 <strong><code>id</code> argument on every network builder.</strong> <code><a href="../reference/author_network.html">author_network()</a></code>, <code><a href="../reference/keyword_network.html">keyword_network()</a></code>, <code><a href="../reference/reference_network.html">reference_network()</a></code>, <code><a href="../reference/document_network.html">document_network()</a></code>, <code><a href="../reference/source_network.html">source_network()</a></code>, <code><a href="../reference/country_network.html">country_network()</a></code>, <code><a href="../reference/institution_network.html">institution_network()</a></code>, <code><a href="../reference/conetwork.html">conetwork()</a></code>, <code><a href="../reference/local_citations.html">local_citations()</a></code>, and <code><a href="../reference/historiograph.html">historiograph()</a></code> gain an <code>id</code> argument that names the work-identifier column (the rows of the <code>works x entities</code> matrix). This completes the custom-column workflow introduced in 0.5.0, which had given every <em>entity</em> field a self-naming argument but still required the <em>works</em> column to be named <code>id</code>.
