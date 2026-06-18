@@ -101,7 +101,7 @@ reference:
     contents:
       - biblio_data
       - scopus_quantum_cloud
-      - open_alex_gold_open_access_learning_analytics
+      - learning_analytics
 
 articles:
   - title: "Vignettes"
