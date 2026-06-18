@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Reading bibliometric data into bibnets • bibnets</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Reading bibliometric data into bibnets">
 </head>
@@ -31,7 +31,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/bibnets.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/mohsaqr/bibnets"><span class="fa fab fa-github"></span></a></li>
@@ -51,7 +51,7 @@
       <h1>Reading bibliometric data into bibnets</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/bibnets/blob/main/vignettes/reading-data.Rmd" class="external-link"><code>vignettes/reading-data.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/bibnets/blob/HEAD/vignettes/reading-data.Rmd" class="external-link"><code>vignettes/reading-data.Rmd</code></a></small>
       <div class="d-none name"><code>reading-data.Rmd</code></div>
     </div>
 
@@ -62,17 +62,25 @@
 <div class="section level2">
 <h2 id="introduction-and-the-standard-schema">1. Introduction and the standard schema<a class="anchor" aria-label="anchor" href="#introduction-and-the-standard-schema"></a>
 </h2>
-<p>Each network builder in <code>bibnets</code>
-(<code><a href="../reference/author_network.html">author_network()</a></code>, <code><a href="../reference/keyword_network.html">keyword_network()</a></code>,
-<code><a href="../reference/reference_network.html">reference_network()</a></code>, <code><a href="../reference/document_network.html">document_network()</a></code>,
-<code><a href="../reference/source_network.html">source_network()</a></code>, <code><a href="../reference/country_network.html">country_network()</a></code>,
-<code><a href="../reference/institution_network.html">institution_network()</a></code>, <code><a href="../reference/conetwork.html">conetwork()</a></code>) requires a
-data frame with a fixed set of columns and a small number of
-list-columns holding multi-valued fields. The readers convert
-source-specific exports (Scopus CSV, Web of Science plaintext, OpenAlex
-flat or nested, Dimensions, Lens.org, BibTeX, RIS, Crossref) into this
-common representation.</p>
-<p>The standard schema returned by every reader is:</p>
+<p><code>bibnets</code> reads bibliographic data from two kinds of
+source. The first is the standard database exports — Scopus, Web of
+Science, OpenAlex, Lens.org, Dimensions, Crossref, BibTeX, and RIS —
+which it recognises and parses automatically; give it a single file,
+several files, or a whole folder and it works out each format on its
+own. The second is <strong>any custom table of your own</strong>: a CSV
+or data frame that is not a known export, where you simply name the
+columns that hold the authors, references, or keywords and
+<code>bibnets</code> reads it into the same structure. Either way you
+get the same structure — the <strong>bibnets format</strong> — that
+every network builder (<code><a href="../reference/author_network.html">author_network()</a></code>,
+<code><a href="../reference/keyword_network.html">keyword_network()</a></code>, <code><a href="../reference/reference_network.html">reference_network()</a></code>,
+<code><a href="../reference/document_network.html">document_network()</a></code>, <code><a href="../reference/source_network.html">source_network()</a></code>,
+<code><a href="../reference/country_network.html">country_network()</a></code>, <code><a href="../reference/institution_network.html">institution_network()</a></code>,
+<code><a href="../reference/conetwork.html">conetwork()</a></code>) works from. The bibnets format is a data frame
+with one row per paper: most columns hold a single value (title, year,
+journal), while the fields that can have many values per paper —
+authors, references, keywords — hold a list in each row.</p>
+<p>In full, the bibnets format has these columns:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -143,26 +151,216 @@ it</td>
 </tr>
 </tbody>
 </table>
-<p>Source-specific extras (e.g. <code>index_keywords</code>,
-<code>keywords_plus</code>, <code>affiliations</code>,
-<code>countries</code>, <code>language</code>) follow the standard
-columns. The contract that downstream functions such as
-<code><a href="../reference/build_bipartite.html">build_bipartite()</a></code> and <code><a href="../reference/author_network.html">author_network()</a></code> rely on
-is that each multi-valued field is stored as a list-column whose
-elements are character vectors.</p>
-<p>This vignette covers all nine readers, the <code><a href="../reference/read_biblio.html">read_biblio()</a></code>
-entry point, the generic-CSV path, building networks directly from
-custom columns and separators (no reader needed), the
-<code><a href="../reference/split_field.html">split_field()</a></code> helper, and the manual construction of
-bibnets-compatible data frames.</p>
+<p>Some sources add extra columns (such as <code>index_keywords</code>,
+<code>keywords_plus</code>, <code>affiliations</code>, or
+<code>countries</code>); these are kept after the standard ones.</p>
+<p>This vignette documents the <code><a href="../reference/read_biblio.html">read_biblio()</a></code> entry point
+and each reader, the generic-CSV path, network construction directly
+from custom columns and separators, the <code><a href="../reference/split_field.html">split_field()</a></code>
+helper, and the manual construction of a compatible data frame.</p>
 </div>
 <div class="section level2">
-<h2 id="read_biblio">2. <code>read_biblio()</code><a class="anchor" aria-label="anchor" href="#read_biblio"></a>
+<h2 id="custom-data-and-separators">2. Custom data and separators<a class="anchor" aria-label="anchor" href="#custom-data-and-separators"></a>
+</h2>
+<div class="section level3">
+<h3 id="custom-csv-map-columns-by-name">Custom CSV — map columns by name<a class="anchor" aria-label="anchor" href="#custom-csv-map-columns-by-name"></a>
+</h3>
+<p>For CSV files that do not match any of the recognised signatures
+(in-house exports, custom dumps, public datasets), map each source
+column onto a standard field <strong>by name</strong>. The identifier
+column is named via <code>id</code>; each multi-valued field is named
+via its own argument — <code>authors</code>, <code>keywords</code>,
+<code>references</code>, <code>countries</code>,
+<code>affiliations</code> — and <code>journal</code> for the scalar
+source/venue. <code>sep</code> is the delimiter applied inside those
+cells. Naming any of these columns implies
+<code>format = "generic"</code>, so you do not need to pass
+<code>format</code> yourself.</p>
+<p>Hypothetical call:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span></span>
+<span>  <span class="st">"my_data.csv"</span>,</span>
+<span>  id       <span class="op">=</span> <span class="st">"doc_id"</span>,</span>
+<span>  authors  <span class="op">=</span> <span class="st">"Authors"</span>,</span>
+<span>  keywords <span class="op">=</span> <span class="st">"Keywords"</span>,</span>
+<span>  sep      <span class="op">=</span> <span class="st">";"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Demonstrated on the bundled OpenAlex CSV (which uses <code>|</code>
+as the delimiter). The source columns have long dotted names; mapping
+them by argument yields the standard <code>authors</code> and
+<code>keywords</code> list-columns:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"openalex_works.csv"</span>, package <span class="op">=</span> <span class="st">"bibnets"</span><span class="op">)</span></span>
+<span><span class="va">generic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span></span>
+<span>  <span class="va">f</span>,</span>
+<span>  id       <span class="op">=</span> <span class="st">"id"</span>,</span>
+<span>  authors  <span class="op">=</span> <span class="st">"authorships.author.display_name"</span>,</span>
+<span>  keywords <span class="op">=</span> <span class="st">"primary_topic.display_name"</span>,</span>
+<span>  sep      <span class="op">=</span> <span class="st">"|"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">generic</span><span class="op">$</span><span class="va">authors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"</span></span>
+<span><span class="va">generic</span><span class="op">$</span><span class="va">keywords</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "Online Learning and Analytics"</span></span></code></pre></div>
+<p>Each mapped column is split on <code>sep</code> and stored under its
+standard name as a list-column; the original source column is left in
+place. For any further columns that have no dedicated argument,
+<code>list_cols</code> splits them in place (keeping their original
+names).</p>
+</div>
+<div class="section level3">
+<h3 id="custom-columns-and-separators-no-reader-needed">Custom columns and separators (no reader needed)<a class="anchor" aria-label="anchor" href="#custom-columns-and-separators-no-reader-needed"></a>
+</h3>
+<p>Often a dataset is already a plain data frame or CSV with its own
+column names and its own delimiter — you do not need to coerce it into
+the standard schema first. Every network builder accepts a column
+argument named after the entity it builds (<code>authors</code>,
+<code>keywords</code>, <code>references</code>, <code>journal</code>,
+<code>countries</code>, <code>affiliations</code>) plus a
+<code>sep</code> for splitting a delimited character column. The builder
+splits, normalises, and builds in one call.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id            <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
+<span>  `Author Names`<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smith J, Doe A, Lee K"</span>, <span class="st">"Smith J, Lee K"</span>,</span>
+<span>                    <span class="st">"Doe A, Lee K"</span>, <span class="st">"Smith J, Doe A"</span><span class="op">)</span>,</span>
+<span>  Tags          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ml, ai"</span>, <span class="st">"ml, nlp"</span>, <span class="st">"ai, nlp"</span>, <span class="st">"ml, ai"</span><span class="op">)</span>,</span>
+<span>  check.names   <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Point the builder at the column and give it the delimiter — no renaming.</span></span>
+<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">papers</span>, authors <span class="op">=</span> <span class="st">"Author Names"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from   to       weight  count</span></span>
+<span><span class="co">#&gt; 1  DOE A  LEE K         2      2</span></span>
+<span><span class="co">#&gt; 2  DOE A  SMITH J       2      2</span></span>
+<span><span class="co">#&gt; 3  LEE K  SMITH J       2      2</span></span>
+<span><span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">papers</span>, keywords <span class="op">=</span> <span class="st">"Tags"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: keyword_co_occurrence | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from  to   weight  count</span></span>
+<span><span class="co">#&gt; 1  AI    ML        2      2</span></span>
+<span><span class="co">#&gt; 2  AI    NLP       1      1</span></span>
+<span><span class="co">#&gt; 3  ML    NLP       1      1</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="the-document-identifier">The document identifier<a class="anchor" aria-label="anchor" href="#the-document-identifier"></a>
+</h3>
+<p>The works dimension (the rows of the <code>works x entities</code>
+matrix) is the <code>id</code> column. You do not have to supply one:
+<code>id = NULL</code> (the default) uses an existing <code>id</code>
+column when present and otherwise numbers the rows, treating each row as
+one document. The example above has no <code>id</code> column and still
+works for that reason. To use a differently-named identifier column,
+name it with the <code>id</code> argument:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">papers2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  paper_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P1"</span>, <span class="st">"P2"</span>, <span class="st">"P3"</span><span class="op">)</span>,</span>
+<span>  authors  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice, Bob"</span>, <span class="st">"Alice, Carol"</span>, <span class="st">"Bob, Carol"</span><span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">papers2</span>, authors <span class="op">=</span> <span class="st">"authors"</span>, sep <span class="op">=</span> <span class="st">","</span>, id <span class="op">=</span> <span class="st">"paper_id"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from   to     weight  count</span></span>
+<span><span class="co">#&gt; 1  ALICE  BOB         1      1</span></span>
+<span><span class="co">#&gt; 2  ALICE  CAROL       1      1</span></span>
+<span><span class="co">#&gt; 3  BOB    CAROL       1      1</span></span></code></pre></div>
+<p>Two entities are linked when they share the same <code>id</code>, so
+the identifier controls what counts as “the same document” during
+projection.</p>
+<p><code>sep</code> is any literal delimiter, so BibTeX-style
+<code>" and "</code> or pipe-delimited exports work too:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bib</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id      <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  creators <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice and Bob"</span>, <span class="st">"Alice and Carol"</span>, <span class="st">"Bob and Carol"</span><span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">bib</span>, authors <span class="op">=</span> <span class="st">"creators"</span>, sep <span class="op">=</span> <span class="st">" and "</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from   to     weight  count</span></span>
+<span><span class="co">#&gt; 1  ALICE  BOB         1      1</span></span>
+<span><span class="co">#&gt; 2  ALICE  CAROL       1      1</span></span>
+<span><span class="co">#&gt; 3  BOB    CAROL       1      1</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="a-separate-separator-for-references">A separate separator for references<a class="anchor" aria-label="anchor" href="#a-separate-separator-for-references"></a>
+</h3>
+<p>In a coupling network the <em>entity</em> column and the
+<em>references</em> column can use different delimiters. Reference
+strings frequently contain internal commas
+(<code>"Smith J, 2020, Journal"</code>), so <code>references</code> is
+split on <code>";"</code> by default, independent of <code>sep</code>.
+Override it with <code>references_sep</code> when your references use
+another delimiter:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P1"</span>, <span class="st">"P2"</span>, <span class="st">"P3"</span><span class="op">)</span>,</span>
+<span>  auth       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice, Bob"</span>, <span class="st">"Alice, Carol"</span>, <span class="st">"Bob, Carol"</span><span class="op">)</span>,</span>
+<span>  references <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R1, R2"</span>, <span class="st">"R1, R3"</span>, <span class="st">"R2, R3"</span><span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"coupling"</span>, authors <span class="op">=</span> <span class="st">"auth"</span>, sep <span class="op">=</span> <span class="st">","</span>,</span>
+<span>               references_sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: author_coupling | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from   to     weight  count</span></span>
+<span><span class="co">#&gt; 1  ALICE  BOB         3      3</span></span>
+<span><span class="co">#&gt; 2  ALICE  CAROL       3      3</span></span>
+<span><span class="co">#&gt; 3  BOB    CAROL       3      3</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="quoted-values">Quoted values<a class="anchor" aria-label="anchor" href="#quoted-values"></a>
+</h3>
+<p>Values exported with surrounding quotes (<code>"Alice"</code>, or the
+CSV doubled form <code>""Alice""</code>) are cleaned automatically —
+<code>strip_quotes = TRUE</code> is the default, so a quoted label and
+its bare form collapse to the same node. Internal apostrophes
+(e.g. <code>O'Brien</code>) are left untouched. Set
+<code>strip_quotes = FALSE</code> to keep the quotes as part of the
+label.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id      <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  authors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'"Alice"; "Bob"'</span>, <span class="st">'"Alice"; "Carol"'</span>, <span class="st">'"Bob"; "Carol"'</span><span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span>                       <span class="co"># quotes stripped -&gt; ALICE, BOB, CAROL</span></span>
+<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
+<span><span class="co">#&gt;    from   to     weight  count</span></span>
+<span><span class="co">#&gt; 1  ALICE  BOB         1      1</span></span>
+<span><span class="co">#&gt; 2  ALICE  CAROL       1      1</span></span>
+<span><span class="co">#&gt; 3  BOB    CAROL       1      1</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="a-safety-net-for-the-wrong-delimiter">A safety net for the wrong delimiter<a class="anchor" aria-label="anchor" href="#a-safety-net-for-the-wrong-delimiter"></a>
+</h3>
+<p>If you pass a <code>sep</code> that does not actually split the
+column — for example the data is pipe-delimited but you left
+<code>sep = ";"</code> — and the values contain a structural delimiter
+(<code>";"</code>, <code>"|"</code>, or a tab), the builder warns you
+instead of silently treating each whole cell as one entity:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id      <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  authors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smith J| Doe A"</span>, <span class="st">"Smith J| Lee K"</span>, <span class="st">"Doe A| Lee K"</span><span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">bad</span><span class="op">)</span><span class="op">)</span>          <span class="co"># warns: values contain "|"</span></span>
+<span><span class="co">#&gt; Warning: Splitting column 'authors' on sep = ";" produced no multi-entry rows,</span></span>
+<span><span class="co">#&gt; but most values contain "|". If entries are separated by "|", pass that as sep.</span></span></code></pre></div>
+<p>The check is deliberately quiet for commas and <code>" and "</code>,
+which appear inside perfectly valid single labels
+(<code>"Last, First"</code> names, one-reference-per-row citation
+strings, organisations like <code>"Smith and Sons"</code>).</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="read_biblio">3. <code>read_biblio()</code><a class="anchor" aria-label="anchor" href="#read_biblio"></a>
 </h2>
 <p><code><a href="../reference/read_biblio.html">read_biblio()</a></code> accepts a single file, a vector of file
 paths, or a directory. When <code>format = "auto"</code> (the default)
 it detects the format from the contents of the file:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"export.csv"</span><span class="op">)</span>          <span class="co"># auto-detect format</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="st">"scopus_dir/"</span><span class="op">)</span>         <span class="co"># entire directory, rbind'd</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a.csv"</span>, <span class="st">"b.csv"</span><span class="op">)</span><span class="op">)</span>   <span class="co"># multiple files, rbind'd</span></span>
@@ -208,90 +406,9 @@ of <code><a href="https://docs.ropensci.org/rcrossref/reference/cr_works.html" c
 <p>Both take R objects rather than files and are called directly.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-openalex-flat-csv">3. Worked example — OpenAlex flat CSV<a class="anchor" aria-label="anchor" href="#worked-example-openalex-flat-csv"></a>
-</h2>
-<p>The package includes a 30-row OpenAlex flat CSV at
-<code>inst/extdata/openalex_works.csv</code>, corresponding to the
-export produced by downloading “Works” results from the OpenAlex web
-interface. Multi-valued fields use <code>|</code> as the delimiter.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"openalex_works.csv"</span>, package <span class="op">=</span> <span class="st">"bibnets"</span><span class="op">)</span></span>
-<span><span class="va">oa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_openalex_csv.html">read_openalex_csv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">oa</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'data.frame':    30 obs. of  13 variables:</span></span>
-<span><span class="co">#&gt;  $ id            : chr  "W2769342982" "W2264893711" "W2612059685" "W3118164373" ...</span></span>
-<span><span class="co">#&gt;  $ title         : chr  "Open University Learning Analytics dataset" "Educational Data Mining and Learning Analytics in Programming" "Predicting Student Performance using Advanced Learning Analytics" "Predicting Student Performance Using Data Mining and Learning Analytics Techniques: A Systematic Literature Review" ...</span></span>
-<span><span class="co">#&gt;  $ year          : int  2017 2015 2017 2020 2022 2016 2020 2024 2016 2020 ...</span></span>
-<span><span class="co">#&gt;  $ journal       : chr  "Scientific Data" "" "" "Applied Sciences" ...</span></span>
-<span><span class="co">#&gt;  $ doi           : chr  "10.1038/sdata.2017.171" "10.1145/2858796.2858798" "10.1145/3041021.3054164" "10.3390/app11010237" ...</span></span>
-<span><span class="co">#&gt;  $ cited_by_count: int  432 312 235 417 247 163 122 133 131 177 ...</span></span>
-<span><span class="co">#&gt;  $ abstract      : chr  NA NA NA NA ...</span></span>
-<span><span class="co">#&gt;  $ type          : chr  "article" "article" "article" "article" ...</span></span>
-<span><span class="co">#&gt;  $ authors       :List of 30</span></span>
-<span><span class="co">#&gt;  $ references    :List of 30</span></span>
-<span><span class="co">#&gt;  $ keywords      :List of 30</span></span>
-<span><span class="co">#&gt;  $ affiliations  :List of 30</span></span>
-<span><span class="co">#&gt;  $ countries     :List of 30</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">oa</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"title"</span>, <span class="st">"year"</span>, <span class="st">"journal"</span>, <span class="st">"type"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            id</span></span>
-<span><span class="co">#&gt; 1 W2769342982</span></span>
-<span><span class="co">#&gt; 2 W2264893711</span></span>
-<span><span class="co">#&gt; 3 W2612059685</span></span>
-<span><span class="co">#&gt; 4 W3118164373</span></span>
-<span><span class="co">#&gt; 5 W4300484403</span></span>
-<span><span class="co">#&gt;                                                                                                                title</span></span>
-<span><span class="co">#&gt; 1                                                                         Open University Learning Analytics dataset</span></span>
-<span><span class="co">#&gt; 2                                                      Educational Data Mining and Learning Analytics in Programming</span></span>
-<span><span class="co">#&gt; 3                                                   Predicting Student Performance using Advanced Learning Analytics</span></span>
-<span><span class="co">#&gt; 4 Predicting Student Performance Using Data Mining and Learning Analytics Techniques: A Systematic Literature Review</span></span>
-<span><span class="co">#&gt; 5                           Artificial Intelligence and Learning Analytics in Teacher Education: A Systematic Review</span></span>
-<span><span class="co">#&gt;   year            journal    type</span></span>
-<span><span class="co">#&gt; 1 2017    Scientific Data article</span></span>
-<span><span class="co">#&gt; 2 2015                    article</span></span>
-<span><span class="co">#&gt; 3 2017                    article</span></span>
-<span><span class="co">#&gt; 4 2020   Applied Sciences article</span></span>
-<span><span class="co">#&gt; 5 2022 Education Sciences  review</span></span></code></pre></div>
-<p>The list-columns:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">oa</span><span class="op">$</span><span class="va">authors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"</span></span>
-<span><span class="va">oa</span><span class="op">$</span><span class="va">affiliations</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "The Open University"                 </span></span>
-<span><span class="co">#&gt; [2] "Czech Technical University in Prague"</span></span>
-<span><span class="co">#&gt; [3] "The Open University"                 </span></span>
-<span><span class="co">#&gt; [4] "The Open University"                 </span></span>
-<span><span class="co">#&gt; [5] "Czech Technical University in Prague"</span></span>
-<span><span class="va">oa</span><span class="op">$</span><span class="va">countries</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "CZ" "GB" "GB" "CZ" "GB"</span></span></code></pre></div>
-<p>Two limitations of the flat export should be noted:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">oa</span><span class="op">$</span><span class="va">references</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">oa</span><span class="op">$</span><span class="va">abstract</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p><code>references</code> is empty and <code>abstract</code> is
-<code>NA</code> because these fields are not included in the OpenAlex
-web download. Cited references and abstracts from OpenAlex are obtained
-via <code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">openalexR::oa_fetch()</a></code> and processed with
-<code><a href="../reference/read_openalex.html">read_openalex()</a></code> (described in section 6).</p>
-<p>The remaining fields support several network constructions that do
-not require references — co-authorship, country, institution, keyword,
-source, and document networks:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">co</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/country_network.html">country_network</a></span><span class="op">(</span><span class="va">oa</span>, counting <span class="op">=</span> <span class="st">"fractional"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">co</span>, <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: country_collaboration | 8 nodes · 5 edges | counting: fractional </span></span>
-<span><span class="co">#&gt;    from  to  weight  count</span></span>
-<span><span class="co">#&gt; 1  GB    NO     1.5      3</span></span>
-<span><span class="co">#&gt; 2  CA    US   1.167      2</span></span>
-<span><span class="co">#&gt; 3  AU    CN       1      1</span></span>
-<span><span class="co">#&gt; 4  AU    EC       1      1</span></span>
-<span><span class="co">#&gt; 5  CZ    GB       1      1</span></span></code></pre></div>
-</div>
-<div class="section level2">
 <h2 id="scopus">4. Scopus<a class="anchor" aria-label="anchor" href="#scopus"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_scopus.html">read_scopus</a></span><span class="op">(</span><span class="st">"scopus.csv"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/read_scopus.html">read_scopus()</a></code> ingests the standard Scopus CSV export
 (<code>File -&gt; Export -&gt; CSV</code> from the Scopus search UI).
@@ -384,7 +501,7 @@ same node in co-citation and reference networks.</p>
 <h2 id="web-of-science">5. Web of Science<a class="anchor" aria-label="anchor" href="#web-of-science"></a>
 </h2>
 <p>WoS exports come in two shapes:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wos1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_wos.html">read_wos</a></span><span class="op">(</span><span class="st">"savedrecs.txt"</span><span class="op">)</span>                       <span class="co"># plaintext (default)</span></span>
 <span><span class="va">wos2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_wos.html">read_wos</a></span><span class="op">(</span><span class="st">"savedrecs.tsv"</span>, format <span class="op">=</span> <span class="st">"tab"</span><span class="op">)</span>       <span class="co"># tab-delimited</span></span></code></pre></div>
 <p>The plaintext format is a tagged record syntax. Each record begins
@@ -450,40 +567,9 @@ carries the same fields in a flat CSV-like grid. Either way the output
 schema is identical.</p>
 </div>
 <div class="section level2">
-<h2 id="openalex-two-paths">6. OpenAlex — two paths<a class="anchor" aria-label="anchor" href="#openalex-two-paths"></a>
+<h2 id="dimensions">6. Dimensions<a class="anchor" aria-label="anchor" href="#dimensions"></a>
 </h2>
-<p>OpenAlex ships data through two routes that bibnets supports
-separately.</p>
-<div class="section level3">
-<h3 id="path-a-in-memory-tibble-from-openalexr">Path A: in-memory tibble from <code>openalexR</code><a class="anchor" aria-label="anchor" href="#path-a-in-memory-tibble-from-openalexr"></a>
-</h3>
-<p>This path is used when references and abstracts are required.
-<code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">openalexR::oa_fetch()</a></code> returns a nested tibble with
-<code>author</code>, <code>referenced_works</code>,
-<code>concepts</code>, and <code>keywords</code> list-columns;
-<code><a href="../reference/read_openalex.html">read_openalex()</a></code> converts it to the standard schema:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR" class="external-link">openalexR</a></span><span class="op">)</span></span>
-<span><span class="va">raw</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">oa_fetch</a></span><span class="op">(</span>entity <span class="op">=</span> <span class="st">"works"</span>, search <span class="op">=</span> <span class="st">"learning analytics"</span>, per_page <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_openalex.html">read_openalex</a></span><span class="op">(</span><span class="va">raw</span><span class="op">)</span></span></code></pre></div>
-<p>References are returned as OpenAlex Work IDs
-(e.g. <code>W2769342982</code>) rather than formatted citation strings.
-The IDs are stable identifiers suitable for co-citation and
-direct-citation networks; visualisations that need human-readable labels
-can join the IDs back to titles in a separate step.</p>
-</div>
-<div class="section level3">
-<h3 id="path-b-flat-csv">Path B: flat CSV<a class="anchor" aria-label="anchor" href="#path-b-flat-csv"></a>
-</h3>
-<p>The <code><a href="../reference/read_openalex_csv.html">read_openalex_csv()</a></code> reader, demonstrated in section
-3, applies to the file format produced by the OpenAlex web interface.
-References and abstracts are not present in this format.</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="dimensions">7. Dimensions<a class="anchor" aria-label="anchor" href="#dimensions"></a>
-</h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_dimensions.html">read_dimensions</a></span><span class="op">(</span><span class="st">"dimensions_export.csv"</span><span class="op">)</span></span></code></pre></div>
 <p>The Dimensions CSV begins with a metadata row of the form</p>
 <pre><code><span><span class="st">"About the data: This export was generated on YYYY-MM-DD ..."</span></span></code></pre>
@@ -496,9 +582,9 @@ identifies the column row by the Dimensions header tokens
 as list-columns, analogous to the OpenAlex schema.</p>
 </div>
 <div class="section level2">
-<h2 id="lens-org">8. Lens.org<a class="anchor" aria-label="anchor" href="#lens-org"></a>
+<h2 id="lens-org">7. Lens.org<a class="anchor" aria-label="anchor" href="#lens-org"></a>
 </h2>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ln</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_lens.html">read_lens</a></span><span class="op">(</span><span class="st">"lens_export.csv"</span><span class="op">)</span></span></code></pre></div>
 <p>Key Lens columns and how they map:</p>
 <table class="table">
@@ -558,9 +644,9 @@ as list-columns, analogous to the OpenAlex schema.</p>
 </table>
 </div>
 <div class="section level2">
-<h2 id="bibtex-ris">9. BibTeX &amp; RIS<a class="anchor" aria-label="anchor" href="#bibtex-ris"></a>
+<h2 id="bibtex-ris">8. BibTeX &amp; RIS<a class="anchor" aria-label="anchor" href="#bibtex-ris"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_bibtex.html">read_bibtex</a></span><span class="op">(</span><span class="st">"library.bib"</span><span class="op">)</span></span>
 <span><span class="va">ri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_ris.html">read_ris</a></span><span class="op">(</span><span class="st">"savedrecs.ris"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/read_bibtex.html">read_bibtex()</a></code> parses
@@ -576,9 +662,9 @@ networks, the appropriate sources are Scopus, Web of Science, OpenAlex
 (via <code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">oa_fetch()</a></code>), Dimensions, Lens, or Crossref.</p>
 </div>
 <div class="section level2">
-<h2 id="crossref-via-rcrossref">10. Crossref via rcrossref<a class="anchor" aria-label="anchor" href="#crossref-via-rcrossref"></a>
+<h2 id="crossref-via-rcrossref">9. Crossref via rcrossref<a class="anchor" aria-label="anchor" href="#crossref-via-rcrossref"></a>
 </h2>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rcrossref/" class="external-link">rcrossref</a></span><span class="op">)</span></span>
 <span><span class="va">raw</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/rcrossref/reference/cr_works.html" class="external-link">cr_works</a></span><span class="op">(</span>query <span class="op">=</span> <span class="st">"graph neural networks"</span>, limit <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_crossref.html">read_crossref</a></span><span class="op">(</span><span class="va">raw</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
@@ -591,205 +677,114 @@ returns (<code>container.title</code> vs <code>container-title</code>;
 schema.</p>
 </div>
 <div class="section level2">
-<h2 id="custom-csv-map-columns-by-name">11. Custom CSV — map columns by name<a class="anchor" aria-label="anchor" href="#custom-csv-map-columns-by-name"></a>
+<h2 id="openalex-two-paths">10. OpenAlex — two paths<a class="anchor" aria-label="anchor" href="#openalex-two-paths"></a>
 </h2>
-<p>For CSV files that do not match any of the recognised signatures
-(in-house exports, custom dumps, public datasets), map each source
-column onto a standard field <strong>by name</strong>. The identifier
-column is named via <code>id</code>; each multi-valued field is named
-via its own argument — <code>authors</code>, <code>keywords</code>,
-<code>references</code>, <code>countries</code>,
-<code>affiliations</code> — and <code>journal</code> for the scalar
-source/venue. <code>sep</code> is the delimiter applied inside those
-cells. Naming any of these columns implies
-<code>format = "generic"</code>, so you do not need to pass
-<code>format</code> yourself.</p>
-<p>Hypothetical call:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span></span>
-<span>  <span class="st">"my_data.csv"</span>,</span>
-<span>  id       <span class="op">=</span> <span class="st">"doc_id"</span>,</span>
-<span>  authors  <span class="op">=</span> <span class="st">"Authors"</span>,</span>
-<span>  keywords <span class="op">=</span> <span class="st">"Keywords"</span>,</span>
-<span>  sep      <span class="op">=</span> <span class="st">";"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Demonstrated on the bundled OpenAlex CSV (which uses <code>|</code>
-as the delimiter). The source columns have long dotted names; mapping
-them by argument yields the standard <code>authors</code> and
-<code>keywords</code> list-columns:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"openalex_works.csv"</span>, package <span class="op">=</span> <span class="st">"bibnets"</span><span class="op">)</span></span>
-<span><span class="va">generic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_biblio.html">read_biblio</a></span><span class="op">(</span></span>
-<span>  <span class="va">f</span>,</span>
-<span>  id       <span class="op">=</span> <span class="st">"id"</span>,</span>
-<span>  authors  <span class="op">=</span> <span class="st">"authorships.author.display_name"</span>,</span>
-<span>  keywords <span class="op">=</span> <span class="st">"primary_topic.display_name"</span>,</span>
-<span>  sep      <span class="op">=</span> <span class="st">"|"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">generic</span><span class="op">$</span><span class="va">authors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"</span></span>
-<span><span class="va">generic</span><span class="op">$</span><span class="va">keywords</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "Online Learning and Analytics"</span></span></code></pre></div>
-<p>Each mapped column is split on <code>sep</code> and stored under its
-standard name as a list-column; the original source column is left in
-place. For any further columns that have no dedicated argument,
-<code>list_cols</code> splits them in place (keeping their original
-names).</p>
-</div>
-<div class="section level2">
-<h2 id="custom-columns-and-separators-no-reader-needed">12. Custom columns and separators (no reader needed)<a class="anchor" aria-label="anchor" href="#custom-columns-and-separators-no-reader-needed"></a>
-</h2>
-<p>Often a dataset is already a plain data frame or CSV with its own
-column names and its own delimiter — you do not need to coerce it into
-the standard schema first. Every network builder accepts a column
-argument named after the entity it builds (<code>authors</code>,
-<code>keywords</code>, <code>references</code>, <code>journal</code>,
-<code>countries</code>, <code>affiliations</code>) plus a
-<code>sep</code> for splitting a delimited character column. The builder
-splits, normalises, and builds in one call.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id            <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
-<span>  `Author Names`<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smith J, Doe A, Lee K"</span>, <span class="st">"Smith J, Lee K"</span>,</span>
-<span>                    <span class="st">"Doe A, Lee K"</span>, <span class="st">"Smith J, Doe A"</span><span class="op">)</span>,</span>
-<span>  Tags          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ml, ai"</span>, <span class="st">"ml, nlp"</span>, <span class="st">"ai, nlp"</span>, <span class="st">"ml, ai"</span><span class="op">)</span>,</span>
-<span>  check.names   <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Point the builder at the column and give it the delimiter — no renaming.</span></span>
-<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">papers</span>, authors <span class="op">=</span> <span class="st">"Author Names"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from   to       weight  count</span></span>
-<span><span class="co">#&gt; 1  DOE A  LEE K         2      2</span></span>
-<span><span class="co">#&gt; 2  DOE A  SMITH J       2      2</span></span>
-<span><span class="co">#&gt; 3  LEE K  SMITH J       2      2</span></span>
-<span><span class="fu"><a href="../reference/keyword_network.html">keyword_network</a></span><span class="op">(</span><span class="va">papers</span>, keywords <span class="op">=</span> <span class="st">"Tags"</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: keyword_co_occurrence | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from  to   weight  count</span></span>
-<span><span class="co">#&gt; 1  AI    ML        2      2</span></span>
-<span><span class="co">#&gt; 2  AI    NLP       1      1</span></span>
-<span><span class="co">#&gt; 3  ML    NLP       1      1</span></span></code></pre></div>
+<p>OpenAlex ships data through two routes that bibnets supports
+separately.</p>
 <div class="section level3">
-<h3 id="the-document-identifier">The document identifier<a class="anchor" aria-label="anchor" href="#the-document-identifier"></a>
+<h3 id="path-a-flat-csv">Path A: flat CSV<a class="anchor" aria-label="anchor" href="#path-a-flat-csv"></a>
 </h3>
-<p>The works dimension (the rows of the <code>works x entities</code>
-matrix) is the <code>id</code> column. You do not have to supply one:
-<code>id = NULL</code> (the default) uses an existing <code>id</code>
-column when present and otherwise numbers the rows, treating each row as
-one document. The example above has no <code>id</code> column and still
-works for that reason. To use a differently-named identifier column,
-name it with the <code>id</code> argument:</p>
+<p>The package includes a 30-row OpenAlex flat CSV at
+<code>inst/extdata/openalex_works.csv</code>, corresponding to the
+export produced by downloading “Works” results from the OpenAlex web
+interface. Multi-valued fields use <code>|</code> as the delimiter.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">papers2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  paper_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P1"</span>, <span class="st">"P2"</span>, <span class="st">"P3"</span><span class="op">)</span>,</span>
-<span>  authors  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice, Bob"</span>, <span class="st">"Alice, Carol"</span>, <span class="st">"Bob, Carol"</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">papers2</span>, authors <span class="op">=</span> <span class="st">"authors"</span>, sep <span class="op">=</span> <span class="st">","</span>, id <span class="op">=</span> <span class="st">"paper_id"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from   to     weight  count</span></span>
-<span><span class="co">#&gt; 1  ALICE  BOB         1      1</span></span>
-<span><span class="co">#&gt; 2  ALICE  CAROL       1      1</span></span>
-<span><span class="co">#&gt; 3  BOB    CAROL       1      1</span></span></code></pre></div>
-<p>Two entities are linked when they share the same <code>id</code>, so
-the identifier controls what counts as “the same document” during
-projection.</p>
-<p><code>sep</code> is any literal delimiter, so BibTeX-style
-<code>" and "</code> or pipe-delimited exports work too:</p>
+<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"openalex_works.csv"</span>, package <span class="op">=</span> <span class="st">"bibnets"</span><span class="op">)</span></span>
+<span><span class="va">oa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_openalex_csv.html">read_openalex_csv</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">oa</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 'data.frame':    30 obs. of  13 variables:</span></span>
+<span><span class="co">#&gt;  $ id            : chr  "W2769342982" "W2264893711" "W2612059685" "W3118164373" ...</span></span>
+<span><span class="co">#&gt;  $ title         : chr  "Open University Learning Analytics dataset" "Educational Data Mining and Learning Analytics in Programming" "Predicting Student Performance using Advanced Learning Analytics" "Predicting Student Performance Using Data Mining and Learning Analytics Techniques: A Systematic Literature Review" ...</span></span>
+<span><span class="co">#&gt;  $ year          : int  2017 2015 2017 2020 2022 2016 2020 2024 2016 2020 ...</span></span>
+<span><span class="co">#&gt;  $ journal       : chr  "Scientific Data" "" "" "Applied Sciences" ...</span></span>
+<span><span class="co">#&gt;  $ doi           : chr  "10.1038/sdata.2017.171" "10.1145/2858796.2858798" "10.1145/3041021.3054164" "10.3390/app11010237" ...</span></span>
+<span><span class="co">#&gt;  $ cited_by_count: int  432 312 235 417 247 163 122 133 131 177 ...</span></span>
+<span><span class="co">#&gt;  $ abstract      : chr  NA NA NA NA ...</span></span>
+<span><span class="co">#&gt;  $ type          : chr  "article" "article" "article" "article" ...</span></span>
+<span><span class="co">#&gt;  $ authors       :List of 30</span></span>
+<span><span class="co">#&gt;  $ references    :List of 30</span></span>
+<span><span class="co">#&gt;  $ keywords      :List of 30</span></span>
+<span><span class="co">#&gt;  $ affiliations  :List of 30</span></span>
+<span><span class="co">#&gt;  $ countries     :List of 30</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">oa</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"title"</span>, <span class="st">"year"</span>, <span class="st">"journal"</span>, <span class="st">"type"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt;            id</span></span>
+<span><span class="co">#&gt; 1 W2769342982</span></span>
+<span><span class="co">#&gt; 2 W2264893711</span></span>
+<span><span class="co">#&gt; 3 W2612059685</span></span>
+<span><span class="co">#&gt; 4 W3118164373</span></span>
+<span><span class="co">#&gt; 5 W4300484403</span></span>
+<span><span class="co">#&gt;                                                                                                                title</span></span>
+<span><span class="co">#&gt; 1                                                                         Open University Learning Analytics dataset</span></span>
+<span><span class="co">#&gt; 2                                                      Educational Data Mining and Learning Analytics in Programming</span></span>
+<span><span class="co">#&gt; 3                                                   Predicting Student Performance using Advanced Learning Analytics</span></span>
+<span><span class="co">#&gt; 4 Predicting Student Performance Using Data Mining and Learning Analytics Techniques: A Systematic Literature Review</span></span>
+<span><span class="co">#&gt; 5                           Artificial Intelligence and Learning Analytics in Teacher Education: A Systematic Review</span></span>
+<span><span class="co">#&gt;   year            journal    type</span></span>
+<span><span class="co">#&gt; 1 2017    Scientific Data article</span></span>
+<span><span class="co">#&gt; 2 2015                    article</span></span>
+<span><span class="co">#&gt; 3 2017                    article</span></span>
+<span><span class="co">#&gt; 4 2020   Applied Sciences article</span></span>
+<span><span class="co">#&gt; 5 2022 Education Sciences  review</span></span></code></pre></div>
+<p>The list-columns:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bib</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id      <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>  creators <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice and Bob"</span>, <span class="st">"Alice and Carol"</span>, <span class="st">"Bob and Carol"</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">bib</span>, authors <span class="op">=</span> <span class="st">"creators"</span>, sep <span class="op">=</span> <span class="st">" and "</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from   to     weight  count</span></span>
-<span><span class="co">#&gt; 1  ALICE  BOB         1      1</span></span>
-<span><span class="co">#&gt; 2  ALICE  CAROL       1      1</span></span>
-<span><span class="co">#&gt; 3  BOB    CAROL       1      1</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="a-separate-separator-for-references">A separate separator for references<a class="anchor" aria-label="anchor" href="#a-separate-separator-for-references"></a>
-</h3>
-<p>In a coupling network the <em>entity</em> column and the
-<em>references</em> column can use different delimiters. Reference
-strings frequently contain internal commas
-(<code>"Smith J, 2020, Journal"</code>), so <code>references</code> is
-split on <code>";"</code> by default, independent of <code>sep</code>.
-Override it with <code>references_sep</code> when your references use
-another delimiter:</p>
+<code class="sourceCode R"><span><span class="va">oa</span><span class="op">$</span><span class="va">authors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"</span></span>
+<span><span class="va">oa</span><span class="op">$</span><span class="va">affiliations</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "The Open University"                 </span></span>
+<span><span class="co">#&gt; [2] "Czech Technical University in Prague"</span></span>
+<span><span class="co">#&gt; [3] "The Open University"                 </span></span>
+<span><span class="co">#&gt; [4] "The Open University"                 </span></span>
+<span><span class="co">#&gt; [5] "Czech Technical University in Prague"</span></span>
+<span><span class="va">oa</span><span class="op">$</span><span class="va">countries</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "CZ" "GB" "GB" "CZ" "GB"</span></span></code></pre></div>
+<p>References and abstracts are absent from the OpenAlex flat export:
+<code>references</code> is empty and <code>abstract</code> is
+<code>NA</code> because the web download does not include those fields.
+Use OpenAlex via <code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">openalexR::oa_fetch()</a></code> and
+<code><a href="../reference/read_openalex.html">read_openalex()</a></code> when you need cited references or
+abstracts.</p>
+<p>The remaining fields support several network constructions that do
+not require references — co-authorship, country, institution, keyword,
+source, and document networks:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P1"</span>, <span class="st">"P2"</span>, <span class="st">"P3"</span><span class="op">)</span>,</span>
-<span>  auth       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice, Bob"</span>, <span class="st">"Alice, Carol"</span>, <span class="st">"Bob, Carol"</span><span class="op">)</span>,</span>
-<span>  references <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R1, R2"</span>, <span class="st">"R1, R3"</span>, <span class="st">"R2, R3"</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"coupling"</span>, authors <span class="op">=</span> <span class="st">"auth"</span>, sep <span class="op">=</span> <span class="st">","</span>,</span>
-<span>               references_sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # bibnets network: author_coupling | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from   to     weight  count</span></span>
-<span><span class="co">#&gt; 1  ALICE  BOB         3      3</span></span>
-<span><span class="co">#&gt; 2  ALICE  CAROL       3      3</span></span>
-<span><span class="co">#&gt; 3  BOB    CAROL       3      3</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">co</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/country_network.html">country_network</a></span><span class="op">(</span><span class="va">oa</span>, counting <span class="op">=</span> <span class="st">"fractional"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">co</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # bibnets network: country_collaboration | 8 nodes · 5 edges | counting: fractional </span></span>
+<span><span class="co">#&gt;    from  to  weight  count</span></span>
+<span><span class="co">#&gt; 1  GB    NO     1.5      3</span></span>
+<span><span class="co">#&gt; 2  CA    US   1.167      2</span></span>
+<span><span class="co">#&gt; 3  AU    CN       1      1</span></span>
+<span><span class="co">#&gt; 4  AU    EC       1      1</span></span>
+<span><span class="co">#&gt; 5  CZ    GB       1      1</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="quoted-values">Quoted values<a class="anchor" aria-label="anchor" href="#quoted-values"></a>
+<h3 id="path-b-in-memory-tibble-from-openalexr">Path B: in-memory tibble from <code>openalexR</code><a class="anchor" aria-label="anchor" href="#path-b-in-memory-tibble-from-openalexr"></a>
 </h3>
-<p>Values exported with surrounding quotes (<code>"Alice"</code>, or the
-CSV doubled form <code>""Alice""</code>) are cleaned automatically —
-<code>strip_quotes = TRUE</code> is the default, so a quoted label and
-its bare form collapse to the same node. Internal apostrophes
-(e.g. <code>O'Brien</code>) are left untouched. Set
-<code>strip_quotes = FALSE</code> to keep the quotes as part of the
-label.</p>
+<p>This path is used when references and abstracts are required.
+<code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">openalexR::oa_fetch()</a></code> returns a nested tibble with
+<code>author</code>, <code>referenced_works</code>,
+<code>concepts</code>, and <code>keywords</code> list-columns;
+<code><a href="../reference/read_openalex.html">read_openalex()</a></code> converts it to the standard schema:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id      <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>  authors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'"Alice"; "Bob"'</span>, <span class="st">'"Alice"; "Carol"'</span>, <span class="st">'"Bob"; "Carol"'</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span>                       <span class="co"># quotes stripped -&gt; ALICE, BOB, CAROL</span></span>
-<span><span class="co">#&gt; # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full </span></span>
-<span><span class="co">#&gt;    from   to     weight  count</span></span>
-<span><span class="co">#&gt; 1  ALICE  BOB         1      1</span></span>
-<span><span class="co">#&gt; 2  ALICE  CAROL       1      1</span></span>
-<span><span class="co">#&gt; 3  BOB    CAROL       1      1</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="a-safety-net-for-the-wrong-delimiter">A safety net for the wrong delimiter<a class="anchor" aria-label="anchor" href="#a-safety-net-for-the-wrong-delimiter"></a>
-</h3>
-<p>If you pass a <code>sep</code> that does not actually split the
-column — for example the data is pipe-delimited but you left
-<code>sep = ";"</code> — and the values contain a structural delimiter
-(<code>";"</code>, <code>"|"</code>, or a tab), the builder warns you
-instead of silently treating each whole cell as one entity:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id      <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>  authors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Smith J| Doe A"</span>, <span class="st">"Smith J| Lee K"</span>, <span class="st">"Doe A| Lee K"</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/author_network.html">author_network</a></span><span class="op">(</span><span class="va">bad</span><span class="op">)</span><span class="op">)</span>          <span class="co"># warns: values contain "|"</span></span>
-<span><span class="co">#&gt; Warning: Splitting column 'authors' on sep = ";" produced no multi-entry rows,</span></span>
-<span><span class="co">#&gt; but most values contain "|". If entries are separated by "|", pass that as sep.</span></span></code></pre></div>
-<p>The check is deliberately quiet for commas and <code>" and "</code>,
-which appear inside perfectly valid single labels
-(<code>"Last, First"</code> names, one-reference-per-row citation
-strings, organisations like <code>"Smith and Sons"</code>).</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/openalexR" class="external-link">openalexR</a></span><span class="op">)</span></span>
+<span><span class="va">raw</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">oa_fetch</a></span><span class="op">(</span>entity <span class="op">=</span> <span class="st">"works"</span>, search <span class="op">=</span> <span class="st">"learning analytics"</span>, per_page <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_openalex.html">read_openalex</a></span><span class="op">(</span><span class="va">raw</span><span class="op">)</span></span></code></pre></div>
+<p>References are returned as OpenAlex Work IDs
+(e.g. <code>W2769342982</code>) rather than formatted citation strings.
+The IDs are stable identifiers suitable for co-citation and
+direct-citation networks; visualisations that need human-readable labels
+can join the IDs back to titles in a separate step.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="building-data-manually">13. Building data manually<a class="anchor" aria-label="anchor" href="#building-data-manually"></a>
+<h2 id="building-data-manually">11. Building data manually<a class="anchor" aria-label="anchor" href="#building-data-manually"></a>
 </h2>
 <p>When data does not come from any of the supported sources, a
 bibnets-compatible data frame can be constructed directly. The
 requirement is: standard scalar columns are character or integer;
 multi-valued fields are list-columns whose elements are character
 vectors.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  id    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"p1"</span>, <span class="st">"p2"</span>, <span class="st">"p3"</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Paper A"</span>, <span class="st">"Paper B"</span>, <span class="st">"Paper C"</span><span class="op">)</span>,</span>
@@ -844,12 +839,12 @@ node <code>"GRAPH"</code>. Tests or comparisons that reference node
 names should use uppercase strings.</p>
 </div>
 <div class="section level2">
-<h2 id="the-split_field-helper">14. The <code>split_field()</code> helper<a class="anchor" aria-label="anchor" href="#the-split_field-helper"></a>
+<h2 id="the-split_field-helper">12. The <code>split_field()</code> helper<a class="anchor" aria-label="anchor" href="#the-split_field-helper"></a>
 </h2>
 <p><code><a href="../reference/split_field.html">split_field()</a></code> converts a character column with
 semicolon-delimited (or otherwise delimited) values into a list-column
 without going through <code>read_biblio(format = "generic")</code>:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/split_field.html">split_field</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice; Bob; Carol"</span>, <span class="st">"Dave; Eve"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [1] "Alice" "Bob"   "Carol"</span></span>
@@ -867,13 +862,13 @@ other readers apply internally to multi-valued columns; it is exported
 for use in custom pipelines.</p>
 </div>
 <div class="section level2">
-<h2 id="combining-data-from-multiple-sources">15. Combining data from multiple sources<a class="anchor" aria-label="anchor" href="#combining-data-from-multiple-sources"></a>
+<h2 id="combining-data-from-multiple-sources">13. Combining data from multiple sources<a class="anchor" aria-label="anchor" href="#combining-data-from-multiple-sources"></a>
 </h2>
 <p>Different readers expose different extras: WoS provides
 <code>keywords_plus</code>, Scopus provides <code>index_keywords</code>,
 OpenAlex provides <code>countries</code>. To combine sources, restrict
 each frame to the standard columns and bind:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">common</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"title"</span>, <span class="st">"year"</span>, <span class="st">"journal"</span>, <span class="st">"doi"</span>, <span class="st">"cited_by_count"</span>,</span>
 <span>            <span class="st">"abstract"</span>, <span class="st">"type"</span>, <span class="st">"authors"</span>, <span class="st">"references"</span>, <span class="st">"keywords"</span><span class="op">)</span></span>
 <span></span>
@@ -897,13 +892,13 @@ coerced into the combined frame.</li>
 </ol>
 </div>
 <div class="section level2">
-<h2 id="inspecting-and-sanity-checking">16. Inspecting and sanity-checking<a class="anchor" aria-label="anchor" href="#inspecting-and-sanity-checking"></a>
+<h2 id="inspecting-and-sanity-checking">14. Inspecting and sanity-checking<a class="anchor" aria-label="anchor" href="#inspecting-and-sanity-checking"></a>
 </h2>
 <p>After reading, basic checks on the list-column sizes and the scalar
 columns help detect silent corruption. Empty list-columns and
 out-of-range years are common indicators that an export is
 incomplete.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">scopus_quantum_cloud</span><span class="op">)</span></span>
 <span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="va">scopus_quantum_cloud</span></span>
 <span></span>
@@ -948,7 +943,7 @@ thematic searches.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="troubleshooting">17. Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
+<h2 id="troubleshooting">15. Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
 </h2>
 <table class="table">
 <colgroup>
@@ -1048,7 +1043,7 @@ change.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
