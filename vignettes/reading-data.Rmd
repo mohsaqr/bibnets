@@ -52,7 +52,8 @@ The contract that downstream functions such as `build_bipartite()` and
 list-column whose elements are character vectors.
 
 This vignette covers all nine readers, the `read_biblio()` entry point,
-the generic-CSV path, the `split_field()` helper, and the manual
+the generic-CSV path, building networks directly from custom columns and
+separators (no reader needed), the `split_field()` helper, and the manual
 construction of bibnets-compatible data frames.
 
 ## 2. `read_biblio()`
@@ -90,8 +91,9 @@ Format detection is performed on the first non-empty line of the file:
   CSV.
 
 If detection fails, `read_biblio()` raises an error that lists the
-supported formats and indicates how to pass `format` explicitly or use
-`format = "generic"` with `actors`.
+supported formats and indicates how to pass `format` explicitly or name
+the entity columns (`authors`, `keywords`, ...), which reads the file as a
+generic CSV.
 
 Two readers are not dispatched by `read_biblio()`:
 
@@ -313,47 +315,50 @@ field-naming variants Crossref returns (`container.title` vs
 `container-title`; `is.referenced.by.count` vs
 `is-referenced-by-count`) and maps both to the standard schema.
 
-## 11. Generic CSV — `read_biblio(format = "generic", ...)`
+## 11. Custom CSV — map columns by name
 
 For CSV files that do not match any of the recognised signatures
-(in-house exports, custom dumps, public datasets), the generic path
-provides explicit column-name mapping. The identifier column is named
-via `id`; columns to be treated as list-columns are named via `actors`.
-`sep` is the delimiter applied inside those cells.
+(in-house exports, custom dumps, public datasets), map each source column
+onto a standard field **by name**. The identifier column is named via
+`id`; each multi-valued field is named via its own argument — `authors`,
+`keywords`, `references`, `countries`, `affiliations` — and `journal` for
+the scalar source/venue. `sep` is the delimiter applied inside those cells.
+Naming any of these columns implies `format = "generic"`, so you do not
+need to pass `format` yourself.
 
 Hypothetical call:
 
 ```{r generic-call, eval = FALSE}
 data <- read_biblio(
   "my_data.csv",
-  format  = "generic",
-  id      = "doc_id",
-  actors  = c("Authors", "Keywords"),
-  sep     = ";"
+  id       = "doc_id",
+  authors  = "Authors",
+  keywords = "Keywords",
+  sep      = ";"
 )
 ```
 
-Demonstrated on the bundled OpenAlex CSV (which uses `|` as the delimiter):
+Demonstrated on the bundled OpenAlex CSV (which uses `|` as the delimiter).
+The source columns have long dotted names; mapping them by argument yields
+the standard `authors` and `keywords` list-columns:
 
 ```{r generic-demo}
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 generic <- read_biblio(
   f,
-  format = "generic",
-  id     = "id",
-  actors = c("authorships.author.display_name", "primary_topic.display_name"),
-  sep    = "|"
+  id       = "id",
+  authors  = "authorships.author.display_name",
+  keywords = "primary_topic.display_name",
+  sep      = "|"
 )
-names(generic)[1:6]
-generic$authorships.author.display_name[[1]]
+generic$authors[[1]]
+generic$keywords[[1]]
 ```
 
-The named `id` column is copied to a top-level `id`. Each column listed
-in `actors` is split on `sep` and stored as a list-column. Other columns
-are retained unchanged. The resulting frame is therefore *not* in the
-standard schema; it is a wider source-specific table. Network
-constructors can either be pointed at the relevant columns directly, or
-the frame can be post-processed into the standard schema.
+Each mapped column is split on `sep` and stored under its standard name as a
+list-column; the original source column is left in place. For any further
+columns that have no dedicated argument, `list_cols` splits them in place
+(keeping their original names).
 
 ## 12. Custom columns and separators (no reader needed)
 
@@ -379,6 +384,27 @@ papers <- data.frame(
 author_network(papers, authors = "Author Names", sep = ",")
 keyword_network(papers, keywords = "Tags", sep = ",")
 ```
+
+### The document identifier
+
+The works dimension (the rows of the `works x entities` matrix) is the `id`
+column. You do not have to supply one: `id = NULL` (the default) uses an
+existing `id` column when present and otherwise numbers the rows, treating
+each row as one document. The example above has no `id` column and still
+works for that reason. To use a differently-named identifier column, name it
+with the `id` argument:
+
+```{r custom-id}
+papers2 <- data.frame(
+  paper_id = c("P1", "P2", "P3"),
+  authors  = c("Alice, Bob", "Alice, Carol", "Bob, Carol"),
+  stringsAsFactors = FALSE
+)
+author_network(papers2, authors = "authors", sep = ",", id = "paper_id")
+```
+
+Two entities are linked when they share the same `id`, so the identifier
+controls what counts as "the same document" during projection.
 
 `sep` is any literal delimiter, so BibTeX-style `" and "` or pipe-delimited
 exports work too:
@@ -567,7 +593,7 @@ Indicators to check:
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `Could not detect file format` | First line doesn't match any signature | Pass `format = "scopus"` (etc.) explicitly, or use `format = "generic"` with `actors` |
+| `Could not detect file format` | First line doesn't match any signature | Pass `format = "scopus"` (etc.) explicitly, or name the entity columns (`authors`, `keywords`, ...) to read it as a generic CSV |
 | Empty `references` list on every row | BibTeX/RIS or OpenAlex flat CSV — these don't carry citations | Use Scopus/WoS, OpenAlex via `oa_fetch()`, Dimensions, Lens, or Crossref |
 | `Invalid multibyte string` on read | Wrong encoding | Most readers accept `encoding = "latin1"`; pass it through `read_biblio(..., encoding = "latin1")` |
 | Author names look like `LASTNAME, F.J.` not `FJ LASTNAME` | Default is `flip_names = FALSE` | The reader returns names as-is from the source. Cluster them by string match downstream, or pass `flip_names = TRUE` if all names follow `Last, First` |
@@ -578,10 +604,13 @@ Indicators to check:
 
 - The companion vignette, `vignette("bibnets")`, covers network
   construction on the in-package datasets.
+- `vignette("parsing-author-names")` covers `parse_names()` for
+  normalising author labels before a network is built.
 - All network builders (`author_network()`, `keyword_network()`,
   `reference_network()`, `document_network()`, `source_network()`,
   `country_network()`, `institution_network()`, `conetwork()`) accept
-  the same set of arguments (`type`, `counting`, `similarity`,
-  `threshold`, `top_n`, `format`), so switching between network types
-  on data already in the standard schema requires only a function-name
-  change.
+  the same core arguments (`type`, `counting`, `similarity`,
+  `threshold`, `top_n`, `format`) plus the custom-column arguments
+  shown above (`id`, the entity column, `sep`, `references_sep`,
+  `strip_quotes`), so switching between network types on data already
+  in the standard schema requires only a function-name change.

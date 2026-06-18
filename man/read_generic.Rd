@@ -4,7 +4,18 @@
 \alias{read_generic}
 \title{Read a generic CSV with user-specified columns}
 \usage{
-read_generic(file, id = NULL, actors = NULL, sep = ";")
+read_generic(
+  file,
+  id = NULL,
+  sep = ";",
+  authors = NULL,
+  keywords = NULL,
+  references = NULL,
+  countries = NULL,
+  affiliations = NULL,
+  journal = NULL,
+  list_cols = NULL
+)
 }
 \description{
 Read a generic CSV with user-specified columns

@@ -57,8 +57,10 @@ conetwork <- function(data,
                        self_loops = FALSE,
                        deduplicate = TRUE,
                        format = "edgelist",
-                       strip_quotes = TRUE) {
-  check_data(data, c("id", field))
+                       strip_quotes = TRUE,
+                       id = NULL) {
+  data <- resolve_id(data, id)
+  check_data(data, field)
   check_choice(counting, position_independent_counts(), "counting")
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")

@@ -12,6 +12,9 @@
 #'   `type = "coupling"`. Default `";"`.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each entity.
+#' @param id Optional. Name of the column to use as the work identifier
+#'   (the matrix-row dimension). If `NULL` (default), an existing `id`
+#'   column is used when present, otherwise row numbers are used.
 #' @param type Character. `"coupling"` (default), `"co_citation"`, or
 #'   `"equivalence"`.
 #' @param counting Character. Counting method. Default `"full"`.
@@ -43,8 +46,9 @@ source_network <- function(data,
                            journal = "journal",
                            sep = ";",
                            references_sep = ";",
-                           strip_quotes = TRUE) {
-  check_data(data, "id")
+                           strip_quotes = TRUE,
+                           id = NULL) {
+  data <- resolve_id(data, id)
   check_choice(type, c("coupling", "co_citation", "equivalence"), "type")
   check_choice(counting, position_independent_counts(), "counting")
   check_choice(similarity, c("none", "association", "cosine", "jaccard",

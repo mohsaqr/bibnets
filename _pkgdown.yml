@@ -84,6 +84,13 @@ reference:
       - to_matrix
       - to_cograph
 
+  - title: "Author names"
+    desc: >
+      Reorder and split author names into components before building
+      author networks.
+    contents:
+      - parse_names
+
   - title: "Utilities"
     contents:
       - split_field
@@ -101,3 +108,4 @@ articles:
     contents:
       - bibnets
       - reading-data
+      - parsing-author-names

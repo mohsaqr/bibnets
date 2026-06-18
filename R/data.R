@@ -28,7 +28,7 @@
 "biblio_data"
 
 
-#' OpenAlex Gold Open Access Learning Analytics dataset
+#' Learning analytics dataset (OpenAlex)
 #'
 #' A corpus of 1,508 gold open-access scholarly works on learning analytics,
 #' retrieved from OpenAlex (CC0 licence). All records have a verified title,
@@ -60,11 +60,10 @@
 #' @source OpenAlex \url{https://openalex.org}, CC0 licence.
 #'
 #' @examples
-#' data(open_alex_gold_open_access_learning_analytics)
-#' d <- open_alex_gold_open_access_learning_analytics
-#' author_network(d, "collaboration")
-#' country_network(d, "collaboration")
-"open_alex_gold_open_access_learning_analytics"
+#' data(learning_analytics)
+#' author_network(learning_analytics, "collaboration")
+#' country_network(learning_analytics, "collaboration")
+"learning_analytics"
 
 
 #' Scopus dataset — Green Cloud Computing and Quantization (2020–2025)

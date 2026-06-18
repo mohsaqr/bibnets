@@ -12,6 +12,9 @@
 #'   character column. Default `";"`.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each reference.
+#' @param id Optional. Name of the column to use as the work identifier.
+#'   If `NULL` (default), an existing `id` column is used when present,
+#'   otherwise row numbers are used.
 #'
 #' @return A data frame with columns:
 #'   \describe{
@@ -27,8 +30,9 @@
 #' data(biblio_data)
 #' local_citations(biblio_data)
 local_citations <- function(data, references = "references", sep = ";",
-                            strip_quotes = TRUE) {
-  check_data(data, c("id", references))
+                            strip_quotes = TRUE, id = NULL) {
+  data <- resolve_id(data, id)
+  check_data(data, references)
   data <- ensure_list_column(data, references, sep, strip_quotes)
 
   ids <- as.character(data[["id"]])
@@ -99,8 +103,9 @@ local_citations <- function(data, references = "references", sep = ";",
 #' h$edges
 historiograph <- function(data, n = 30, min_lcs = 1,
                           references = "references", sep = ";",
-                          strip_quotes = TRUE) {
-  check_data(data, c("id", references, "year"))
+                          strip_quotes = TRUE, id = NULL) {
+  data <- resolve_id(data, id)
+  check_data(data, c(references, "year"))
   data <- ensure_list_column(data, references, sep, strip_quotes)
 
   ## Compute local citations (data already split/stripped above; forward

@@ -18,7 +18,8 @@ source_network(
   journal = "journal",
   sep = ";",
   references_sep = ";",
-  strip_quotes = TRUE
+  strip_quotes = TRUE,
+  id = NULL
 )
 }
 \arguments{
@@ -74,6 +75,10 @@ applies only to the author column; the references column uses
 
 \item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
 characters are removed from each entity.}
+
+\item{id}{Optional. Name of the column to use as the work identifier
+(the matrix-row dimension). If \code{NULL} (default), an existing \code{id}
+column is used when present, otherwise row numbers are used.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),

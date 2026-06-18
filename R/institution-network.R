@@ -10,6 +10,9 @@
 #'   `type = "coupling"`. Default `";"`.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each entity.
+#' @param id Optional. Name of the column to use as the work identifier
+#'   (the matrix-row dimension). If `NULL` (default), an existing `id`
+#'   column is used when present, otherwise row numbers are used.
 #' @param type Character. `"collaboration"` (default), `"coupling"`, or
 #'   `"equivalence"`.
 #' @param counting Character. Counting method. Default `"full"`.
@@ -26,8 +29,8 @@
 #'
 #' @export
 #' @examples
-#' data(open_alex_gold_open_access_learning_analytics)
-#' institution_network(open_alex_gold_open_access_learning_analytics, "collaboration")
+#' data(learning_analytics)
+#' institution_network(learning_analytics, "collaboration")
 institution_network <- function(data,
                                 type = "collaboration",
                                 counting = "full",
@@ -42,8 +45,10 @@ institution_network <- function(data,
                                 affiliations = "affiliations",
                                 sep = ";",
                                 references_sep = ";",
-                                strip_quotes = TRUE) {
-  check_data(data, c("id", affiliations))
+                                strip_quotes = TRUE,
+                                id = NULL) {
+  data <- resolve_id(data, id)
+  check_data(data, affiliations)
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)

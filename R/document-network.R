@@ -8,6 +8,9 @@
 #'   Default `"references"`.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each reference.
+#' @param id Optional. Name of the column to use as the work identifier
+#'   (the matrix-row dimension). If `NULL` (default), an existing `id`
+#'   column is used when present, otherwise row numbers are used.
 #' @param type Character. Relationship type:
 #'   \describe{
 #'     \item{`"coupling"`}{Bibliographic coupling: documents linked when they
@@ -47,8 +50,10 @@ document_network <- function(data,
                              format = "edgelist",
                              references = "references",
                              sep = ";",
-                             strip_quotes = TRUE) {
-  check_data(data, c("id", references))
+                             strip_quotes = TRUE,
+                             id = NULL) {
+  data <- resolve_id(data, id)
+  check_data(data, references)
   check_choice(type, c("coupling", "citation", "co_citation", "equivalence"), "type")
   check_choice(counting, position_independent_counts(), "counting")
   check_choice(similarity, c("none", "association", "cosine", "jaccard",

@@ -18,7 +18,8 @@ keyword_network(
   format = "edgelist",
   sep = ";",
   strip_quotes = TRUE,
-  field = NULL
+  field = NULL,
+  id = NULL
 )
 }
 \arguments{
@@ -74,6 +75,10 @@ applies only to the author column; the references column uses
 characters are removed from each keyword.}
 
 \item{field}{Deprecated. Use \code{keywords} instead.}
+
+\item{id}{Optional. Name of the column to use as the work identifier
+(the matrix-row dimension). If \code{NULL} (default), an existing \code{id}
+column is used when present, otherwise row numbers are used.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),

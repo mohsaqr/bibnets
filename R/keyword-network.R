@@ -9,6 +9,9 @@
 #'   set works, e.g. `keywords = "Tags"`.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each keyword.
+#' @param id Optional. Name of the column to use as the work identifier
+#'   (the matrix-row dimension). If `NULL` (default), an existing `id`
+#'   column is used when present, otherwise row numbers are used.
 #' @param field Deprecated. Use `keywords` instead.
 #' @param counting Character. Counting method. Default `"full"`.
 #' @param similarity Character. Similarity measure. Default `"none"`.
@@ -44,13 +47,15 @@ keyword_network <- function(data,
                             format = "edgelist",
                             sep = ";",
                             strip_quotes = TRUE,
-                            field = NULL) {
+                            field = NULL,
+                            id = NULL) {
   if (!is.null(field)) {
     warning("Argument 'field' is deprecated; use 'keywords' instead.",
             call. = FALSE)
     keywords <- field
   }
-  check_data(data, c("id", keywords))
+  data <- resolve_id(data, id)
+  check_data(data, keywords)
   data <- ensure_list_column(data, keywords, sep, strip_quotes)
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")

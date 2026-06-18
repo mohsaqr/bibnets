@@ -18,536 +18,446 @@ knitr::opts_chunk$set(
 library(bibnets)
 ```
 
-## What bibnets Builds
+## Introduction
 
-Bibliometric data usually arrives as a table of papers. Each paper has fields
-such as authors, references, keywords, countries, institutions, source title,
-and year. Most bibliometric networks are projections of those fields.
+`bibnets` imports scholarly metadata and constructs bibliometric networks
+from works, authors, references, keywords, sources, countries, and
+institutions. It represents co-authorship, co-citation, bibliographic
+coupling, keyword co-occurrence, direct citation, historiograph, and custom
+co-occurrence analyses as network edge lists.
 
-The core idea is simple:
+### Input and imports
 
-1. Build a sparse `papers x entities` matrix.
-2. Weight the matrix with a counting method.
-3. Multiply the matrix to obtain entity-entity or paper-paper links.
-4. Return a standard edge list.
+`read_biblio()` is the entry point for file-based input. It accepts a file, a
+set of files, or a directory, detects supported file exports when
+`format = "auto"`, and dispatches to the corresponding reader. The file
+readers cover Scopus CSV with `read_scopus()`, Web of Science plain-text and
+tab-delimited exports with `read_wos()`, flat OpenAlex CSV with
+`read_openalex_csv()`, BibTeX with `read_bibtex()`, RIS with `read_ris()`,
+Lens.org CSV with `read_lens()`, Dimensions CSV with `read_dimensions()`,
+and generic CSV input through `read_biblio(format = "generic")` or inferred
+generic input when source columns are mapped by name. OpenAlex records
+returned by `openalexR::oa_fetch()` are converted with `read_openalex()`.
+Crossref records returned by `rcrossref::cr_works()` are converted with
+`read_crossref()`.
 
-Internally, this is the package pipeline:
+The source-specific readers return a common data frame with `id`, `title`,
+`year`, `journal`, `doi`, `cited_by_count`, `abstract`, `type`, and
+list-columns such as `authors`, `references`, and `keywords`.
+Source-specific fields, including `countries`, `affiliations`,
+`index_keywords`, and `keywords_plus`, are kept when present.
 
-```
-build_bipartite()
-  -> apply_counting()
-  -> multiply_bipartite()
-  -> as_bibnets_network()
-```
+### Network construction
 
-The exported builders wrap that pipeline for common bibliometric questions:
+Network construction follows the same matrix path across builders. A
+works-by-entities bipartite matrix is created by `build_bipartite()` or, for
+position-dependent weighting, by `build_author_bipartite()`. The matrix is
+weighted by `apply_counting()` or by positional weights, projected by
+`multiply_bipartite()`, and returned by `as_bibnets_network()`.
 
-| Function | Nodes | Link means |
+The counting methods are `"full"`, `"fractional"`, `"paper"`, `"strength"`,
+`"harmonic"`, `"arithmetic"`, `"geometric"`, `"adaptive_geometric"`,
+`"golden"`, `"first"`, `"last"`, `"first_last"`, and
+`"position_weighted"`. The attention profiles are `"lead"`, `"last"`,
+`"proximity"`, and `"circular"`; in the implementation these map to
+`"attention_lead"`, `"attention_last"`, `"attention_proximity"`, and
+`"attention_circular"` positional weights. Attention weighting is available
+for author, keyword, country, and institution networks.
+
+Projected matrices can be returned as raw counts with `"none"` or normalized
+with `"cosine"`, `"association"`, `"jaccard"`, `"inclusion"`, or
+`"equivalence"`. The same similarity names are accepted by `normalize()`.
+
+### Speed
+
+The incidence matrix is stored as a sparse `dgCMatrix`. Projection uses
+`crossprod()` for column-mode networks and `tcrossprod()` for row-mode
+networks, and edge extraction is performed from the sparse projected matrix
+without materializing a dense matrix. Memory use follows the number of
+non-zero matrix entries and retained edges rather than the size of a dense
+node-by-node matrix. The hard dependencies are Matrix, stats, and utils.
+
+### Exports
+
+The default return value is an edge list. Export and conversion functions are
+`to_igraph()`, `to_tbl_graph()`, `to_cograph()`, `to_gephi()`,
+`to_graphml()`, and `to_matrix()`. `to_gephi()` writes or returns
+Gephi-ready node and edge CSV tables. `to_graphml()` writes or returns
+GraphML. `to_matrix()` returns a sparse adjacency matrix.
+
+### Output
+
+Every builder returns a **`bibnets_network`**: a tidy data frame with four
+columns —
+
+- `from`, `to` — the two endpoints of an edge,
+- `count` — the raw binary co-occurrence count for that pair,
+- `weight` — the analytical weight after counting and optional similarity
+  normalization.
+
+With `counting = "full"` and `similarity = "none"`, `weight` equals
+`count`. They diverge once fractional counting or a similarity measure is
+applied.
+
+The builders, at a glance:
+
+| Function | Nodes | An edge means |
 |---|---|---|
-| `author_network()` | authors | co-authorship, author coupling, or author co-citation |
-| `reference_network()` | cited references | references are cited together |
+| `author_network()` | authors | co-authorship, author coupling, or co-citation |
+| `reference_network()` | cited references | two references cited together |
 | `document_network()` | documents | shared references, shared citers, or direct citation |
-| `keyword_network()` | keywords | keywords appear together in papers |
-| `source_network()` | journals/sources | sources share references or are co-cited |
+| `keyword_network()` | keywords | two keywords appear together |
+| `source_network()` | journals | sources share references or are co-cited |
 | `country_network()` | countries | countries collaborate or share references |
 | `institution_network()` | institutions | institutions collaborate or share references |
-| `conetwork()` | any field | entities co-occur or share values of another field |
-| `local_citations()` | documents | local citation counts inside the corpus |
-| `historiograph()` | documents | directed citation history among locally cited papers |
-| `temporal_network()` | any builder's nodes | the same network repeated over time windows |
+| `conetwork()` | any field | entities co-occur, or share values of another field |
+| `local_citations()` | documents | within-corpus citation counts |
+| `historiograph()` | documents | directed citation history among top-cited papers |
+| `temporal_network()` | any builder's nodes | the same network over time windows |
 
-Every network builder returns a `bibnets_network`: a data frame with columns
-`from`, `to`, `weight`, and `count`.
+## Quick start
 
-`count` is the raw binary co-occurrence. `weight` is the analytical weight after
-counting and optional similarity normalization.
+You do **not** need a special reader. Any data frame with one row per paper
+works — point a builder at the column that holds the entity and tell it the
+delimiter:
 
-## Data Used in This Vignette
+```{r quick-df}
+papers <- data.frame(
+  `Author Names` = c("Smith J, Doe A, Lee K", "Smith J, Lee K",
+                     "Doe A, Lee K", "Smith J, Doe A"),
+  check.names = FALSE
+)
 
-The package includes small and medium example datasets:
-
-```{r}
-data(biblio_data)
-data(scopus_quantum_cloud)
-data(open_alex_gold_open_access_learning_analytics)
-
-small <- biblio_data
-sc <- scopus_quantum_cloud
-oa <- open_alex_gold_open_access_learning_analytics
-
-nrow(small)
-nrow(sc)
-nrow(oa)
+author_network(papers, authors = "Author Names", sep = ",")
 ```
 
-`biblio_data` is a tiny synthetic dataset. `scopus_quantum_cloud` contains 499
-Scopus records. `open_alex_gold_open_access_learning_analytics` contains 1,508
-OpenAlex records with authors, countries, institutions, and primary topics.
+If your data is a scholarly export instead, read it first — the format is
+detected from the file content — then build with the defaults:
 
-## Reading Your Own Data
+```{r quick-reader, eval = FALSE}
+data    <- read_biblio("scopus.csv")
+authors <- author_network(data, type = "collaboration")
+```
 
-For files, use `read_biblio()`:
+Either way the result is the same four-column edge list, ready to inspect,
+prune, or export.
 
-```{r, eval = FALSE}
+## Reading your own data
+
+### Scholarly exports
+
+`read_biblio()` accepts a file, a folder, or several files, and detects
+Scopus, Web of Science, OpenAlex, BibTeX, RIS, Lens.org, and Dimensions
+from the content:
+
+```{r read-files, eval = FALSE}
 data <- read_biblio("export.csv")
 data <- read_biblio("folder_with_exports/")
 data <- read_biblio(c("part_1.csv", "part_2.csv"))
 ```
 
-`read_biblio()` detects common formats from file content. You can also call a
-reader directly:
+The format-specific readers can also be called directly
+(`read_scopus()`, `read_wos()`, `read_openalex_csv()`, `read_dimensions()`,
+`read_lens()`, `read_bibtex()`, `read_ris()`).
 
-```{r, eval = FALSE}
-read_scopus("scopus.csv")
-read_wos("savedrecs.txt")
-read_openalex_csv("openalex_works.csv")
-read_dimensions("dimensions.csv")
-read_lens("lens.csv")
-read_bibtex("library.bib")
-read_ris("library.ris")
-```
+### A custom CSV
 
-For a custom CSV, specify the identifier and the columns that should be split
-into list-columns:
+For a CSV that matches no known export, map each source column onto a
+standard field **by name** — `authors`, `keywords`, `references`,
+`countries`, `affiliations`, or `journal`. Naming any of them reads the
+file as a generic CSV, so you do not pass `format` yourself:
 
-```{r, eval = FALSE}
+```{r read-generic, eval = FALSE}
 data <- read_biblio(
   "custom.csv",
-  format = "generic",
-  id = "paper_id",
-  actors = c("Authors", "Keywords"),
-  sep = ";"
+  id       = "paper_id",
+  authors  = "Author Names",
+  keywords = "Tags",
+  sep      = ","
 )
 ```
 
-You do not even need a reader for a plain data frame: every builder takes a
-column argument named after its entity (`authors`, `keywords`, `references`,
-`journal`, `countries`, `affiliations`) plus a `sep`, so a custom column with
-its own delimiter works in one call:
+Each mapped column is split on `sep` into the standard list-column, so
+afterwards every builder works with its defaults.
 
-```{r, eval = FALSE}
+### A plain data frame, directly
+
+As the quick start showed, you can skip the reader entirely and let the
+builder split a column for you. The same column arguments are available on
+every builder:
+
+```{r read-direct, eval = FALSE}
 author_network(my_df, authors = "Author Names", sep = ",")
-keyword_network(my_df, keywords = "Tags", sep = ",")
+keyword_network(my_df, keywords = "Tags",       sep = ",")
 ```
 
-Surrounding quotes are stripped by default (`strip_quotes = TRUE`), and the
-references column in a coupling network takes its own `references_sep`. See
-`vignette("reading-data")`, section 12, for the full treatment.
+The work identifier is the `id` column. You need not supply one: when no
+`id` column is present each row is treated as one document; pass
+`id = "paper_id"` to use a differently-named column. Surrounding quotes are
+stripped by default (`strip_quotes = TRUE`), and in a coupling network the
+references column takes its own `references_sep`. The companion
+`vignette("reading-data")` covers every reader and these options in full.
 
-Readers return a common schema where possible:
+### The standard schema
 
-```{r}
+Readers return a common set of columns:
+
+```{r schema}
+data(scopus_quantum_cloud)
+sc <- scopus_quantum_cloud
 names(sc)[1:12]
 ```
 
-The most important columns for network construction are:
+The columns that matter for network construction are `id`, the list-columns
+`authors` / `references` / `keywords`, and `year` (used by
+`temporal_network()`). Source-specific extras such as `countries`,
+`affiliations`, and `keywords_plus` are kept when available.
 
-- `id`: the document identifier.
-- `authors`: a list-column of author names.
-- `references`: a list-column of cited references or cited work IDs.
-- `keywords`: a list-column of author/index/topic keywords.
-- `year`: the time variable used by `temporal_network()`.
+## Datasets used here
 
-Source-specific columns such as `countries`, `affiliations`, `index_keywords`,
-and `keywords_plus` are preserved when available.
+```{r data}
+data(biblio_data)
+data(learning_analytics)
 
-## Author Collaboration
+small <- biblio_data            # tiny, synthetic
+oa    <- learning_analytics     # 1,508 OpenAlex records on learning analytics
 
-The simplest author network links two authors when they appear on the same
-paper:
-
-```{r}
-authors_full <- author_network(oa, type = "collaboration")
-head(authors_full, 5)
+c(small = nrow(small), scopus = nrow(sc), openalex = nrow(oa))
 ```
 
-The printed result has the standard schema:
+## Author collaboration
 
-```{r}
-summary(authors_full)
+Two authors are linked when they appear on the same paper:
+
+```{r author-basic}
+authors <- author_network(oa, type = "collaboration")
+head(authors, 5)
+summary(authors)
 ```
 
-Use `min_occur` to remove very rare authors before projection:
+Use `min_occur` to drop rare authors before projection:
 
-```{r}
-authors_core <- author_network(oa, "collaboration", min_occur = 2)
-nrow(authors_full)
-nrow(authors_core)
+```{r author-minoccur}
+nrow(author_network(oa, type = "collaboration"))
+nrow(author_network(oa, type = "collaboration", min_occur = 2))
 ```
 
-## Counting Methods
+### Counting methods
 
-Counting determines how much a paper contributes to edge weights.
+`counting` controls how much each paper contributes to an edge:
 
-Full counting gives every observed co-occurrence a weight of 1:
-
-```{r}
-head(author_network(small, "collaboration", counting = "full"), 5)
+```{r counting}
+head(author_network(small, type = "collaboration", counting = "full"), 3)
+head(author_network(small, type = "collaboration", counting = "fractional"), 3)
+head(author_network(small, type = "collaboration", counting = "harmonic"), 3)
+head(author_network(small, type = "collaboration", counting = "first_last"), 3)
 ```
 
-Fractional counting reduces the influence of long author lists:
+- `"full"` — every observed co-occurrence counts 1 (use for raw events).
+- `"fractional"` — scaled by list size so large teams don't dominate.
+- `"harmonic"` / `"first_last"` and other position methods — only when
+  author order is analytically meaningful.
 
-```{r}
-head(author_network(small, "collaboration", counting = "fractional"), 5)
+### Attention weights
+
+`attention` applies a smooth positional profile instead of a named counting
+scheme (available for author, keyword, country, and institution networks):
+
+```{r attention}
+head(author_network(small, attention = "lead"), 3)
 ```
 
-Harmonic counting gives more credit to earlier byline positions while keeping
-the paper's total credit normalized:
-
-```{r}
-head(author_network(small, "collaboration", counting = "harmonic"), 5)
-```
-
-First-last counting is useful only when the field's authorship conventions make
-both first and last positions meaningful:
-
-```{r}
-head(author_network(small, "collaboration", counting = "first_last"), 5)
-```
-
-The correct method depends on the claim being made. Use `full` when the
-question is about observed collaboration events. Use `fractional` when papers
-with many entities should not dominate. Use position-dependent methods only
-when author order is analytically meaningful.
-
-## Attention-Style Position Weights
-
-The `attention` argument applies a smooth position profile. It is separate from
-`counting` and is available for author, keyword, country, and institution
-networks.
-
-```{r}
-lead <- author_network(small, attention = "lead")
-last <- author_network(small, attention = "last")
-
-head(lead, 5)
-head(last, 5)
-```
-
-The four profiles are:
-
-| `attention` | Highest weight |
+| `attention` | Highest weight at |
 |---|---|
 | `"lead"` | first position |
 | `"last"` | last position |
 | `"proximity"` | middle positions |
-| `"circular"` | first and last positions |
+| `"circular"` | first and last |
 
-Use attention weighting when the analysis needs a transparent positional
-assumption rather than a named bibliometric counting convention.
+## Reference co-citation
 
-## Reference Co-citation
+Two references are linked when a paper cites both:
 
-Co-citation links two cited references when they are cited together by at least
-one paper:
-
-```{r}
+```{r cocitation}
 refs <- reference_network(sc, min_occur = 2)
 head(refs, 5)
 ```
 
-Co-citation is a column-mode projection of the `papers x references` matrix.
-The nodes are references; the links come from papers that cite both references.
+A similarity measure offsets the advantage of very frequently cited works:
 
-Similarity normalization can reduce the advantage of very frequently cited
-references:
-
-```{r}
-refs_cos <- reference_network(sc, min_occur = 2, similarity = "cosine")
-head(refs_cos, 5)
+```{r cocitation-cosine}
+head(reference_network(sc, min_occur = 2, similarity = "cosine"), 3)
 ```
 
-## Document Coupling and Citation
+## Document coupling and citation
 
-Bibliographic coupling links two documents when they share cited references:
+Coupling links two documents that share cited references:
 
-```{r}
-coupled_docs <- document_network(sc, type = "coupling", similarity = "cosine")
-head(coupled_docs, 5)
+```{r coupling}
+head(document_network(sc, type = "coupling", similarity = "cosine"), 5)
 ```
 
-Direct citation is different. It keeps direction: `from` is the citing document
-and `to` is the cited document, but only when both documents are inside the same
-corpus.
+Direct citation is directed — `from` cites `to` — and only within the
+corpus (the cited work must also be a row in the data):
 
-```{r}
-direct_docs <- document_network(sc, type = "citation")
-head(direct_docs, 5)
+```{r citation}
+head(document_network(sc, type = "citation"), 5)
 ```
 
-Many exported datasets cite external works that are not themselves rows in the
-dataset. Those external citations support co-citation and coupling, but they do
-not become direct-citation edges unless the cited work is also present in `id`.
+## Keyword co-occurrence
 
-## Keyword Co-occurrence
-
-Keyword networks are often the quickest way to inspect a corpus thematically:
-
-```{r}
+```{r keywords}
 kw <- keyword_network(sc, min_occur = 2)
 head(kw, 5)
 ```
 
-Entity labels are trimmed and uppercased during matrix construction. This means
-that `machine learning`, `Machine Learning`, and ` MACHINE LEARNING ` resolve
-to the same node.
+Labels are trimmed and upper-cased during construction, so
+`machine learning`, `Machine Learning`, and ` MACHINE LEARNING ` are one
+node. Association strength is a common choice for co-occurrence maps:
 
-Association strength is commonly useful for co-occurrence maps because it
-downweights pairs that are common only because both keywords are individually
-frequent:
-
-```{r}
-kw_assoc <- keyword_network(sc, min_occur = 2, similarity = "association")
-head(kw_assoc, 5)
+```{r keywords-assoc}
+head(keyword_network(sc, min_occur = 2, similarity = "association"), 3)
 ```
 
-## Countries, Institutions, and Sources
+## Countries, institutions, and sources
 
-OpenAlex-style data often contains country and institution list-columns:
-
-```{r}
-country_edges <- country_network(oa, counting = "fractional")
-head(country_edges, 5)
-
-inst_edges <- institution_network(oa, counting = "fractional", min_occur = 2)
-head(inst_edges, 5)
+```{r geo}
+head(country_network(oa, counting = "fractional"), 5)
+head(institution_network(oa, counting = "fractional", min_occur = 2), 5)
+head(source_network(sc, type = "coupling", min_occur = 2), 5)
 ```
 
-Source networks use `journal` as the entity field. Coupling links sources that
-cite the same references:
+For coupling networks, `min_occur` is applied to the aggregated entity
+before the network is built.
 
-```{r}
-source_edges <- source_network(sc, type = "coupling", min_occur = 2)
-head(source_edges, 5)
+## Generic co-networks
+
+`conetwork()` covers projections without a dedicated wrapper. One field
+links entities that co-occur; a second field (`by`) links them through a
+shared value:
+
+```{r conetwork}
+head(conetwork(sc, "keywords", min_occur = 2), 3)
+head(conetwork(sc, "authors", by = "keywords", min_occur = 2), 3)
 ```
 
-For source, country, institution, and author coupling, `min_occur` is applied
-to the aggregated entity before building the coupling network.
-
-## Generic Co-networks
-
-Use `conetwork()` when you want a projection not covered by a dedicated helper.
-
-One-field use:
-
-```{r}
-head(conetwork(sc, "keywords", min_occur = 2), 5)
-```
-
-Two-field use:
-
-```{r}
-head(conetwork(sc, "authors", by = "keywords", min_occur = 2), 5)
-```
-
-The second example links authors through shared keywords. This is not a
-co-authorship network; it is a thematic-similarity network between authors.
-
-Delimited character columns are split automatically:
-
-```{r}
-toy <- data.frame(
-  id = c("P1", "P2", "P3"),
-  tags = c("methods; networks", "networks; R", "methods; R")
-)
-
-conetwork(toy, "tags")
-```
+The second result links authors through shared keywords — a thematic
+similarity network, not a co-authorship one.
 
 ## Normalization
 
-The same raw counts can support different similarity scores:
+The same raw counts support different similarity scores; only `weight`
+changes, `count` does not:
 
-```{r}
+```{r normalize}
 none <- keyword_network(sc, min_occur = 2, similarity = "none")
 cos  <- keyword_network(sc, min_occur = 2, similarity = "cosine")
-
 head(none[, c("from", "to", "weight", "count")], 3)
-head(cos[, c("from", "to", "weight", "count")], 3)
+head(cos[,  c("from", "to", "weight", "count")], 3)
 ```
 
-Notice that `count` is unchanged. The `weight` column changes because
-normalization is applied after raw co-occurrence has been counted.
+Use `"none"` for raw weights, `"cosine"` for overlap scaled by size,
+`"association"` to emphasize pairs that co-occur more than expected, and
+`"jaccard"` / `"inclusion"` / `"equivalence"` to match a downstream
+convention.
 
-Available methods are:
+## Reducing large networks
 
-```{r}
-normalize(to_matrix(keyword_network(small)), "cosine")
+```{r reduce}
+edges <- author_network(oa, type = "collaboration")
+c(all        = nrow(edges),
+  threshold  = nrow(prune(edges, threshold = 2)),
+  top_n      = nrow(prune(edges, top_n = 5)),
+  top_nodes  = nrow(filter_top(edges, n = 50)))
 ```
 
-In practice:
+- `prune(threshold = x)` — absolute edge-weight cutoff.
+- `prune(top_n = k)` — keep each node's strongest edges.
+- `filter_top(n = k)` — keep edges among the most-connected nodes.
 
-- Use `similarity = "none"` for raw weighted counts.
-- Use `similarity = "cosine"` for interpretable overlap scaled by marginal
-  size.
-- Use `similarity = "association"` when the goal is to emphasize pairs that
-  co-occur more than expected from their individual frequencies.
-- Use `jaccard`, `inclusion`, or `equivalence` when those coefficients match a
-  downstream method or established reporting convention.
+`backbone()` applies the disparity filter, which keeps edges that are strong
+relative to a node's local strength distribution — not a global cutoff:
 
-## Reducing Large Networks
-
-Dense co-occurrence networks can be hard to inspect. `bibnets` provides three
-different reduction strategies.
-
-```{r}
-edges <- author_network(oa, "collaboration")
-
-nrow(edges)
-nrow(prune(edges, threshold = 2))
-nrow(prune(edges, top_n = 5))
-nrow(filter_top(edges, n = 50))
-```
-
-`prune(threshold = x)` keeps edges with weight at least `x`.
-`prune(top_n = k)` keeps locally strong edges for each endpoint.
-`filter_top(n = k)` first selects the most connected nodes, then keeps edges
-among them.
-
-`backbone()` applies the disparity filter for multiscale weighted networks:
-
-```{r}
+```{r backbone}
 bb <- backbone(edges, alpha = 0.05)
 nrow(bb)
-head(bb, 5)
 ```
 
-The disparity filter asks whether an edge is unusually strong relative to at
-least one endpoint's local strength distribution. This is different from a
-global weight cutoff and can preserve meaningful edges attached to smaller
-nodes.
+## Temporal networks
 
-## Temporal Networks
+`temporal_network()` runs any builder over time windows (fixed, sliding, or
+cumulative):
 
-`temporal_network()` runs any network builder over time windows:
-
-```{r}
+```{r temporal}
 tn <- temporal_network(oa, author_network, "collaboration", window = 3)
 names(tn)
 ```
 
-Fixed windows are non-overlapping. Sliding windows overlap:
+Each window's edge list carries a `window` column. Windows with fewer than
+two records, or no surviving edges, are dropped; a builder error inside a
+window becomes a warning labelled with that window.
 
-```{r}
-tn_slide <- temporal_network(
-  oa,
-  author_network,
-  "collaboration",
-  window = 3,
-  step = 1,
-  strategy = "sliding"
-)
+## Local citations and historiographs
 
-names(tn_slide)
-```
+`local_citations()` counts how often each document is cited by others in the
+same corpus; `historiograph()` builds the directed citation graph among the
+top-cited documents:
 
-Cumulative windows always start at the first observed year and grow forward:
+```{r historiograph}
+head(local_citations(sc), 5)
 
-```{r}
-tn_cum <- temporal_network(
-  oa,
-  author_network,
-  "collaboration",
-  window = 3,
-  strategy = "cumulative"
-)
-
-names(tn_cum)
-```
-
-Each returned edge list has a `window` column. Windows with fewer than two
-records or no surviving edges are omitted. If a builder errors inside a window,
-`temporal_network()` reports a warning with the window label.
-
-## Local Citations and Historiographs
-
-`local_citations()` counts how often each document is cited by other documents
-inside the same dataset:
-
-```{r}
-lcs <- local_citations(sc)
-head(lcs, 5)
-```
-
-`historiograph()` builds a directed citation graph among the top locally cited
-documents:
-
-```{r}
 h <- historiograph(sc, n = 10)
 h$nodes
 head(h$edges, 5)
 ```
 
-This requires reference strings or IDs to match document IDs in the same data
-frame. If the cited works are external to the corpus, local citation counts will
-be low or zero even when global citation counts are high.
+Both require reference strings or IDs to match document IDs in the data; if
+the cited works are external, local counts stay low.
 
-## Exporting Results
+## Author-name normalization
 
-The default edge list is already useful for many tools:
+`parse_names()` reorders and splits author names (it recognizes
+`Last, First`, `SURNAME Initials`, and `First Last`). Because node identity
+is fixed when a network is built, normalize *before* building so that two
+spellings of one author merge:
 
-```{r}
+```{r parse-names}
+parse_names(c("Saqr, Mohammed", "WANG Y", "Mohammed Saqr"))
+```
+
+See `vignette("parsing-author-names")` for the full treatment.
+
+## Exporting
+
+The edge list is already usable; converters cover the common targets:
+
+```{r export}
 edges <- keyword_network(sc, min_occur = 2)
-head(edges, 5)
-```
 
-Convert to a sparse matrix:
-
-```{r}
-m <- to_matrix(edges)
+m <- to_matrix(edges)            # sparse adjacency matrix
 m[1:4, 1:4]
-```
 
-Prepare Gephi tables:
-
-```{r}
-gephi <- to_gephi(edges)
-head(gephi$nodes, 3)
+gephi <- to_gephi(edges)         # Gephi node/edge tables
 head(gephi$edges, 3)
+
+cat(substr(to_graphml(edges), 1, 200))   # GraphML, no XML dependency
 ```
 
-Write GraphML without adding an XML dependency:
+`to_igraph()`, `to_tbl_graph()`, and `to_cograph()` are available when their
+(suggested) packages are installed.
 
-```{r}
-xml <- to_graphml(edges)
-cat(substr(xml, 1, 300))
-```
+## Reading a `bibnets_network`
 
-Optional graph objects are available when the suggested packages are installed:
+The object records how it was built, as attributes:
 
-```{r, eval = FALSE}
-if (requireNamespace("igraph", quietly = TRUE)) {
-  g <- to_igraph(edges)
-}
+```{r attrs}
+edges <- author_network(oa, type = "collaboration", counting = "harmonic")
+c(type     = attr(edges, "network_type"),
+  counting = attr(edges, "counting"),
+  sim      = attr(edges, "similarity"))
 
-if (requireNamespace("tidygraph", quietly = TRUE)) {
-  tg <- to_tbl_graph(edges)
-}
-
-if (requireNamespace("cograph", quietly = TRUE)) {
-  cg <- to_cograph(edges)
-}
-```
-
-## Interpreting a `bibnets_network`
-
-The object stores construction metadata as attributes:
-
-```{r}
-edges <- author_network(oa, "collaboration", counting = "harmonic")
-
-attr(edges, "network_type")
-attr(edges, "counting")
-attr(edges, "similarity")
-```
-
-The `print()` method reports the network type, node count, edge count, counting
-method, and similarity method. `summary()` reports basic network and weight
-summaries:
-
-```{r}
 summary(edges)
 ```
 
-These attributes are meant to make downstream output easier to audit. A saved
-edge list should still say how it was produced.
+`print()` reports the network type, node and edge counts, and the counting
+and similarity methods — so a saved edge list always says how it was made.

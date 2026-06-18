@@ -1,3 +1,66 @@
+# bibnets 0.6.0
+
+## Breaking changes
+
+- The example dataset `open_alex_gold_open_access_learning_analytics` is
+  renamed to `learning_analytics`. Update `data(...)` calls accordingly.
+
+## New features
+
+- **`id` argument on every network builder.** `author_network()`,
+  `keyword_network()`, `reference_network()`, `document_network()`,
+  `source_network()`, `country_network()`, `institution_network()`,
+  `conetwork()`, `local_citations()`, and `historiograph()` gain an `id`
+  argument that names the work-identifier column (the rows of the
+  `works x entities` matrix). This completes the custom-column workflow
+  introduced in 0.5.0, which had given every *entity* field a self-naming
+  argument but still required the *works* column to be named `id`.
+  - `id = NULL` (default): use an existing `id` column when present,
+    otherwise fall back to row numbers (each row is one document). A custom
+    data frame with no identifier column now builds without error.
+  - `id = "paper_id"`: use any named column as the identifier.
+
+  The new argument sits at the end of each signature, so existing positional
+  calls are unaffected. If `id` names a column other than `"id"` while the
+  data already has a distinct `"id"` column, the call errors rather than
+  silently overwriting that column (which might itself be an entity field).
+
+## Bug fixes
+
+- `split_field()` (and therefore every builder) now coerces a `factor`
+  entity column to character before splitting, instead of failing with
+  "non-character argument". Hand-built data frames with
+  `stringsAsFactors = TRUE` now work like character columns.
+
+## Generic reader: map columns by entity name
+
+- `read_biblio(format = "generic", ...)` now takes entity-named arguments
+  — `authors`, `keywords`, `references`, `countries`, `affiliations`, and
+  `journal` — each naming the source column to map onto that standard
+  field. Multi-valued fields are split on `sep` into the standard
+  list-column; `journal` is kept scalar. This mirrors the network-builder
+  vocabulary, so the same field names are used end to end:
+
+  ```r
+  read_biblio("my.csv", format = "generic", id = "paper_id",
+              authors = "Author Names", keywords = "Tags", sep = ",")
+  ```
+
+  `list_cols` is retained for splitting any further columns in place
+  (keeping their original names). Naming any of these columns (or `id`)
+  implies `format = "generic"`, so passing `format` is optional:
+
+  ```r
+  read_biblio("my.csv", id = "paper_id", authors = "Author Names", sep = ",")
+  ```
+
+## Deprecations
+
+- The generic reader's `actors` argument is deprecated — the columns it
+  named were never only "actors". Use the entity arguments above (or
+  `list_cols` for arbitrary columns). `actors` still works, mapped to
+  `list_cols`, with a deprecation warning.
+
 # bibnets 0.5.1
 
 ## Documentation

@@ -211,7 +211,7 @@ test_that("read_generic warns about misspelled actor columns", {
                               stringsAsFactors = FALSE),
                    tmp, row.names = FALSE)
   expect_warning(
-    read_biblio(tmp, format = "generic", actors = "Authorz", sep = "|"),
+    read_biblio(tmp, format = "generic", list_cols = "Authorz", sep = "|"),
     "Authorz"
   )
 })
@@ -224,7 +224,7 @@ test_that("read_generic end-to-end: custom CSV to author network", {
                               stringsAsFactors = FALSE),
                    tmp, row.names = FALSE)
   d <- read_biblio(tmp, format = "generic", id = "PaperID",
-                   actors = "Authors", sep = "|")
+                   list_cols = "Authors", sep = "|")
   out <- author_network(d, authors = "Authors")
   expect_setequal(unique(c(out$from, out$to)), c("ALICE", "BOB", "CAROL"))
 })

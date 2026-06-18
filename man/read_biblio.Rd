@@ -4,7 +4,21 @@
 \alias{read_biblio}
 \title{Read bibliometric data}
 \usage{
-read_biblio(path, format = "auto", id = NULL, actors = NULL, sep = ";", ...)
+read_biblio(
+  path,
+  format = "auto",
+  id = NULL,
+  authors = NULL,
+  keywords = NULL,
+  references = NULL,
+  countries = NULL,
+  affiliations = NULL,
+  journal = NULL,
+  sep = ";",
+  list_cols = NULL,
+  ...,
+  actors = NULL
+)
 }
 \arguments{
 \item{path}{Character. Path to a file, a vector of file paths, or a
@@ -21,18 +35,35 @@ directory containing export files.}
 \item{\code{"dimensions"}}{Dimensions CSV.}
 \item{\code{"lens"}}{Lens.org CSV.}
 \item{\code{"openalex_csv"}}{Flat OpenAlex CSV export (pipe-delimited fields).}
-\item{\code{"generic"}}{Any CSV. Use \code{id} and \code{actors} to specify columns.}
+\item{\code{"generic"}}{Any CSV. Map its columns with \code{id}, \code{authors},
+\code{keywords}, \code{references}, \code{countries}, \code{affiliations}, \code{journal}.
+Inferred automatically when any of those arguments is supplied, so
+\code{format = "generic"} is optional in that case.}
 }}
 
 \item{id}{Character. Column name for document identifier. Only used
 when \code{format = "generic"}. Default \code{NULL} (uses row numbers).}
 
-\item{actors}{Character vector. Column names to split into list-columns.
-Only used when \code{format = "generic"}.}
+\item{authors, keywords, references, countries, affiliations}{Character. For
+\code{format = "generic"}, the name of the source column to map onto that
+standard field. Its cells are split on \code{sep} into a list-column. For
+example \code{authors = "Author Names"} reads the \verb{Author Names} column into
+the standard \code{authors} list-column.}
 
-\item{sep}{Character. Delimiter for splitting actor columns. Default \code{";"}.}
+\item{journal}{Character. For \code{format = "generic"}, the name of the source
+column to use as the (scalar) \code{journal} field. Not split.}
+
+\item{sep}{Character. Delimiter for splitting the mapped multi-valued
+columns. Default \code{";"}.}
+
+\item{list_cols}{Character vector. For \code{format = "generic"}, additional
+columns to split into list-columns \emph{in place} (keeping their original
+names), for fields without a dedicated argument above.}
 
 \item{...}{Additional arguments passed to the format-specific reader.}
+
+\item{actors}{Deprecated. Use the entity arguments (\code{authors}, \code{keywords},
+...) or \code{list_cols} instead.}
 }
 \value{
 A data frame.
@@ -58,16 +89,18 @@ folder <- system.file("extdata", package = "bibnets")
 all_data <- read_biblio(folder)
 nrow(all_data)
 
-# Generic CSV: point read_biblio at any CSV and name the list-column fields
+# Custom CSV: map each source column onto a standard field by name.
+# Naming columns implies format = "generic" (no need to pass it).
 tmp <- tempfile(fileext = ".csv")
 write.csv(data.frame(
   doc_id  = c("a", "b"),
   Authors = c("Smith J; Jones A", "Davis M"),
   Keywords = c("networks; bibliometrics", "analytics")
 ), tmp, row.names = FALSE)
-generic <- read_biblio(tmp, format = "generic",
+generic <- read_biblio(tmp,
                        id = "doc_id",
-                       actors = c("Authors", "Keywords"),
+                       authors = "Authors",
+                       keywords = "Keywords",
                        sep = ";")
 head(generic)
 }

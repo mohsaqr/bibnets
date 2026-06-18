@@ -8,7 +8,8 @@ local_citations(
   data,
   references = "references",
   sep = ";",
-  strip_quotes = TRUE
+  strip_quotes = TRUE,
+  id = NULL
 )
 }
 \arguments{
@@ -24,6 +25,10 @@ character column. Default \code{";"}.}
 
 \item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
 characters are removed from each reference.}
+
+\item{id}{Optional. Name of the column to use as the work identifier.
+If \code{NULL} (default), an existing \code{id} column is used when present,
+otherwise row numbers are used.}
 }
 \value{
 A data frame with columns:

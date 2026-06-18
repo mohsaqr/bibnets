@@ -205,7 +205,7 @@ test_that("read_biblio stops when given a nonexistent directory", {
 test_that("read_biblio with format='generic' invokes read_generic correctly", {
   f <- make_generic_file()
   d <- read_biblio(f, format = "generic", id = "doc_id",
-                   actors = c("Authors", "Tags"), sep = "|")
+                   list_cols = c("Authors", "Tags"), sep = "|")
   expect_equal(nrow(d), 3L)
   expect_true(is.list(d$Authors))
   expect_true(is.list(d$Tags))
@@ -217,16 +217,81 @@ test_that("read_biblio with format='generic' invokes read_generic correctly", {
   expect_equal(d$id, c("D1", "D2", "D3"))
 })
 
-test_that("read_biblio generic: actors not in file warn and are skipped", {
+test_that("read_biblio generic: list_cols not in file warn and are skipped", {
   f <- make_generic_file()
   expect_warning(
     d <- read_biblio(f, format = "generic",
-                     actors = c("Authors", "NonExistent")),
+                     list_cols = c("Authors", "NonExistent")),
     "NonExistent"
   )
   expect_true(is.list(d$Authors))
   ## "NonExistent" is absent — warned, not added as list col
   expect_false("NonExistent" %in% names(d))
+})
+
+test_that("read_biblio generic: entity args map source columns to standard fields", {
+  f <- tempfile(fileext = ".csv")
+  utils::write.csv(data.frame(
+    doc       = c("P1", "P2"),
+    `Author Names` = c("Smith J; Doe A", "Lee K"),
+    Tags      = c("ml; ai", "nlp; ai"),
+    Nations   = c("USA; UK", "DE"),
+    check.names = FALSE, stringsAsFactors = FALSE
+  ), f, row.names = FALSE)
+
+  d <- read_biblio(f, format = "generic", id = "doc",
+                   authors = "Author Names", keywords = "Tags",
+                   countries = "Nations", sep = ";")
+
+  ## Standard list-columns created under their standard names
+  expect_true(all(c("authors", "keywords", "countries") %in% names(d)))
+  expect_true(is.list(d$authors))
+  expect_equal(d$authors[[1]], c("Smith J", "Doe A"))
+  expect_equal(d$keywords[[1]], c("ml", "ai"))
+  expect_equal(d$countries[[2]], "DE")
+  expect_equal(d$id, c("P1", "P2"))
+
+  ## Builds straight from the result with default field args
+  net <- keyword_network(d)
+  expect_setequal(unique(c(net$from, net$to)), c("AI", "ML", "NLP"))
+})
+
+test_that("read_biblio infers generic when entity columns are named (no format)", {
+  f <- tempfile(fileext = ".csv")
+  utils::write.csv(data.frame(
+    doc       = c("P1", "P2"),
+    `Author Names` = c("Smith J; Doe A", "Lee K; Doe A"),
+    check.names = FALSE, stringsAsFactors = FALSE
+  ), f, row.names = FALSE)
+
+  ## No format = "generic" passed — naming `authors` implies it
+  d <- read_biblio(f, id = "doc", authors = "Author Names", sep = ";")
+  expect_true(is.list(d$authors))
+  expect_equal(d$authors[[1]], c("Smith J", "Doe A"))
+  expect_equal(d$id, c("P1", "P2"))
+})
+
+test_that("read_biblio generic: journal maps as a scalar (not split)", {
+  f <- tempfile(fileext = ".csv")
+  utils::write.csv(data.frame(
+    doc = c("P1", "P2"),
+    Venue = c("J Stat Soft", "J ML Res"),
+    stringsAsFactors = FALSE
+  ), f, row.names = FALSE)
+  d <- read_biblio(f, format = "generic", id = "doc", journal = "Venue")
+  expect_false(is.list(d$journal))
+  expect_equal(d$journal, c("J Stat Soft", "J ML Res"))
+})
+
+test_that("read_biblio generic: deprecated 'actors' still works but warns", {
+  f <- make_generic_file()
+  expect_warning(
+    d <- read_biblio(f, format = "generic", id = "doc_id",
+                     actors = c("Authors", "Tags"), sep = "|"),
+    "deprecated"
+  )
+  expect_true(is.list(d$Authors))
+  expect_equal(length(d$Authors[[1]]), 2L)
 })
 
 test_that("read_biblio generic: NULL id uses row numbers as character id", {
@@ -480,14 +545,14 @@ test_that("read_generic sep parameter splits on custom delimiter", {
     stringsAsFactors = FALSE
   )
   write.csv(df, f, row.names = FALSE)
-  d <- read_biblio(f, format = "generic", actors = "authors", sep = "::")
+  d <- read_biblio(f, format = "generic", list_cols = "authors", sep = "::")
   expect_equal(length(d$authors[[1]]), 3L)
   expect_equal(length(d$authors[[2]]), 2L)
 })
 
-test_that("read_generic with no actors argument leaves columns as-is", {
+test_that("read_generic with no list_cols argument leaves columns as-is", {
   f <- make_generic_file()
   d <- read_biblio(f, format = "generic")
-  ## No actors specified: Authors column should remain character, not list
+  ## No list_cols specified: Authors column should remain character, not list
   expect_false(is.list(d$Authors))
 })

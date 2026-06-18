@@ -23,6 +23,9 @@
 #'   characters are removed from each entity, so a quoted CSV value such as
 #'   `"Alice"` or `""Alice""` is treated as `Alice`. Set `FALSE` to keep
 #'   quotes as part of the label.
+#' @param id Optional. Name of the column to use as the work identifier
+#'   (the matrix-row dimension). If `NULL` (default), an existing `id`
+#'   column is used when present, otherwise row numbers are used.
 #' @param type Character. Relationship type:
 #'   \describe{
 #'     \item{`"collaboration"`}{Co-authorship: authors linked when they
@@ -107,8 +110,10 @@ author_network <- function(data,
                            authors = "authors",
                            sep = ";",
                            references_sep = ";",
-                           strip_quotes = TRUE) {
-  check_data(data, c("id", authors))
+                           strip_quotes = TRUE,
+                           id = NULL) {
+  data <- resolve_id(data, id)
+  check_data(data, authors)
   check_choice(similarity, c("none", "association", "cosine", "jaccard",
                               "inclusion", "equivalence"), "similarity")
   check_format(format)

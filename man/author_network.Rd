@@ -21,7 +21,8 @@ author_network(
   authors = "authors",
   sep = ";",
   references_sep = ";",
-  strip_quotes = TRUE
+  strip_quotes = TRUE,
+  id = NULL
 )
 }
 \arguments{
@@ -110,6 +111,10 @@ your references are delimited differently.}
 characters are removed from each entity, so a quoted CSV value such as
 \code{"Alice"} or \verb{""Alice""} is treated as \code{Alice}. Set \code{FALSE} to keep
 quotes as part of the label.}
+
+\item{id}{Optional. Name of the column to use as the work identifier
+(the matrix-row dimension). If \code{NULL} (default), an existing \code{id}
+column is used when present, otherwise row numbers are used.}
 }
 \value{
 Depends on \code{format}: a \code{bibnets_network} data frame (default),

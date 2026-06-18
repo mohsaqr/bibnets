@@ -52,12 +52,16 @@ citation scoring; and threshold and top-n pruning utilities.
   `to_matrix()`, and `to_cograph()`.
 - **Temporal and historical analysis**: `temporal_network()`,
   `local_citations()`, and `historiograph()`.
+- **Author-name parsing**: `parse_names()` reorders and splits author names
+  (`Last, First`, `SURNAME Initials`, or `First Last`) into `first` / `last` /
+  `particle` / `suffix` components — useful for normalizing labels before
+  building author networks.
 - **Standard output**: all network builders return a `bibnets_network` edge
   list with `from`, `to`, `weight`, and `count` columns.
 
 ## Install
 
-Once accepted on CRAN:
+From CRAN:
 
 ```r
 install.packages("bibnets")
@@ -75,16 +79,14 @@ remotes::install_github("mohsaqr/bibnets")
 ```r
 library(bibnets)
 
-# Read a file or folder. The reader is detected from file content.
-data <- read_biblio("export.csv")
+# Build straight from your own data frame — name the column and delimiter:
+authors <- author_network(my_papers, authors = "Author Names", sep = ",")
 
-# Common networks
+# Or read a scholarly export (format auto-detected), then build:
+data    <- read_biblio("scopus.csv")
 authors <- author_network(data, type = "collaboration")
-refs    <- reference_network(data, type = "co_citation", min_occur = 2)
-docs    <- document_network(data, type = "coupling", similarity = "cosine")
-keys    <- keyword_network(data, similarity = "association")
 
-# Inspect the standard edge-list schema
+# Standard edge list: from, to, weight, count
 head(authors)
 summary(authors)
 ```
@@ -119,16 +121,16 @@ dim    <- read_dimensions("dimensions.csv")
 lens   <- read_lens("lens.csv")
 ```
 
-For custom CSV files, tell `read_biblio()` which columns should be split into
-list-columns:
+For custom CSV files, map each source column onto a standard field by name
+(`authors`, `keywords`, `references`, `countries`, `affiliations`, `journal`):
 
 ```r
 data <- read_biblio(
   "my_data.csv",
-  format = "generic",
-  id = "paper_id",
-  actors = c("Authors", "Keywords"),
-  sep = ";"
+  id       = "paper_id",
+  authors  = "Authors",
+  keywords = "Keywords",
+  sep      = ";"
 )
 ```
 
@@ -149,7 +151,6 @@ normalizes, and projects in a single call:
 
 ```r
 papers <- data.frame(
-  id            = 1:4,
   `Author Names`= c("Smith J, Doe A, Lee K", "Smith J, Lee K",
                     "Doe A, Lee K", "Smith J, Doe A"),
   Tags          = c("ml, ai", "ml, nlp", "ai, nlp", "ml, ai"),
@@ -159,6 +160,16 @@ papers <- data.frame(
 # Point the builder at the column and give it the delimiter — no renaming.
 author_network(papers, authors = "Author Names", sep = ",")
 keyword_network(papers, keywords = "Tags", sep = ",")
+```
+
+There is no document-identifier column in that example, and none is needed: the
+builders use an existing `id` column when present and otherwise fall back to row
+numbers (each row is treated as one document). To use a differently-named
+identifier column, name it with `id`:
+
+```r
+papers$paper_id <- c("A1", "A2", "A3", "A4")
+author_network(papers, authors = "Author Names", sep = ",", id = "paper_id")
 ```
 
 `sep` is any literal delimiter, so BibTeX-style `" and "` or pipe-delimited
@@ -184,6 +195,10 @@ need no extra arguments:
 
 A few related controls:
 
+- **`id`** — the document-identifier column (the rows of the works × entities
+  matrix). `id = NULL` (default) uses an existing `id` column if present and
+  otherwise numbers the rows; `id = "paper_id"` points at any column. Two
+  entities are linked when they share the same `id` (the same document).
 - **`references_sep`** — coupling builders (`author_network`, `source_network`,
   `country_network`, `institution_network`) split the references column with its
   own delimiter (default `";"`), independent of `sep`. Reference strings often
@@ -202,8 +217,8 @@ A few related controls:
 > The `field =` argument of `keyword_network()` is deprecated in favor of
 > `keywords =`; the old argument still works (with a warning).
 
-See `vignette("reading-data", package = "bibnets")`, section 12, for the full
-treatment.
+See the "Custom columns and separators" section of
+`vignette("reading-data", package = "bibnets")` for the full treatment.
 
 ## Network Builders
 
@@ -217,10 +232,17 @@ Two authors are linked when they appear on the same paper. Use `counting` to
 change how each paper contributes:
 
 ```r
-author_network(data, "collaboration", counting = "full")
-author_network(data, "collaboration", counting = "fractional")
-author_network(data, "collaboration", counting = "harmonic")
-author_network(data, "collaboration", counting = "first_last")
+author_network(data, type = "collaboration", counting = "full")
+author_network(data, type = "collaboration", counting = "fractional")
+author_network(data, type = "collaboration", counting = "harmonic")
+author_network(data, type = "collaboration", counting = "first_last")
+```
+
+`data` can be a reader result or a plain data frame — point the builder
+straight at your own columns, no reader needed:
+
+```r
+author_network(my_df, authors = "Author Names", id = "paper_id", sep = ",")
 ```
 
 Use `attention` instead of `counting` when the goal is position-based
@@ -371,9 +393,28 @@ Optional converters are guarded by `requireNamespace()`, so packages such as
 `igraph`, `tidygraph`, and `cograph` are not required unless their output
 formats are requested.
 
+## Author Name Parsing
+
+The same author can appear under different spellings across sources
+(`"Saqr, Mohammed"`, `"SAQR M"`, `"Mohammed Saqr"`). `parse_names()` reorders
+and splits names so they can be normalized to a single label *before* building
+a network — node identity is fixed at build time, so merging spellings
+afterward is not possible.
+
+```r
+parse_names(c("Saqr, Mohammed", "WANG Y", "Mohammed Saqr"))
+
+# Normalize an authors list-column before author_network()
+data$authors <- lapply(data$authors, parse_names, format = "last_initials")
+```
+
+It recognizes three conventions — `Last, First` (comma), `SURNAME Initials`
+(Scopus/bibnets), and `First Last` — and returns the parsed components in a
+`"parts"` attribute. It is a standalone utility: no reader or builder calls it.
+
 ## Vignettes
 
-Two vignettes ship with the package:
+Three vignettes ship with the package:
 
 - `vignette("bibnets")` — end-to-end workflow: builders, counting and
   similarity options, attention weighting, network reduction, temporal
@@ -381,7 +422,10 @@ Two vignettes ship with the package:
 - `vignette("reading-data", package = "bibnets")` — readers for each
   supported source (Scopus, Web of Science, OpenAlex JSON and flat CSV,
   BibTeX, RIS, Lens, Dimensions, Crossref), the standard schema, generic
-  CSV input, and multi-source merging.
+  CSV input, custom columns and separators, and multi-source merging.
+- `vignette("parsing-author-names", package = "bibnets")` — `parse_names()`:
+  name conventions, output styles, the `"parts"` attribute, and the
+  normalize-before-building workflow.
 
 ## License
 

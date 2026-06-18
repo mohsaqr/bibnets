@@ -16,14 +16,28 @@
 #'     \item{`"dimensions"`}{Dimensions CSV.}
 #'     \item{`"lens"`}{Lens.org CSV.}
 #'     \item{`"openalex_csv"`}{Flat OpenAlex CSV export (pipe-delimited fields).}
-#'     \item{`"generic"`}{Any CSV. Use `id` and `actors` to specify columns.}
+#'     \item{`"generic"`}{Any CSV. Map its columns with `id`, `authors`,
+#'       `keywords`, `references`, `countries`, `affiliations`, `journal`.
+#'       Inferred automatically when any of those arguments is supplied, so
+#'       `format = "generic"` is optional in that case.}
 #'   }
 #' @param id Character. Column name for document identifier. Only used
 #'   when `format = "generic"`. Default `NULL` (uses row numbers).
-#' @param actors Character vector. Column names to split into list-columns.
-#'   Only used when `format = "generic"`.
-#' @param sep Character. Delimiter for splitting actor columns. Default `";"`.
+#' @param authors,keywords,references,countries,affiliations Character. For
+#'   `format = "generic"`, the name of the source column to map onto that
+#'   standard field. Its cells are split on `sep` into a list-column. For
+#'   example `authors = "Author Names"` reads the `Author Names` column into
+#'   the standard `authors` list-column.
+#' @param journal Character. For `format = "generic"`, the name of the source
+#'   column to use as the (scalar) `journal` field. Not split.
+#' @param sep Character. Delimiter for splitting the mapped multi-valued
+#'   columns. Default `";"`.
+#' @param list_cols Character vector. For `format = "generic"`, additional
+#'   columns to split into list-columns *in place* (keeping their original
+#'   names), for fields without a dedicated argument above.
 #' @param ... Additional arguments passed to the format-specific reader.
+#' @param actors Deprecated. Use the entity arguments (`authors`, `keywords`,
+#'   ...) or `list_cols` instead.
 #'
 #' @return A data frame.
 #'
@@ -45,24 +59,49 @@
 #' all_data <- read_biblio(folder)
 #' nrow(all_data)
 #'
-#' # Generic CSV: point read_biblio at any CSV and name the list-column fields
+#' # Custom CSV: map each source column onto a standard field by name.
+#' # Naming columns implies format = "generic" (no need to pass it).
 #' tmp <- tempfile(fileext = ".csv")
 #' write.csv(data.frame(
 #'   doc_id  = c("a", "b"),
 #'   Authors = c("Smith J; Jones A", "Davis M"),
 #'   Keywords = c("networks; bibliometrics", "analytics")
 #' ), tmp, row.names = FALSE)
-#' generic <- read_biblio(tmp, format = "generic",
+#' generic <- read_biblio(tmp,
 #'                        id = "doc_id",
-#'                        actors = c("Authors", "Keywords"),
+#'                        authors = "Authors",
+#'                        keywords = "Keywords",
 #'                        sep = ";")
 #' head(generic)
 read_biblio <- function(path,
                         format = "auto",
                         id = NULL,
-                        actors = NULL,
+                        authors = NULL,
+                        keywords = NULL,
+                        references = NULL,
+                        countries = NULL,
+                        affiliations = NULL,
+                        journal = NULL,
                         sep = ";",
-                        ...) {
+                        list_cols = NULL,
+                        ...,
+                        actors = NULL) {
+  ## Back-compat: 'actors' was renamed in 0.6.0.
+  if (!is.null(actors)) {
+    warning("Argument 'actors' is deprecated; use the entity arguments ",
+            "(authors, keywords, ...) or 'list_cols' instead.", call. = FALSE)
+    if (is.null(list_cols)) list_cols <- actors
+  }
+
+  ## If the caller maps columns by name, the read is generic by definition —
+  ## no need to also pass format = "generic".
+  mapping_supplied <- !is.null(id) || !is.null(authors) || !is.null(keywords) ||
+    !is.null(references) || !is.null(countries) || !is.null(affiliations) ||
+    !is.null(journal) || !is.null(list_cols)
+  if (identical(format, "auto") && mapping_supplied) {
+    format <- "generic"
+  }
+
   ## Collect all file paths
   files <- resolve_paths(path)
 
@@ -72,8 +111,11 @@ read_biblio <- function(path,
 
   ## Read each file
   dfs <- lapply(files, function(f) {
-    read_single_biblio(f, format = format, id = id, actors = actors,
-                        sep = sep, ...)
+    read_single_biblio(f, format = format, id = id, sep = sep,
+                        authors = authors, keywords = keywords,
+                        references = references, countries = countries,
+                        affiliations = affiliations, journal = journal,
+                        list_cols = list_cols, ...)
   })
 
   ## Combine
@@ -114,9 +156,17 @@ align_biblio_columns <- function(dfs) {
 
 #' Read a single bibliometric file
 #' @keywords internal
-read_single_biblio <- function(file, format, id, actors, sep, ...) {
+read_single_biblio <- function(file, format, id, sep,
+                               authors = NULL, keywords = NULL,
+                               references = NULL, countries = NULL,
+                               affiliations = NULL, journal = NULL,
+                               list_cols = NULL, ...) {
   if (format == "generic") {
-    return(read_generic(file, id = id, actors = actors, sep = sep))
+    return(read_generic(file, id = id, sep = sep,
+                        authors = authors, keywords = keywords,
+                        references = references, countries = countries,
+                        affiliations = affiliations, journal = journal,
+                        list_cols = list_cols))
   }
 
   if (format == "auto") {
@@ -141,7 +191,7 @@ read_single_biblio <- function(file, format, id, actors, sep, ...) {
       "must be loaded into R first, then converted with\n",
       "read_openalex() or read_crossref().\n\n",
       "For generic CSV, use: read_biblio(file, format = 'generic', ",
-      "actors = c('Authors', 'Keywords'), sep = ';')",
+      "authors = 'Authors', keywords = 'Keywords', sep = ';')",
       call. = FALSE
     )
   )
@@ -150,7 +200,10 @@ read_single_biblio <- function(file, format, id, actors, sep, ...) {
 
 #' Read a generic CSV with user-specified columns
 #' @keywords internal
-read_generic <- function(file, id = NULL, actors = NULL, sep = ";") {
+read_generic <- function(file, id = NULL, sep = ";",
+                         authors = NULL, keywords = NULL, references = NULL,
+                         countries = NULL, affiliations = NULL, journal = NULL,
+                         list_cols = NULL) {
   check_file(file)
 
   data <- utils::read.csv(file, stringsAsFactors = FALSE, fileEncoding = "UTF-8",
@@ -163,17 +216,38 @@ read_generic <- function(file, id = NULL, actors = NULL, sep = ";") {
     data[["id"]] <- as.character(seq_len(nrow(data)))
   }
 
-  ## Split actor columns into list-columns
-  if (!is.null(actors)) {
-    missing <- setdiff(actors, names(data))
-    if (length(missing) > 0) {
-      warning("Actor column(s) not found in file and skipped: ",
-              paste0("'", missing, "'", collapse = ", "),
+  warn_missing <- function(cols) {
+    miss <- cols[!cols %in% names(data)]
+    if (length(miss) > 0)
+      warning("Column(s) not found in file and skipped: ",
+              paste0("'", miss, "'", collapse = ", "),
               ". Available columns: ",
               paste0("'", names(data), "'", collapse = ", "),
               call. = FALSE)
-    }
-    cols <- intersect(actors, names(data))
+  }
+
+  ## Map entity arguments (standard field name <- source column) onto
+  ## list-columns. NULLs drop out of c(), so only supplied args remain.
+  entity_map <- c(authors = authors, keywords = keywords,
+                  references = references, countries = countries,
+                  affiliations = affiliations)
+  if (length(entity_map) > 0) {
+    warn_missing(entity_map)
+    present <- entity_map[entity_map %in% names(data)]
+    data[names(present)] <- lapply(present,
+                                   function(src) split_field(data[[src]], sep = sep))
+  }
+
+  ## journal is a scalar field (not split)
+  if (!is.null(journal)) {
+    warn_missing(journal)
+    if (journal %in% names(data)) data[["journal"]] <- as.character(data[[journal]])
+  }
+
+  ## list_cols: split any further columns in place, keeping their names
+  if (!is.null(list_cols)) {
+    warn_missing(list_cols)
+    cols <- intersect(list_cols, names(data))
     data[cols] <- lapply(data[cols], split_field, sep = sep)
   }
 

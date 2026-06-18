@@ -4,7 +4,20 @@
 \alias{read_single_biblio}
 \title{Read a single bibliometric file}
 \usage{
-read_single_biblio(file, format, id, actors, sep, ...)
+read_single_biblio(
+  file,
+  format,
+  id,
+  sep,
+  authors = NULL,
+  keywords = NULL,
+  references = NULL,
+  countries = NULL,
+  affiliations = NULL,
+  journal = NULL,
+  list_cols = NULL,
+  ...
+)
 }
 \description{
 Read a single bibliometric file
