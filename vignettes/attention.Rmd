@@ -142,7 +142,6 @@ however many items it lists — can dominate the result.
 López-Pernas, S., Tikka, S., Misiejuk, K., Oliveira, E., & Saqr, M. (2025).
 Modeling the Dynamics and Impact of Human-AI Interactions with Attention
 Transition Network Analysis. SSRN working paper 6187958.
-<https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6187958>
 
 López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: A Concise
 Introduction and a Detailed Methodology for Mapping the Scientific Field of
