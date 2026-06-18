@@ -1,0 +1,794 @@
+# Reading bibliometric data into bibnets
+
+``` r
+
+library(bibnets)
+```
+
+## 1. Introduction and the standard schema
+
+`bibnets` reads bibliographic data from two kinds of source. The first
+is the standard database exports — Scopus, Web of Science, OpenAlex,
+Lens.org, Dimensions, Crossref, BibTeX, and RIS — which it recognises
+and parses automatically; give it a single file, several files, or a
+whole folder and it works out each format on its own. The second is
+**any custom table of your own**: a CSV or data frame that is not a
+known export, where you simply name the columns that hold the authors,
+references, or keywords and `bibnets` reads it into the same structure.
+Either way you get the same structure — the **bibnets format** — that
+every network builder
+([`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md),
+[`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md),
+[`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md),
+[`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md),
+[`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md),
+[`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md),
+[`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md),
+[`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md))
+works from. The bibnets format is a data frame with one row per paper:
+most columns hold a single value (title, year, journal), while the
+fields that can have many values per paper — authors, references,
+keywords — hold a list in each row.
+
+In full, the bibnets format has these columns:
+
+| Column | Type | Meaning |
+|----|----|----|
+| `id` | chr | Document identifier (EID, OpenAlex W-ID, DOI, etc.) |
+| `title` | chr | Document title |
+| `year` | int | Publication year |
+| `journal` | chr | Source / journal / venue name |
+| `doi` | chr | DOI without the `https://doi.org/` prefix |
+| `cited_by_count` | int | Citations received (as reported by source) |
+| `abstract` | chr | Abstract text; `NA` for sources that do not expose it |
+| `type` | chr | Document type (article, review, book-chapter, …) |
+| `authors` | list | Character vector of author names per row |
+| `references` | list | Character vector of cited references per row |
+| `keywords` | list | Character vector of keywords per row |
+
+Some sources add extra columns (such as `index_keywords`,
+`keywords_plus`, `affiliations`, or `countries`); these are kept after
+the standard ones.
+
+This vignette documents the
+[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+entry point and each reader, the generic-CSV path, network construction
+directly from custom columns and separators, the
+[`split_field()`](https://saqr.me/bibnets-pkg/reference/split_field.md)
+helper, and the manual construction of a compatible data frame.
+
+## 2. Custom data and separators
+
+### Custom CSV — map columns by name
+
+For CSV files that do not match any of the recognised signatures
+(in-house exports, custom dumps, public datasets), map each source
+column onto a standard field **by name**. The identifier column is named
+via `id`; each multi-valued field is named via its own argument —
+`authors`, `keywords`, `references`, `countries`, `affiliations` — and
+`journal` for the scalar source/venue. `sep` is the delimiter applied
+inside those cells. Naming any of these columns implies
+`format = "generic"`, so you do not need to pass `format` yourself.
+
+Hypothetical call:
+
+``` r
+
+data <- read_biblio(
+  "my_data.csv",
+  id       = "doc_id",
+  authors  = "Authors",
+  keywords = "Keywords",
+  sep      = ";"
+)
+```
+
+Demonstrated on the bundled OpenAlex CSV (which uses `|` as the
+delimiter). The source columns have long dotted names; mapping them by
+argument yields the standard `authors` and `keywords` list-columns:
+
+``` r
+
+f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
+generic <- read_biblio(
+  f,
+  id       = "id",
+  authors  = "authorships.author.display_name",
+  keywords = "primary_topic.display_name",
+  sep      = "|"
+)
+generic$authors[[1]]
+#> [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"
+generic$keywords[[1]]
+#> [1] "Online Learning and Analytics"
+```
+
+Each mapped column is split on `sep` and stored under its standard name
+as a list-column; the original source column is left in place. For any
+further columns that have no dedicated argument, `list_cols` splits them
+in place (keeping their original names).
+
+### Custom columns and separators (no reader needed)
+
+Often a dataset is already a plain data frame or CSV with its own column
+names and its own delimiter — you do not need to coerce it into the
+standard schema first. Every network builder accepts a column argument
+named after the entity it builds (`authors`, `keywords`, `references`,
+`journal`, `countries`, `affiliations`) plus a `sep` for splitting a
+delimited character column. The builder splits, normalises, and builds
+in one call.
+
+``` r
+
+papers <- data.frame(
+  id            = 1:4,
+  `Author Names`= c("Smith J, Doe A, Lee K", "Smith J, Lee K",
+                    "Doe A, Lee K", "Smith J, Doe A"),
+  Tags          = c("ml, ai", "ml, nlp", "ai, nlp", "ml, ai"),
+  check.names   = FALSE,
+  stringsAsFactors = FALSE
+)
+
+# Point the builder at the column and give it the delimiter — no renaming.
+author_network(papers, authors = "Author Names", sep = ",")
+#> # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full 
+#>    from   to       weight  count
+#> 1  DOE A  LEE K         2      2
+#> 2  DOE A  SMITH J       2      2
+#> 3  LEE K  SMITH J       2      2
+keyword_network(papers, keywords = "Tags", sep = ",")
+#> # bibnets network: keyword_co_occurrence | 3 nodes · 3 edges | counting: full 
+#>    from  to   weight  count
+#> 1  AI    ML        2      2
+#> 2  AI    NLP       1      1
+#> 3  ML    NLP       1      1
+```
+
+### The document identifier
+
+The works dimension (the rows of the `works x entities` matrix) is the
+`id` column. You do not have to supply one: `id = NULL` (the default)
+uses an existing `id` column when present and otherwise numbers the
+rows, treating each row as one document. The example above has no `id`
+column and still works for that reason. To use a differently-named
+identifier column, name it with the `id` argument:
+
+``` r
+
+papers2 <- data.frame(
+  paper_id = c("P1", "P2", "P3"),
+  authors  = c("Alice, Bob", "Alice, Carol", "Bob, Carol"),
+  stringsAsFactors = FALSE
+)
+author_network(papers2, authors = "authors", sep = ",", id = "paper_id")
+#> # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full 
+#>    from   to     weight  count
+#> 1  ALICE  BOB         1      1
+#> 2  ALICE  CAROL       1      1
+#> 3  BOB    CAROL       1      1
+```
+
+Two entities are linked when they share the same `id`, so the identifier
+controls what counts as “the same document” during projection.
+
+`sep` is any literal delimiter, so BibTeX-style `" and "` or
+pipe-delimited exports work too:
+
+``` r
+
+bib <- data.frame(
+  id      = 1:3,
+  creators = c("Alice and Bob", "Alice and Carol", "Bob and Carol"),
+  stringsAsFactors = FALSE
+)
+author_network(bib, authors = "creators", sep = " and ")
+#> # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full 
+#>    from   to     weight  count
+#> 1  ALICE  BOB         1      1
+#> 2  ALICE  CAROL       1      1
+#> 3  BOB    CAROL       1      1
+```
+
+### A separate separator for references
+
+In a coupling network the *entity* column and the *references* column
+can use different delimiters. Reference strings frequently contain
+internal commas (`"Smith J, 2020, Journal"`), so `references` is split
+on `";"` by default, independent of `sep`. Override it with
+`references_sep` when your references use another delimiter:
+
+``` r
+
+d <- data.frame(
+  id         = c("P1", "P2", "P3"),
+  auth       = c("Alice, Bob", "Alice, Carol", "Bob, Carol"),
+  references = c("R1, R2", "R1, R3", "R2, R3"),
+  stringsAsFactors = FALSE
+)
+author_network(d, "coupling", authors = "auth", sep = ",",
+               references_sep = ",")
+#> # bibnets network: author_coupling | 3 nodes · 3 edges | counting: full 
+#>    from   to     weight  count
+#> 1  ALICE  BOB         3      3
+#> 2  ALICE  CAROL       3      3
+#> 3  BOB    CAROL       3      3
+```
+
+### Quoted values
+
+Values exported with surrounding quotes (`"Alice"`, or the CSV doubled
+form `""Alice""`) are cleaned automatically — `strip_quotes = TRUE` is
+the default, so a quoted label and its bare form collapse to the same
+node. Internal apostrophes (e.g. `O'Brien`) are left untouched. Set
+`strip_quotes = FALSE` to keep the quotes as part of the label.
+
+``` r
+
+q <- data.frame(
+  id      = 1:3,
+  authors = c('"Alice"; "Bob"', '"Alice"; "Carol"', '"Bob"; "Carol"'),
+  stringsAsFactors = FALSE
+)
+author_network(q)                       # quotes stripped -> ALICE, BOB, CAROL
+#> # bibnets network: author_collaboration | 3 nodes · 3 edges | counting: full 
+#>    from   to     weight  count
+#> 1  ALICE  BOB         1      1
+#> 2  ALICE  CAROL       1      1
+#> 3  BOB    CAROL       1      1
+```
+
+### A safety net for the wrong delimiter
+
+If you pass a `sep` that does not actually split the column — for
+example the data is pipe-delimited but you left `sep = ";"` — and the
+values contain a structural delimiter (`";"`, `"|"`, or a tab), the
+builder warns you instead of silently treating each whole cell as one
+entity:
+
+``` r
+
+bad <- data.frame(
+  id      = 1:3,
+  authors = c("Smith J| Doe A", "Smith J| Lee K", "Doe A| Lee K"),
+  stringsAsFactors = FALSE
+)
+invisible(author_network(bad))          # warns: values contain "|"
+#> Warning: Splitting column 'authors' on sep = ";" produced no multi-entry rows,
+#> but most values contain "|". If entries are separated by "|", pass that as sep.
+```
+
+The check is deliberately quiet for commas and `" and "`, which appear
+inside perfectly valid single labels (`"Last, First"` names,
+one-reference-per-row citation strings, organisations like
+`"Smith and Sons"`).
+
+## 3. `read_biblio()`
+
+[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+accepts a single file, a vector of file paths, or a directory. When
+`format = "auto"` (the default) it detects the format from the contents
+of the file:
+
+``` r
+
+data <- read_biblio("export.csv")          # auto-detect format
+data <- read_biblio("scopus_dir/")         # entire directory, rbind'd
+data <- read_biblio(c("a.csv", "b.csv"))   # multiple files, rbind'd
+data <- read_biblio("file.csv", format = "scopus")   # force a format
+```
+
+When given a directory,
+[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+collects every `.csv`, `.txt`, `.bib`, `.ris`, `.xls`, and `.xlsx` file
+in it, reads each one, and combines the results with
+[`rbind()`](https://rdrr.io/r/base/cbind.html). For more than one file a
+summary message is emitted:
+
+    Read 3 files: 1247 rows total
+
+Format detection is performed on the first non-empty line of the file:
+
+- BibTeX: line 1 begins with `@`
+- RIS: line 1 begins with `TY -`
+- Web of Science plaintext: line 1 begins with `FN` or `PT`
+- CSV-based: detection inspects the header row. When the first line
+  matches the Dimensions preamble (`"About the data: ..."`), line 2 is
+  used instead. Header tokens determine the format: `eid` for Scopus,
+  `lens id` for Lens.org, `publication id` or `dimensions url` for
+  Dimensions, `authorships.author.display_name` for the OpenAlex flat
+  CSV.
+
+If detection fails,
+[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+raises an error that lists the supported formats and indicates how to
+pass `format` explicitly or name the entity columns (`authors`,
+`keywords`, …), which reads the file as a generic CSV.
+
+Two readers are not dispatched by
+[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md):
+
+- [`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+  accepts an in-memory tibble from
+  [`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html),
+  not a file path.
+- [`read_crossref()`](https://saqr.me/bibnets-pkg/reference/read_crossref.md)
+  accepts the `data` element of
+  [`rcrossref::cr_works()`](https://docs.ropensci.org/rcrossref/reference/cr_works.html).
+
+Both take R objects rather than files and are called directly.
+
+## 4. Scopus
+
+``` r
+
+sc <- read_scopus("scopus.csv")
+```
+
+[`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+ingests the standard Scopus CSV export (`File -> Export -> CSV` from the
+Scopus search UI). Mappings from Scopus columns to the bibnets schema:
+
+| Scopus column                     | Standard column                |
+|-----------------------------------|--------------------------------|
+| `EID` (or `Article No.`)          | `id`                           |
+| `Title`                           | `title`                        |
+| `Year`                            | `year`                         |
+| `Source title`                    | `journal`                      |
+| `DOI`                             | `doi` (prefix stripped)        |
+| `Cited by`                        | `cited_by_count`               |
+| `Abstract`                        | `abstract`                     |
+| `Document Type`                   | `type`                         |
+| `Authors` (`;`-delimited)         | `authors` (list)               |
+| `References` (`;`-delimited)      | `references` (list)            |
+| `Author Keywords` (`;`-delimited) | `keywords` (list)              |
+| `Index Keywords` (`;`-delimited)  | `index_keywords` (list, extra) |
+| `Affiliations` (`;`-delimited)    | `affiliations` (list, extra)   |
+| `Language of Original Document`   | `language` (extra)             |
+
+Scopus stores each cited reference as one semicolon-delimited string in
+a single cell.
+[`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+splits on `;` and applies `standardize_refs()` to each entry:
+uppercasing, whitespace normalisation, and removal of a trailing DOI
+where present. References differing only in case or trailing DOI then
+resolve to the same node in co-citation and reference networks.
+
+## 5. Web of Science
+
+WoS exports come in two shapes:
+
+``` r
+
+wos1 <- read_wos("savedrecs.txt")                       # plaintext (default)
+wos2 <- read_wos("savedrecs.tsv", format = "tab")       # tab-delimited
+```
+
+The plaintext format is a tagged record syntax. Each record begins with
+a `PT` (publication type) tag and ends with `ER` (end record). Within
+the record, every field is introduced by a 2-letter tag at the start of
+a line, with continuation lines indented:
+
+| Tag  | Field                                  |
+|------|----------------------------------------|
+| `AU` | Authors (one per line)                 |
+| `TI` | Title                                  |
+| `SO` | Source / journal                       |
+| `PY` | Year                                   |
+| `DI` | DOI                                    |
+| `TC` | Times cited                            |
+| `AB` | Abstract                               |
+| `DT` | Document type                          |
+| `DE` | Author keywords                        |
+| `ID` | Keywords plus (extra: `keywords_plus`) |
+| `CR` | Cited references (one per line)        |
+
+[`read_wos()`](https://saqr.me/bibnets-pkg/reference/read_wos.md) walks
+the file, splitting on `ER` boundaries, and emits one row per record.
+The tab-delimited variant carries the same fields in a flat CSV-like
+grid. Either way the output schema is identical.
+
+## 6. Dimensions
+
+``` r
+
+dm <- read_dimensions("dimensions_export.csv")
+```
+
+The Dimensions CSV begins with a metadata row of the form
+
+    "About the data: This export was generated on YYYY-MM-DD ..."
+
+before the column header.
+[`read_dimensions()`](https://saqr.me/bibnets-pkg/reference/read_dimensions.md)
+detects this preamble and skips it. If the line has been removed (for
+example, by manual editing of the file), the reader continues to
+function because it identifies the column row by the Dimensions header
+tokens `Publication ID` and `Dimensions URL`.
+
+Extras returned: `affiliations` and `countries` as list-columns,
+analogous to the OpenAlex schema.
+
+## 7. Lens.org
+
+``` r
+
+ln <- read_lens("lens_export.csv")
+```
+
+Key Lens columns and how they map:
+
+| Lens column             | Standard column     |
+|-------------------------|---------------------|
+| `Lens ID`               | `id`                |
+| `Title`                 | `title`             |
+| `Publication Year`      | `year`              |
+| `Source Title`          | `journal`           |
+| `DOI`                   | `doi`               |
+| `Cited by Count`        | `cited_by_count`    |
+| `Abstract`              | `abstract`          |
+| `Publication Type`      | `type`              |
+| `Author/s`              | `authors` (list)    |
+| `Reference Identifiers` | `references` (list) |
+| `Keywords`              | `keywords` (list)   |
+
+## 8. BibTeX & RIS
+
+``` r
+
+bt <- read_bibtex("library.bib")
+ri <- read_ris("savedrecs.ris")
+```
+
+[`read_bibtex()`](https://saqr.me/bibnets-pkg/reference/read_bibtex.md)
+parses `@type{key, field = {value}, ...}` blocks.
+[`read_ris()`](https://saqr.me/bibnets-pkg/reference/read_ris.md) parses
+tagged `TY - ... ER -` blocks; the structure is equivalent to WoS
+plaintext, but with a different tag dictionary.
+
+Standard BibTeX and RIS do not contain cited-reference data, so the
+`references` column in the resulting data frame is empty on every row.
+These formats are sufficient for co-authorship and keyword co-occurrence
+networks. For co-citation, coupling, or direct citation networks, the
+appropriate sources are Scopus, Web of Science, OpenAlex (via
+[`oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html)),
+Dimensions, Lens, or Crossref.
+
+## 9. Crossref via rcrossref
+
+``` r
+
+library(rcrossref)
+raw  <- cr_works(query = "graph neural networks", limit = 100)
+data <- read_crossref(raw$data)
+```
+
+[`read_crossref()`](https://saqr.me/bibnets-pkg/reference/read_crossref.md)
+accepts the `data` element of the
+[`cr_works()`](https://docs.ropensci.org/rcrossref/reference/cr_works.html)
+result (a data frame, not the wrapping list). The function handles the
+two field-naming variants Crossref returns (`container.title` vs
+`container-title`; `is.referenced.by.count` vs `is-referenced-by-count`)
+and maps both to the standard schema.
+
+## 10. OpenAlex — two paths
+
+OpenAlex ships data through two routes that bibnets supports separately.
+
+### Path A: flat CSV
+
+The package includes a 30-row OpenAlex flat CSV at
+`inst/extdata/openalex_works.csv`, corresponding to the export produced
+by downloading “Works” results from the OpenAlex web interface.
+Multi-valued fields use `|` as the delimiter.
+
+``` r
+
+f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
+oa <- read_openalex_csv(f)
+str(oa, max.level = 1)
+#> 'data.frame':    30 obs. of  13 variables:
+#>  $ id            : chr  "W2769342982" "W2264893711" "W2612059685" "W3118164373" ...
+#>  $ title         : chr  "Open University Learning Analytics dataset" "Educational Data Mining and Learning Analytics in Programming" "Predicting Student Performance using Advanced Learning Analytics" "Predicting Student Performance Using Data Mining and Learning Analytics Techniques: A Systematic Literature Review" ...
+#>  $ year          : int  2017 2015 2017 2020 2022 2016 2020 2024 2016 2020 ...
+#>  $ journal       : chr  "Scientific Data" "" "" "Applied Sciences" ...
+#>  $ doi           : chr  "10.1038/sdata.2017.171" "10.1145/2858796.2858798" "10.1145/3041021.3054164" "10.3390/app11010237" ...
+#>  $ cited_by_count: int  432 312 235 417 247 163 122 133 131 177 ...
+#>  $ abstract      : chr  NA NA NA NA ...
+#>  $ type          : chr  "article" "article" "article" "article" ...
+#>  $ authors       :List of 30
+#>  $ references    :List of 30
+#>  $ keywords      :List of 30
+#>  $ affiliations  :List of 30
+#>  $ countries     :List of 30
+head(oa[, c("id", "title", "year", "journal", "type")], 5)
+#>            id
+#> 1 W2769342982
+#> 2 W2264893711
+#> 3 W2612059685
+#> 4 W3118164373
+#> 5 W4300484403
+#>                                                                                                                title
+#> 1                                                                         Open University Learning Analytics dataset
+#> 2                                                      Educational Data Mining and Learning Analytics in Programming
+#> 3                                                   Predicting Student Performance using Advanced Learning Analytics
+#> 4 Predicting Student Performance Using Data Mining and Learning Analytics Techniques: A Systematic Literature Review
+#> 5                           Artificial Intelligence and Learning Analytics in Teacher Education: A Systematic Review
+#>   year            journal    type
+#> 1 2017    Scientific Data article
+#> 2 2015                    article
+#> 3 2017                    article
+#> 4 2020   Applied Sciences article
+#> 5 2022 Education Sciences  review
+```
+
+The list-columns:
+
+``` r
+
+oa$authors[[1]]
+#> [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"
+oa$affiliations[[1]]
+#> [1] "The Open University"                 
+#> [2] "Czech Technical University in Prague"
+#> [3] "The Open University"                 
+#> [4] "The Open University"                 
+#> [5] "Czech Technical University in Prague"
+oa$countries[[1]]
+#> [1] "CZ" "GB" "GB" "CZ" "GB"
+```
+
+References and abstracts are absent from the OpenAlex flat export:
+`references` is empty and `abstract` is `NA` because the web download
+does not include those fields. Use OpenAlex via
+[`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html)
+and
+[`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+when you need cited references or abstracts.
+
+The remaining fields support several network constructions that do not
+require references — co-authorship, country, institution, keyword,
+source, and document networks:
+
+``` r
+
+co <- country_network(oa, counting = "fractional")
+head(co, 5)
+#> # bibnets network: country_collaboration | 8 nodes · 5 edges | counting: fractional 
+#>    from  to  weight  count
+#> 1  GB    NO     1.5      3
+#> 2  CA    US   1.167      2
+#> 3  AU    CN       1      1
+#> 4  AU    EC       1      1
+#> 5  CZ    GB       1      1
+```
+
+### Path B: in-memory tibble from `openalexR`
+
+This path is used when references and abstracts are required.
+[`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html)
+returns a nested tibble with `author`, `referenced_works`, `concepts`,
+and `keywords` list-columns;
+[`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+converts it to the standard schema:
+
+``` r
+
+library(openalexR)
+raw  <- oa_fetch(entity = "works", search = "learning analytics", per_page = 200)
+data <- read_openalex(raw)
+```
+
+References are returned as OpenAlex Work IDs (e.g. `W2769342982`) rather
+than formatted citation strings. The IDs are stable identifiers suitable
+for co-citation and direct-citation networks; visualisations that need
+human-readable labels can join the IDs back to titles in a separate
+step.
+
+## 11. Building data manually
+
+When data does not come from any of the supported sources, a
+bibnets-compatible data frame can be constructed directly. The
+requirement is: standard scalar columns are character or integer;
+multi-valued fields are list-columns whose elements are character
+vectors.
+
+``` r
+
+df <- data.frame(
+  id    = c("p1", "p2", "p3"),
+  title = c("Paper A", "Paper B", "Paper C"),
+  year  = c(2020L, 2021L, 2022L),
+  stringsAsFactors = FALSE
+)
+df$authors <- list(
+  c("ALICE", "BOB"),
+  c("BOB", "CAROL"),
+  c("ALICE", "CAROL", "DAVE")
+)
+df$references <- list(
+  c("R1", "R2"),
+  c("R1", "R3"),
+  c("R2", "R3", "R4")
+)
+df$keywords <- list(
+  c("graph", "network"),
+  c("network", "embedding"),
+  c("graph", "embedding", "neural")
+)
+
+author_network(df, "collaboration")
+#> # bibnets network: author_collaboration | 4 nodes · 5 edges | counting: full 
+#>    from   to     weight  count
+#> 1  ALICE  BOB         1      1
+#> 2  ALICE  CAROL       1      1
+#> 3  BOB    CAROL       1      1
+#> 4  ALICE  DAVE        1      1
+#> 5  CAROL  DAVE        1      1
+keyword_network(df)
+#> # bibnets network: keyword_co_occurrence | 4 nodes · 5 edges | counting: full 
+#>    from       to       weight  count
+#> 1  EMBEDDING  GRAPH         1      1
+#> 2  EMBEDDING  NETWORK       1      1
+#> 3  GRAPH      NETWORK       1      1
+#> 4  EMBEDDING  NEURAL        1      1
+#> 5  GRAPH      NEURAL        1      1
+reference_network(df)
+#> # bibnets network: reference_co_citation | 4 nodes · 5 edges | counting: full 
+#>    from  to  weight  count
+#> 1  R1    R2       1      1
+#> 2  R1    R3       1      1
+#> 3  R2    R3       1      1
+#> 4  R2    R4       1      1
+#> 5  R3    R4       1      1
+```
+
+[`build_bipartite()`](https://saqr.me/bibnets-pkg/reference/build_bipartite.md)
+applies `toupper(trimws(...))` to every entity label before constructing
+the sparse matrix, so `"graph"`, `"Graph"`, and `"GRAPH"` are mapped to
+the same node `"GRAPH"`. Tests or comparisons that reference node names
+should use uppercase strings.
+
+## 12. The `split_field()` helper
+
+[`split_field()`](https://saqr.me/bibnets-pkg/reference/split_field.md)
+converts a character column with semicolon-delimited (or otherwise
+delimited) values into a list-column without going through
+`read_biblio(format = "generic")`:
+
+``` r
+
+split_field(c("Alice; Bob; Carol", "Dave; Eve"))
+#> [[1]]
+#> [1] "Alice" "Bob"   "Carol"
+#> 
+#> [[2]]
+#> [1] "Dave" "Eve"
+split_field(c("a|b|c", "d|e"), sep = "|")
+#> [[1]]
+#> [1] "a" "b" "c"
+#> 
+#> [[2]]
+#> [1] "d" "e"
+```
+
+This is the same operation that
+[`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+and the other readers apply internally to multi-valued columns; it is
+exported for use in custom pipelines.
+
+## 13. Combining data from multiple sources
+
+Different readers expose different extras: WoS provides `keywords_plus`,
+Scopus provides `index_keywords`, OpenAlex provides `countries`. To
+combine sources, restrict each frame to the standard columns and bind:
+
+``` r
+
+common <- c("id", "title", "year", "journal", "doi", "cited_by_count",
+            "abstract", "type", "authors", "references", "keywords")
+
+data(biblio_data)
+b1 <- biblio_data
+b2 <- biblio_data
+b2$id <- paste0(b2$id, "_dup")
+
+cols <- intersect(common, names(b1))
+combined <- rbind(b1[, cols], b2[, cols])
+nrow(combined)
+#> [1] 20
+```
+
+Two practical notes:
+
+1.  When document IDs overlap across sources (which occurs when Scopus
+    and WoS both index the same article), prefixing the IDs as shown
+    prevents duplicate documents from inflating co-occurrence counts.
+2.  Source-specific extras (e.g. WoS `keywords_plus`) should be retained
+    on the per-source frame and merged selectively rather than coerced
+    into the combined frame.
+
+## 14. Inspecting and sanity-checking
+
+After reading, basic checks on the list-column sizes and the scalar
+columns help detect silent corruption. Empty list-columns and
+out-of-range years are common indicators that an export is incomplete.
+
+``` r
+
+data(scopus_quantum_cloud)
+sc <- scopus_quantum_cloud
+
+range(lengths(sc$authors))
+#> [1]  0 40
+range(lengths(sc$references))
+#> [1]   0 245
+range(lengths(sc$keywords))
+#> [1]  0 20
+
+head(sort(table(sc$journal), decreasing = TRUE), 5)
+#> 
+#> IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 
+#>                                                                            24 
+#>                   IEEE Transactions on Circuits and Systems I: Regular Papers 
+#>                                                                            20 
+#>                                                                   IEEE Access 
+#>                                                                            18 
+#>              IEEE Transactions on Very Large Scale Integration (VLSI) Systems 
+#>                                                                            14 
+#>                                               IEEE Internet of Things Journal 
+#>                                                                            12
+range(sc$year, na.rm = TRUE)
+#> [1] 2020 2025
+table(sc$type)
+#> 
+#>           Article              Book      Book chapter  Conference paper 
+#>               279                 1                15               191 
+#> Conference review            Review 
+#>                 3                10
+```
+
+Indicators to check:
+
+- A [`lengths()`](https://rdrr.io/r/base/lengths.html) of `0` on every
+  row of `references` for a Scopus or WoS file indicates that the export
+  did not include the references column. Re-export from the source with
+  the references field selected.
+- A year of `0` or `NA` indicates an empty source field.
+- A single dominant document type (e.g. only `"article"`) is expected
+  for filtered searches; broader mixes are expected for thematic
+  searches.
+
+## 15. Troubleshooting
+
+| Symptom | Cause | Fix |
+|----|----|----|
+| `Could not detect file format` | First line doesn’t match any signature | Pass `format = "scopus"` (etc.) explicitly, or name the entity columns (`authors`, `keywords`, …) to read it as a generic CSV |
+| Empty `references` list on every row | BibTeX/RIS or OpenAlex flat CSV — these don’t carry citations | Use Scopus/WoS, OpenAlex via [`oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html), Dimensions, Lens, or Crossref |
+| `Invalid multibyte string` on read | Wrong encoding | Most readers accept `encoding = "latin1"`; pass it through `read_biblio(..., encoding = "latin1")` |
+| Author names look like `LASTNAME, F.J.` not `FJ LASTNAME` | Default is `flip_names = FALSE` | The reader returns names as-is from the source. Cluster them by string match downstream, or pass `flip_names = TRUE` if all names follow `Last, First` |
+| Dimensions file silently fails | “About the data” preamble removed and column header edited | [`read_dimensions()`](https://saqr.me/bibnets-pkg/reference/read_dimensions.md) detects the standard preamble and falls back to header-token detection; the failure mode requires the column header itself to have been edited |
+| Co-authorship network contains duplicate nodes (e.g. `"Alice"` and `"ALICE"`) | Mixed casing in the source | The standard readers and [`build_bipartite()`](https://saqr.me/bibnets-pkg/reference/build_bipartite.md) apply `toupper(trimws(...))` to entity labels. Manually constructed frames should apply the same normalisation |
+
+## Further reading
+
+- The companion vignette,
+  [`vignette("bibnets")`](https://saqr.me/bibnets-pkg/articles/bibnets.md),
+  covers network construction on the in-package datasets.
+- [`vignette("parsing-author-names")`](https://saqr.me/bibnets-pkg/articles/parsing-author-names.md)
+  covers
+  [`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+  for normalising author labels before a network is built.
+- All network builders
+  ([`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md),
+  [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md),
+  [`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md),
+  [`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md),
+  [`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md),
+  [`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md),
+  [`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md),
+  [`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md))
+  accept the same core arguments (`type`, `counting`, `similarity`,
+  `threshold`, `top_n`, `format`) plus the custom-column arguments shown
+  above (`id`, the entity column, `sep`, `references_sep`,
+  `strip_quotes`), so switching between network types on data already in
+  the standard schema requires only a function-name change.

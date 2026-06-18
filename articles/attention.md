@@ -1,0 +1,183 @@
+# Attention weighting
+
+``` r
+
+library(bibnets)
+```
+
+## Why attention weighting
+
+Standard co-occurrence treats every pair in a list as equally related.
+In a keyword list, the first and second terms receive the same link
+weight as the first and tenth terms; in a collaboration list, adjacent
+collaborators receive the same link weight as distant collaborators.
+This can make long lists produce dense networks in which close and
+distant relations are not distinguished.
+
+Attention weighting addresses this by borrowing the principle behind
+attention mechanisms in large language models and graph attention
+networks: a node attends most strongly to nearby neighbours, and
+influence decays with distance (López-Pernas et al., 2025). In
+`bibnets`, this is most natural for keyword co-occurrence and
+collaboration networks where list order carries information about how
+strongly two items are related. Instead of giving every co-occurring
+pair the same weight, attention weighting makes nearby items influence
+each other more strongly than distant items.
+
+Each paper’s total contribution is normalised to sum to one, so a long
+list contributes the same total as a short list and no single paper can
+dominate the network. The weights are a fixed positional rule, not
+learned content-based attention, and the profile you choose states the
+ordering assumption explicitly.
+
+## The four profiles
+
+`attention` takes one of four profiles. Each shapes how a paper’s
+contribution is distributed over ordered items, then normalises the
+result to sum to one.
+
+| Profile | Attention concentrates on | Reasoning |
+|----|----|----|
+| `"lead"` | early positions | weight is highest at the first position and falls quadratically down the list |
+| `"last"` | late positions | weight rises quadratically toward the final position |
+| `"proximity"` | nearby item pairs | each co-occurrence link is weighted by how close the two items are to each other in the list; influence decays with pairwise distance, suiting keywords and collaborations where nearness encodes relatedness |
+| `"circular"` | both ends of the list | weight is highest at the first and last positions and lower toward the middle |
+
+## A worked example
+
+Three papers, with author order preserved:
+
+``` r
+
+papers <- data.frame(
+  id      = c("P1", "P2", "P3"),
+  authors = c("Alice; Bob; Carol", "Alice; Dave", "Carol; Alice; Eve"),
+  stringsAsFactors = FALSE
+)
+```
+
+The canonical use case for attention weighting is ordered keyword and
+collaboration data, where neighbouring items are expected to be more
+closely related than distant items. Byline order is a special case: some
+fields use it to encode lead contribution, senior contribution, or both.
+
+With plain full counting every co-authorship link weighs the same per
+paper, so the strongest tie is simply the pair that appears together
+most often:
+
+``` r
+
+author_network(papers, counting = "full")
+#> # bibnets network: author_collaboration | 5 nodes · 6 edges | counting: full 
+#>    from   to     weight  count
+#> 1  ALICE  CAROL       2      2
+#> 2  ALICE  BOB         1      1
+#> 3  BOB    CAROL       1      1
+#> 4  ALICE  DAVE        1      1
+#> 5  ALICE  EVE         1      1
+#> 6  CAROL  EVE         1      1
+```
+
+Switch to `attention = "lead"` and the weight concentrates on early
+byline positions. Alice, who leads two of the three papers, now anchors
+the strongest ties:
+
+``` r
+
+author_network(papers, attention = "lead")
+#> # bibnets network: author_attention_lead | 5 nodes · 6 edges | counting: lead 
+#>    from   to      weight  count
+#> 1  ALICE  CAROL   0.2296      2
+#> 2  ALICE  BOB     0.1837      1
+#> 3  ALICE  DAVE      0.16      1
+#> 4  CAROL  EVE    0.04592      1
+#> 5  BOB    CAROL  0.02041      1
+#> 6  ALICE  EVE    0.02041      1
+```
+
+Switch to `attention = "last"` and the emphasis moves to the final
+position, so links involving the last-listed authors rise to the top
+instead:
+
+``` r
+
+author_network(papers, attention = "last")
+#> # bibnets network: author_attention_last | 5 nodes · 6 edges | counting: last 
+#>    from   to      weight  count
+#> 1  BOB    CAROL   0.1837      1
+#> 2  ALICE  EVE     0.1837      1
+#> 3  ALICE  DAVE      0.16      1
+#> 4  ALICE  CAROL  0.06633      2
+#> 5  CAROL  EVE    0.04592      1
+#> 6  ALICE  BOB    0.02041      1
+```
+
+The `count` column is identical across all three — it is the raw number
+of shared papers. Only `weight` changes, because attention
+re-distributes each paper’s credit by the selected ordering rule. The
+choice of profile can reorder which collaborations look strongest, so it
+should match the ordering convention of the corpus.
+
+## Attention is a deliberate choice, not a default
+
+`attention` and `counting` are mutually exclusive. When `attention` is
+set, the network is built directly from positional weights and the
+`type` and `counting` arguments are ignored; the result is labelled with
+the profile so a saved edge list records the assumption that produced
+it:
+
+``` r
+
+attr(author_network(papers, attention = "proximity"), "counting")
+#> [1] "proximity"
+```
+
+Leave `attention` unset (the default) to use ordinary counting, where
+you can choose `"full"`, `"fractional"`, or one of the position-aware
+counting methods instead.
+
+## Where attention applies
+
+Attention is available wherever list order is meaningful: author,
+keyword, country, and institution networks.
+
+``` r
+
+author_network(data, attention = "lead")
+keyword_network(data, attention = "proximity")
+country_network(data, attention = "circular")
+institution_network(data, attention = "last")
+```
+
+For keyword, country, and institution networks the “position” is the
+order in which the field is listed for each paper. Proximity is the most
+direct profile when near neighbours in the list are expected to be more
+related than distant ones.
+
+## How it works
+
+For each paper, attention applies the selected ordering rule and
+normalises the paper’s contribution to sum to one, then uses those
+weights when the network is projected. Because every paper’s
+contribution sums to one, no single paper — however many items it lists
+— can dominate the result.
+
+## References
+
+López-Pernas, S., Tikka, S., Misiejuk, K., Oliveira, E., & Saqr, M.
+(2025). Modeling the Dynamics and Impact of Human-AI Interactions with
+Attention Transition Network Analysis. SSRN working paper 6187958.
+<https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6187958>
+
+López-Pernas, S., Saqr, M., & Apiola, M. (2023). Scientometrics: A
+Concise Introduction and a Detailed Methodology for Mapping the
+Scientific Field of Computing Education Research. In M. Apiola, S.
+López-Pernas, & M. Saqr (Eds.), *Past, Present and Future of Computing
+Education Research: A Global Perspective* (pp. 79–99). Springer Nature
+Switzerland AG. <https://doi.org/10.1007/978-3-031-25336-2_5>
+
+Saqr, M., López-Pernas, S., Conde, M. Á., & Hernández-García, Á. (2024).
+Social Network Analysis: A primer, a guide and a tutorial in R. In M.
+Saqr & S. López-Pernas (Eds.), *Learning Analytics Methods and
+Tutorials: A Practical Guide Using R* (pp. 491–518). Springer, Cham.
+<https://doi.org/10.1007/978-3-031-54464-4_15>
