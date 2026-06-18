@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting Started with bibnets • bibnets</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with bibnets">
 </head>
@@ -29,7 +29,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="active nav-item"><a class="nav-link" href="../articles/bibnets.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/bibnets.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
       </ul>
@@ -51,7 +51,7 @@
       <h1>Getting Started with bibnets</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/bibnets/blob/main/vignettes/bibnets.Rmd" class="external-link"><code>vignettes/bibnets.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/bibnets/blob/HEAD/vignettes/bibnets.Rmd" class="external-link"><code>vignettes/bibnets.Rmd</code></a></small>
       <div class="d-none name"><code>bibnets.Rmd</code></div>
     </div>
 
@@ -62,92 +62,70 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p><code>bibnets</code> imports scholarly metadata and constructs
-bibliometric networks from works, authors, references, keywords,
-sources, countries, and institutions. It represents co-authorship,
-co-citation, bibliographic coupling, keyword co-occurrence, direct
-citation, historiograph, and custom co-occurrence analyses as network
-edge lists.</p>
+<p><code>bibnets</code> constructs bibliometric networks from scholarly
+metadata. It imports the export formats of the major bibliographic
+databases, converts them internally to a common tabular representation,
+and projects that representation into networks through a single function
+per network type. The package covers the standard constructions and adds
+several that are less commonly available: position-based attention
+weighting, aggregation of entities into higher-level networks, a range
+of counting and similarity weights, and temporal construction over time
+windows.</p>
 <div class="section level3">
-<h3 id="input-and-imports">Input and imports<a class="anchor" aria-label="anchor" href="#input-and-imports"></a>
+<h3 id="data-import">Data import<a class="anchor" aria-label="anchor" href="#data-import"></a>
 </h3>
-<p><code><a href="../reference/read_biblio.html">read_biblio()</a></code> is the entry point for file-based input.
-It accepts a file, a set of files, or a directory, detects supported
-file exports when <code>format = "auto"</code>, and dispatches to the
-corresponding reader. The file readers cover Scopus CSV with
-<code><a href="../reference/read_scopus.html">read_scopus()</a></code>, Web of Science plain-text and tab-delimited
-exports with <code><a href="../reference/read_wos.html">read_wos()</a></code>, flat OpenAlex CSV with
-<code><a href="../reference/read_openalex_csv.html">read_openalex_csv()</a></code>, BibTeX with
-<code><a href="../reference/read_bibtex.html">read_bibtex()</a></code>, RIS with <code><a href="../reference/read_ris.html">read_ris()</a></code>, Lens.org
-CSV with <code><a href="../reference/read_lens.html">read_lens()</a></code>, Dimensions CSV with
-<code><a href="../reference/read_dimensions.html">read_dimensions()</a></code>, and generic CSV input through
-<code>read_biblio(format = "generic")</code> or inferred generic input
-when source columns are mapped by name. OpenAlex records returned by
-<code><a href="https://docs.ropensci.org/openalexR/reference/oa_fetch.html" class="external-link">openalexR::oa_fetch()</a></code> are converted with
-<code><a href="../reference/read_openalex.html">read_openalex()</a></code>. Crossref records returned by
-<code><a href="https://docs.ropensci.org/rcrossref/reference/cr_works.html" class="external-link">rcrossref::cr_works()</a></code> are converted with
-<code><a href="../reference/read_crossref.html">read_crossref()</a></code>.</p>
-<p>The source-specific readers return a common data frame with
-<code>id</code>, <code>title</code>, <code>year</code>,
-<code>journal</code>, <code>doi</code>, <code>cited_by_count</code>,
-<code>abstract</code>, <code>type</code>, and list-columns such as
-<code>authors</code>, <code>references</code>, and
-<code>keywords</code>. Source-specific fields, including
-<code>countries</code>, <code>affiliations</code>,
-<code>index_keywords</code>, and <code>keywords_plus</code>, are kept
-when present.</p>
+<p><code>bibnets</code> reads Scopus, Web of Science, OpenAlex,
+Lens.org, Dimensions, Crossref, BibTeX, and RIS exports.
+<code><a href="../reference/read_biblio.html">read_biblio()</a></code> detects the format from file content and
+dispatches to the corresponding reader; all readers return an identical
+schema, so records from different databases can be combined without
+manual reconciliation. Multi-valued fields — authors, references, and
+keywords — are parsed into list-columns. A data frame already in this
+form is used directly, by naming the relevant column, without a
+reader.</p>
 </div>
 <div class="section level3">
-<h3 id="network-construction">Network construction<a class="anchor" aria-label="anchor" href="#network-construction"></a>
+<h3 id="network-builders">Network builders<a class="anchor" aria-label="anchor" href="#network-builders"></a>
 </h3>
-<p>Network construction follows the same matrix path across builders. A
-works-by-entities bipartite matrix is created by
-<code><a href="../reference/build_bipartite.html">build_bipartite()</a></code> or, for position-dependent weighting, by
-<code><a href="../reference/build_author_bipartite.html">build_author_bipartite()</a></code>. The matrix is weighted by
-<code><a href="../reference/apply_counting.html">apply_counting()</a></code> or by positional weights, projected by
-<code><a href="../reference/multiply_bipartite.html">multiply_bipartite()</a></code>, and returned by
-<code>as_bibnets_network()</code>.</p>
-<p>The counting methods are <code>"full"</code>,
-<code>"fractional"</code>, <code>"paper"</code>,
-<code>"strength"</code>, <code>"harmonic"</code>,
-<code>"arithmetic"</code>, <code>"geometric"</code>,
-<code>"adaptive_geometric"</code>, <code>"golden"</code>,
-<code>"first"</code>, <code>"last"</code>, <code>"first_last"</code>,
-and <code>"position_weighted"</code>. The attention profiles are
-<code>"lead"</code>, <code>"last"</code>, <code>"proximity"</code>, and
-<code>"circular"</code>; in the implementation these map to
-<code>"attention_lead"</code>, <code>"attention_last"</code>,
-<code>"attention_proximity"</code>, and
-<code>"attention_circular"</code> positional weights. Attention
-weighting is available for author, keyword, country, and institution
-networks.</p>
-<p>Projected matrices can be returned as raw counts with
-<code>"none"</code> or normalized with <code>"cosine"</code>,
-<code>"association"</code>, <code>"jaccard"</code>,
-<code>"inclusion"</code>, or <code>"equivalence"</code>. The same
-similarity names are accepted by <code><a href="../reference/normalize.html">normalize()</a></code>.</p>
+<p>Dedicated builders construct co-authorship, co-citation,
+bibliographic coupling, keyword co-occurrence, direct citation, and
+historiograph networks; a generic builder covers other projections. The
+builders share one interface and return the same edge list, so the
+network type is determined by the function name.</p>
 </div>
 <div class="section level3">
-<h3 id="speed">Speed<a class="anchor" aria-label="anchor" href="#speed"></a>
+<h3 id="weighting-and-aggregation">Weighting and aggregation<a class="anchor" aria-label="anchor" href="#weighting-and-aggregation"></a>
 </h3>
-<p>The incidence matrix is stored as a sparse <code>dgCMatrix</code>.
-Projection uses <code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">crossprod()</a></code> for column-mode networks and
-<code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">tcrossprod()</a></code> for row-mode networks, and edge extraction is
-performed from the sparse projected matrix without materializing a dense
-matrix. Memory use follows the number of non-zero matrix entries and
-retained edges rather than the size of a dense node-by-node matrix. The
-hard dependencies are Matrix, stats, and utils.</p>
+<p>Counting methods determine each publication’s contribution to an
+edge. They range from full and fractional counting to position-aware
+schemes (harmonic, geometric, golden-ratio, first, last, and
+first–last), and six similarity measures — cosine, association strength,
+Jaccard, inclusion, and equivalence — rescale the projected weights.</p>
+<p>Attention weighting assigns each author a positional weight that sums
+to one across the byline, so a publication’s credit is distributed by
+byline position rather than equally and a large author list does not
+dominate the network. Aggregation pools the references or members of a
+group to construct collaboration and coupling networks among countries,
+institutions, or sources rather than individuals. Temporal construction
+applies any builder over fixed, sliding, or cumulative windows, and a
+disparity-filter backbone retains the edges that are significant
+relative to each node’s strength.</p>
 </div>
 <div class="section level3">
-<h3 id="exports">Exports<a class="anchor" aria-label="anchor" href="#exports"></a>
+<h3 id="implementation">Implementation<a class="anchor" aria-label="anchor" href="#implementation"></a>
 </h3>
-<p>The default return value is an edge list. Export and conversion
-functions are <code><a href="../reference/to_igraph.html">to_igraph()</a></code>, <code><a href="../reference/to_tbl_graph.html">to_tbl_graph()</a></code>,
-<code><a href="../reference/to_cograph.html">to_cograph()</a></code>, <code><a href="../reference/to_gephi.html">to_gephi()</a></code>,
-<code><a href="../reference/to_graphml.html">to_graphml()</a></code>, and <code><a href="../reference/to_matrix.html">to_matrix()</a></code>.
-<code><a href="../reference/to_gephi.html">to_gephi()</a></code> writes or returns Gephi-ready node and edge CSV
-tables. <code><a href="../reference/to_graphml.html">to_graphml()</a></code> writes or returns GraphML.
-<code><a href="../reference/to_matrix.html">to_matrix()</a></code> returns a sparse adjacency matrix.</p>
+<p>The incidence matrix is stored as a sparse <code>dgCMatrix</code> and
+projected with <code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">crossprod()</a></code> or <code><a href="https://rdrr.io/r/base/crossprod.html" class="external-link">tcrossprod()</a></code>;
+edges are extracted without forming a dense node-by-node matrix, so
+memory scales with the number of non-zero co-occurrences rather than
+with the square of the vocabulary. The package imports only Matrix,
+stats, and utils.</p>
+</div>
+<div class="section level3">
+<h3 id="export-formats">Export formats<a class="anchor" aria-label="anchor" href="#export-formats"></a>
+</h3>
+<p>Constructed networks are exported to igraph, tidygraph, cograph,
+Gephi, GraphML, and sparse-matrix representations.</p>
 </div>
 <div class="section level3">
 <h3 id="output">Output<a class="anchor" aria-label="anchor" href="#output"></a>
@@ -422,22 +400,220 @@ edge:</p>
 <span><span class="co">#&gt; 1  BROWN M  SMITH J    0.49      3</span></span>
 <span><span class="co">#&gt; 2  CHEN W   LEE K      0.41      3</span></span>
 <span><span class="co">#&gt; 3  JONES A  SMITH J    0.33      2</span></span></code></pre></div>
-<ul>
-<li>
-<code>"full"</code> — every observed co-occurrence counts 1 (use for
-raw events).</li>
-<li>
-<code>"fractional"</code> — scaled by list size so large teams don’t
-dominate.</li>
-<li>
-<code>"harmonic"</code> / <code>"first_last"</code> and other
-position methods — only when author order is analytically
-meaningful.</li>
-</ul>
+<p>The available methods differ in how they weight the rows or positions
+before projection:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Method</th>
+<th>What it does</th>
+<th>Trade-off</th>
+<th>When to use</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"full"</code></td>
+<td>Leaves the binary incidence matrix unchanged; for positional author
+weights, every listed entity receives weight 1.</td>
+<td>Large teams or long lists create many full-strength pairs.</td>
+<td>Use for raw event counts where every observed co-occurrence should
+count equally.</td>
+</tr>
+<tr class="even">
+<td><code>"fractional"</code></td>
+<td>For symmetric networks, each row contributes
+<code>1 / (n - 1)</code> to pairs when <code>n &gt; 1</code>; for
+coupling it uses <code>1 / n</code>; positional use gives each entity
+<code>1 / n</code>.</td>
+<td>Reduces large-list dominance but treats all positions equally.</td>
+<td>Use when each paper or reference list should have limited influence
+and position is not meaningful.</td>
+</tr>
+<tr class="odd">
+<td><code>"paper"</code></td>
+<td>For symmetric networks, each paper’s pair budget is scaled by
+<code>2 / (n * (n - 1))</code>; for coupling it uses
+<code>1 / n</code>.</td>
+<td>Normalizes at the paper level, so very large and very small papers
+can contribute comparable total pair mass.</td>
+<td>Use when publications, rather than individual author/entity pairs,
+should be the main unit of contribution.</td>
+</tr>
+<tr class="even">
+<td><code>"strength"</code></td>
+<td>Multiplies entity columns by the square root of inverse document
+frequency, <code>sqrt(log(n_works / entity_frequency))</code>; row-size
+scaling for coupling is deferred to projection.</td>
+<td>Downweights ubiquitous entities and emphasizes rarer shared
+entities; values are less like direct counts.</td>
+<td>Use for coupling or profile similarity where common references,
+keywords, or entities should carry less evidence.</td>
+</tr>
+<tr class="odd">
+<td><code>"harmonic"</code></td>
+<td>Uses positional weights proportional to <code>1 / position</code>,
+normalized to sum to one.</td>
+<td>Strongly favors early positions while still giving every later
+position some credit.</td>
+<td>Use when author order matters and early authorship should dominate
+without excluding later authors.</td>
+</tr>
+<tr class="even">
+<td><code>"arithmetic"</code></td>
+<td>Uses a linear decline from first to last, proportional to
+<code>n - position + 1</code>, normalized.</td>
+<td>Gives a gentler first-author advantage than geometric methods.</td>
+<td>Use when byline order matters but credit should decrease steadily
+rather than sharply.</td>
+</tr>
+<tr class="odd">
+<td><code>"geometric"</code></td>
+<td>Uses weights proportional to <code>0.5^(position - 1)</code>,
+normalized.</td>
+<td>Concentrates credit heavily at the front of the byline.</td>
+<td>Use when the first few positions are expected to carry most of the
+contribution.</td>
+</tr>
+<tr class="even">
+<td><code>"adaptive_geometric"</code></td>
+<td>Uses a geometric sequence normalized so the first-to-last weight
+ratio equals <code>n</code> (<code>2/3</code>, <code>1/3</code> for two
+authors).</td>
+<td>Adapts the steepness to team size, making long bylines more
+front-loaded.</td>
+<td>Use when first-author emphasis should increase with the number of
+authors.</td>
+</tr>
+<tr class="odd">
+<td><code>"golden"</code></td>
+<td>Uses golden-ratio decay, proportional to
+<code>phi^(n - position)</code>, normalized.</td>
+<td>More front-loaded than arithmetic but less abrupt than fixed
+halving.</td>
+<td>Use as a moderate positional decay when author order matters but
+geometric halving is too strong.</td>
+</tr>
+<tr class="even">
+<td><code>"first"</code></td>
+<td>Gives weight 1 to the first position and 0 to all others.</td>
+<td>Ignores all non-first contributors.</td>
+<td>Use for strict first-author analyses.</td>
+</tr>
+<tr class="odd">
+<td><code>"last"</code></td>
+<td>Gives weight 1 to the last position and 0 to all others.</td>
+<td>Ignores all non-last contributors.</td>
+<td>Use where last authorship represents the analytical role of
+interest, such as senior or PI credit.</td>
+</tr>
+<tr class="even">
+<td><code>"first_last"</code></td>
+<td>With two authors, assigns <code>0.5</code> and <code>0.5</code>;
+otherwise gives first and last authors an elevated weight and middle
+authors a baseline weight, all normalized.</td>
+<td>Highlights both endpoints while still retaining middle-author
+credit.</td>
+<td>Use in fields where first and last positions have distinct credit or
+leadership meanings.</td>
+</tr>
+<tr class="odd">
+<td><code>"position_weighted"</code></td>
+<td>Uses the supplied <code>position_weights</code> vector, extending
+the last value to longer bylines, then normalizes.</td>
+<td>Puts the burden of choosing defensible weights on the analyst.</td>
+<td>Use when you have field-specific or study-specific positional
+weights.</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="attention-weights">Attention weights<a class="anchor" aria-label="anchor" href="#attention-weights"></a>
 </h3>
+<p>Standard bibliometric co-authorship networks treat every byline
+position as equivalent: a first author who conceived and drove the work
+is weighted identically to a fifteenth contributor who provided a single
+instrument reading. On hyper-authored papers this produces dense,
+low-meaning co-authorship ties that drown out the focused two- or
+three-author collaborations that often signal the sharpest intellectual
+kinship. The attention weighting feature in <code>bibnets</code> is
+designed to correct this. The name is an honest analogy to the attention
+mechanism in large language models: just as a transformer assigns a
+normalized probability distribution across the tokens in a sequence —
+concentrating weight on what matters, spreading it thin over the rest —
+<code>bibnets</code> assigns each author on a paper a positional weight
+that sums to one across the full byline. A fifty-author paper therefore
+contributes exactly one unit of connection budget, the same as a
+two-author paper, and the distribution of that budget reflects
+authorship conventions: <code>"lead"</code> concentrates weight on the
+first author, <code>"last"</code> on the senior or PI position,
+<code>"proximity"</code> rewards the central authors, and
+<code>"circular"</code> rewards both ends jointly. The weights are a
+fixed positional prior, not learned content-based attention, but they
+carry real scholarly meaning, and activating them requires nothing more
+than passing <code>attention = "lead"</code> (or any of the three
+alternatives) to any of the author, keyword, country, or institution
+network functions.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th><code>attention</code></th>
+<th>Weight vector</th>
+<th>Scholarly assumption</th>
+<th>When it fits</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"lead"</code></td>
+<td>Quadratic drop from the first position: the first position has raw
+weight <code>n^2</code>, inner positions decline as the byline advances,
+and the last position has raw weight <code>1</code>, then all weights
+are normalized.</td>
+<td>The lead author is the main intellectual driver.</td>
+<td>Use in first-author-oriented fields or questions about lead
+contribution.</td>
+</tr>
+<tr class="even">
+<td><code>"last"</code></td>
+<td>Quadratic rise to the last position: the first position has raw
+weight <code>1</code>, inner positions rise across the byline, and the
+last position has raw weight <code>n^2</code>, then all weights are
+normalized.</td>
+<td>The last author represents senior, supervisory, or PI
+contribution.</td>
+<td>Use in disciplines where last authorship marks lab leadership or
+supervision.</td>
+</tr>
+<tr class="odd">
+<td><code>"proximity"</code></td>
+<td>Pyramid profile using <code>min(position, n + 1 - position)</code>:
+first and last positions have raw weight <code>1</code>, inner positions
+increase toward the middle, and central positions are highest.</td>
+<td>Central byline positions deserve the most attention.</td>
+<td>Use when the question treats middle-position contributors as the
+focal group.</td>
+</tr>
+<tr class="even">
+<td><code>"circular"</code></td>
+<td>Edge profile using <code>max(position, n + 1 - position)</code>:
+first and last positions have the largest raw weight, while inner
+positions decline toward the center.</td>
+<td>Both ends of the byline are prominent.</td>
+<td>Use where lead and senior positions jointly matter more than middle
+positions.</td>
+</tr>
+</tbody>
+</table>
 <p><code>attention</code> applies a smooth positional profile instead of
 a named counting scheme (available for author, keyword, country, and
 institution networks):</p>
@@ -448,30 +624,6 @@ institution networks):</p>
 <span><span class="co">#&gt; 1  BROWN M  SMITH J  0.3896      3</span></span>
 <span><span class="co">#&gt; 2  JONES A  SMITH J  0.3437      2</span></span>
 <span><span class="co">#&gt; 3  JONES A  LEE K    0.2041      2</span></span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th><code>attention</code></th>
-<th>Highest weight at</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>"lead"</code></td>
-<td>first position</td>
-</tr>
-<tr class="even">
-<td><code>"last"</code></td>
-<td>last position</td>
-</tr>
-<tr class="odd">
-<td><code>"proximity"</code></td>
-<td>middle positions</td>
-</tr>
-<tr class="even">
-<td><code>"circular"</code></td>
-<td>first and last</td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 <div class="section level2">
@@ -616,11 +768,75 @@ similarity network, not a co-authorship one.</p>
 <span><span class="co">#&gt; 1  AIR QUALITY PREDICTION  POST-TRAINING QUANTISATION       1      2</span></span>
 <span><span class="co">#&gt; 2  LFSR SEED               QUANTIZATION (SIGNAL)            1      2</span></span>
 <span><span class="co">#&gt; 3  BOOTH MULTIPLIERS       SHIFT MULTIPLIERS                1      2</span></span></code></pre></div>
-<p>Use <code>"none"</code> for raw weights, <code>"cosine"</code> for
-overlap scaled by size, <code>"association"</code> to emphasize pairs
-that co-occur more than expected, and <code>"jaccard"</code> /
-<code>"inclusion"</code> / <code>"equivalence"</code> to match a
-downstream convention.</p>
+<p><code><a href="../reference/normalize.html">normalize()</a></code> uses the diagonal of the projected matrix as
+each node’s total occurrence count:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Similarity</th>
+<th>Denominator</th>
+<th>Meaning</th>
+<th>When to use</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>"none"</code></td>
+<td>No denominator; the projected matrix is returned as raw weighted
+co-occurrence, with the diagonal removed by the network builder unless
+self-loops are requested.</td>
+<td>
+<code>weight</code> stays on the same scale as the counted
+projection.</td>
+<td>Use when absolute co-occurrence or counted edge strength is the
+quantity of interest.</td>
+</tr>
+<tr class="even">
+<td><code>"cosine"</code></td>
+<td>Square root of the product of the two node totals.</td>
+<td>Symmetric size correction; pairs are high when their overlap is
+large relative to both nodes’ frequencies.</td>
+<td>Use as a general-purpose correction for very frequent nodes while
+preserving a familiar similarity scale.</td>
+</tr>
+<tr class="odd">
+<td><code>"association"</code></td>
+<td>Product of the two node totals.</td>
+<td>Symmetric association-strength normalization; strongly penalizes
+pairs involving very frequent nodes.</td>
+<td>Use for co-occurrence maps where you want rare, unexpectedly tight
+pairings to stand out.</td>
+</tr>
+<tr class="even">
+<td><code>"jaccard"</code></td>
+<td>Sum of the two node totals minus their observed edge value.</td>
+<td>Symmetric overlap over a union-like total.</td>
+<td>Use when the edge should represent shared occurrence as a share of
+either node’s combined footprint.</td>
+</tr>
+<tr class="odd">
+<td><code>"inclusion"</code></td>
+<td>The smaller of the two node totals.</td>
+<td>Symmetric containment-oriented score; it reaches high values when
+the smaller node mostly appears with the larger one.</td>
+<td>Use when subset or specialization relationships are more important
+than balanced overlap.</td>
+</tr>
+<tr class="even">
+<td><code>"equivalence"</code></td>
+<td>Product of the two node totals, with the edge value squared before
+division.</td>
+<td>Cosine-like normalization with stronger penalty for weak or
+occasional overlap.</td>
+<td>Use when following equivalence-index conventions or when only
+consistently paired nodes should remain strong.</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="reducing-large-networks">Reducing large networks<a class="anchor" aria-label="anchor" href="#reducing-large-networks"></a>
@@ -788,6 +1004,23 @@ are installed.</p>
 and the counting and similarity methods — so a saved edge list always
 says how it was made.</p>
 </div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>The methodology implemented in <code>bibnets</code> is described
+in:</p>
+<p>López-Pernas, S., Saqr, M., &amp; Apiola, M. (2023). Scientometrics:
+A Concise Introduction and a Detailed Methodology for Mapping the
+Scientific Field of Computing Education Research. In M. Apiola, S.
+López-Pernas, &amp; M. Saqr (Eds.), <em>Past, Present and Future of
+Computing Education Research: A Global Perspective</em> (pp. 79–99).
+Springer Nature Switzerland AG. <a href="https://doi.org/10.1007/978-3-031-25336-2_5" class="external-link uri">https://doi.org/10.1007/978-3-031-25336-2_5</a></p>
+<p>Saqr, M., López-Pernas, S., Conde, M. Á., &amp; Hernández-García, Á.
+(2024). Social Network Analysis: A primer, a guide and a tutorial in R.
+In M. Saqr &amp; S. López-Pernas (Eds.), <em>Learning Analytics Methods
+and Tutorials: A Practical Guide Using R</em> (pp. 491–518). Springer,
+Cham. <a href="https://doi.org/10.1007/978-3-031-54464-4_15" class="external-link uri">https://doi.org/10.1007/978-3-031-54464-4_15</a></p>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
@@ -799,7 +1032,7 @@ says how it was made.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
