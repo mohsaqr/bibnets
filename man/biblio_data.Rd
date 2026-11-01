@@ -15,9 +15,12 @@ JASIST, Quantitative Science Studies).}
 \item{doi}{DOI string.}
 \item{cited_by_count}{Times cited.}
 \item{authors}{List-column of author name strings (6 unique authors).}
-\item{references}{List-column of cited reference IDs (10 unique refs,
-R1--R10). Each paper cites exactly 4 references.}
-\item{keywords}{List-column of keyword strings (24 unique keywords).
+\item{references}{List-column of cited reference IDs (13 unique
+values): external references R1--R10 (R8 unused) and the in-corpus
+document IDs W1, W2, W3 and W5, which give the direct-citation,
+local-citation and historiograph examples something to find. Each
+paper cites exactly 4 references.}
+\item{keywords}{List-column of keyword strings (23 unique keywords).
 Each paper has 3 keywords.}
 }
 }

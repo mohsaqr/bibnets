@@ -13,9 +13,10 @@ local_citations(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and a references column (list-column
-or delimited string). Optionally \code{year}, \code{title}, \code{journal}, \code{doi},
-\code{cited_by_count}.}
+\item{data}{A data frame with one row per work and a references column
+(list-column or delimited string) whose values use the same identifiers
+as the works. An \code{id} column is optional (see \code{id}). Optionally \code{year},
+\code{title}, \code{journal}, \code{doi}, \code{cited_by_count}.}
 
 \item{references}{Character. Name of the column containing cited references.
 Default \code{"references"}.}
@@ -31,14 +32,17 @@ If \code{NULL} (default), an existing \code{id} column is used when present,
 otherwise row numbers are used.}
 }
 \value{
-A data frame with columns:
+A data frame with one row per document, sorted by decreasing
+\code{lcs}, with columns:
 \describe{
-\item{\code{id}}{Document identifier.}
-\item{\code{lcs}}{Local Citation Score: times cited within the dataset.}
-\item{\code{gcs}}{Global Citation Score: \code{cited_by_count} if available.}
+\item{\code{id}}{Document identifier (character).}
+\item{\code{lcs}}{Local Citation Score (integer): times cited by other
+documents in the dataset.}
+\item{\code{gcs}}{Global Citation Score (integer): \code{cited_by_count}; only
+when that column is present.}
 }
-Plus any metadata columns present in the input (\code{title}, \code{year},
-\code{journal}, \code{doi}).
+followed by \code{year} (integer), \code{title}, \code{journal} and \code{doi} when present
+in the input.
 }
 \description{
 Counts how many times each document is cited by other documents

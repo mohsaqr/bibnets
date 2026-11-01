@@ -3,27 +3,36 @@
 #' Constructs a network where two keywords are linked when they appear
 #' together in the same document.
 #'
-#' @param data A data frame with `id` and a keyword list-column.
+#' @param data A data frame with one row per work and a keyword column
+#'   (list-column or delimited string). An `id` column is optional (see `id`).
 #' @param keywords Character. Name of the keyword column (list-column or
 #'   delimited string). Default `"keywords"`. Any column of a custom data
 #'   set works, e.g. `keywords = "Tags"`.
+#' @param sep Character. Separator used to split the keyword column when it
+#'   is a plain character column, e.g. `sep = ","`. Default `";"`. Ignored
+#'   for list-columns.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each keyword.
 #' @param id Optional. Name of the column to use as the work identifier
 #'   (the matrix-row dimension). If `NULL` (default), an existing `id`
 #'   column is used when present, otherwise row numbers are used.
 #' @param field Deprecated. Use `keywords` instead.
-#' @param counting Character. Counting method. Default `"full"`.
+#' @param counting Character. Counting method: `"full"` (default),
+#'   `"fractional"`, `"paper"` or `"strength"`. Position-dependent methods
+#'   are not available; use `attention` for order-based weights.
 #' @param similarity Character. Similarity measure. Default `"none"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum keyword frequency. Default 1.
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   and return the edges among them. Default `NULL` (all nodes).
 #' @inheritParams author_network
 #'
-#' @return Depends on `format`: a `bibnets_network` data frame (default),
-#'   a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-#'   sparse matrix.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network` data frame with one row per undirected edge, columns
+#'   `from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+#'   attributes `network_type`, `counting` and `similarity`. See
+#'   [author_network()] for the other formats.
 #'
 #' @export
 #' @examples

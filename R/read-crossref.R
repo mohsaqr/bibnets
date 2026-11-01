@@ -20,16 +20,13 @@
 #'   container.title = c("Journal A", "Journal B"),
 #'   is.referenced.by.count = c("3", "9"),
 #'   type = c("journal-article", "journal-article"),
-#'   stringsAsFactors = FALSE
-#' )
-#' raw$author <- list(
-#'   data.frame(given = c("Jane", "Anne"),
-#'              family = c("Smith", "Jones"),
-#'              stringsAsFactors = FALSE),
-#'   data.frame(given = "Mark", family = "Davis", stringsAsFactors = FALSE)
+#'   author = I(list(
+#'     data.frame(given = c("Jane", "Anne"), family = c("Smith", "Jones")),
+#'     data.frame(given = "Mark", family = "Davis")
+#'   ))
 #' )
 #' data <- read_crossref(raw)
-#' head(data[, c("id", "title", "year", "journal")])
+#' subset(data, select = c(id, title, year, journal, authors))
 read_crossref <- function(data) {
   stopifnot(is.data.frame(data))
 

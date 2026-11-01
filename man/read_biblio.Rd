@@ -41,8 +41,9 @@ Inferred automatically when any of those arguments is supplied, so
 \code{format = "generic"} is optional in that case.}
 }}
 
-\item{id}{Character. Column name for document identifier. Only used
-when \code{format = "generic"}. Default \code{NULL} (uses row numbers).}
+\item{id}{Character. Column name for the document identifier. Only used
+when \code{format = "generic"}. Default \code{NULL}: an existing \code{id} column is
+kept, otherwise row numbers are used.}
 
 \item{authors, keywords, references, countries, affiliations}{Character. For
 \code{format = "generic"}, the name of the source column to map onto that
@@ -60,13 +61,23 @@ columns. Default \code{";"}.}
 columns to split into list-columns \emph{in place} (keeping their original
 names), for fields without a dedicated argument above.}
 
-\item{...}{Additional arguments passed to the format-specific reader.}
+\item{...}{Additional arguments passed to the format-specific reader
+(for example \code{encoding} for \code{\link[=read_scopus]{read_scopus()}}). Not used by the generic
+reader.}
 
 \item{actors}{Deprecated. Use the entity arguments (\code{authors}, \code{keywords},
 ...) or \code{list_cols} instead.}
 }
 \value{
-A data frame.
+A data frame with one row per record. The format-specific
+readers return the standard bibnets columns \code{id}, \code{title}, \code{year},
+\code{journal}, \code{doi}, \code{cited_by_count}, \code{abstract}, \code{type} and the
+list-columns \code{authors}, \code{references}, \code{keywords}, followed by any
+source-specific extras. When several files are read, their columns are
+aligned (missing scalar columns filled with \code{NA}, missing list-columns
+with empty vectors), the rows are bound, and a message reports the
+number of files and rows. The generic reader keeps every source column
+and adds \code{id} plus the mapped standard fields.
 }
 \description{
 Universal reader that handles files, folders, format detection, and
@@ -76,13 +87,13 @@ generic CSV input. Accepts a single file, multiple files, or a directory.
 # Auto-detect format from file content (here: a bundled OpenAlex CSV)
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 data <- read_biblio(f)
-head(data[, c("id", "title", "year", "journal")])
+head(subset(data, select = c(id, title, year, journal)))
 
 # Read multiple files at once; auto-detects each format
 f_scopus <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
 f_wos    <- system.file("extdata", "wos_sample.txt",  package = "bibnets")
 combined <- read_biblio(c(f_scopus, f_wos))
-head(combined[, c("id", "title", "year", "journal")])
+head(subset(combined, select = c(id, title, year, journal)))
 
 # Read every supported export in a directory (here: the bundled extdata)
 folder <- system.file("extdata", package = "bibnets")
@@ -102,5 +113,6 @@ generic <- read_biblio(tmp,
                        authors = "Authors",
                        keywords = "Keywords",
                        sep = ";")
-head(generic)
+generic
+unlink(tmp)
 }

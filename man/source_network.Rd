@@ -23,29 +23,36 @@ source_network(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and \code{journal} (character column).
-For coupling, also needs \code{references}. For co-citation, needs a
+\item{data}{A data frame with one row per work and a journal column
+(one value per work). An \code{id} column is optional (see \code{id}). Coupling
+and equivalence also need \code{references}; co-citation needs a
 \code{cited_journals} list-column.}
 
-\item{type}{Character. \code{"coupling"} (default), \code{"co_citation"}, or
-\code{"equivalence"}.}
+\item{type}{Character. \code{"coupling"} (default; sources linked by the
+references their papers share), \code{"co_citation"} (sources cited together,
+from \code{cited_journals}), or \code{"equivalence"} (cosine similarity of the
+sources' pooled reference vectors; \code{counting} and \code{similarity} are
+ignored).}
 
-\item{counting}{Character. Counting method. Default \code{"full"}.}
+\item{counting}{Character. Counting method: \code{"full"} (default),
+\code{"fractional"}, \code{"paper"} or \code{"strength"}.}
 
 \item{similarity}{Character. Similarity measure. Default \code{"none"}.}
 
-\item{threshold}{Numeric. Minimum edge weight. Default 0.}
+\item{threshold}{Numeric. Minimum edge weight; edges with
+\code{weight < threshold} are dropped. Default 0 (keep all).}
 
 \item{min_occur}{Integer. Minimum papers per source. Default 1.}
 
-\item{top_n}{Integer or NULL. Return only the top n edges by weight.
-Default NULL (all edges).}
+\item{top_n}{Integer or NULL. Keep only the \code{top_n} most frequent nodes
+and return the edges among them. Default \code{NULL} (all nodes).}
 
 \item{self_loops}{Logical. If \code{TRUE}, include self-loops (an entity linked
-to itself). Default \code{FALSE}.}
+to itself). Default \code{FALSE}. Only takes effect with
+\code{similarity = "none"}; every similarity measure zeroes the diagonal.}
 
 \item{deduplicate}{Logical. If \code{TRUE} (default), each \verb{(paper, entity)}
-pair is counted at most once — duplicate entries in the source data
+pair is counted at most once -- duplicate entries in the source data
 (e.g., the same author listed twice on a paper) are treated as one
 occurrence. Set to \code{FALSE} to count every raw occurrence.}
 
@@ -64,14 +71,12 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 source. Default \code{"journal"}. Use this to point at any column of a
 custom data set, e.g. \code{journal = "Source title"}.}
 
-\item{sep}{Character. Separator used to split the entity column when it
-is a plain character column rather than a list-column, e.g. \code{sep = ","}
-or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
-applies only to the author column; the references column uses
-\code{references_sep}.}
+\item{sep}{Character. Not used: the journal column holds one value per
+work and is never split. Kept for a signature consistent with the other
+builders.}
 
 \item{references_sep}{Character. Separator for the \code{references} column in
-\code{type = "coupling"}. Default \code{";"}.}
+\code{type = "coupling"} and \code{"equivalence"}. Default \code{";"}.}
 
 \item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
 characters are removed from each entity.}
@@ -81,9 +86,11 @@ characters are removed from each entity.}
 column is used when present, otherwise row numbers are used.}
 }
 \value{
-Depends on \code{format}: a \code{bibnets_network} data frame (default),
-a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-sparse matrix.
+Depends on \code{format}. The default \code{"edgelist"} returns a
+\code{bibnets_network} data frame with one row per undirected edge, columns
+\code{from}, \code{to}, \code{weight} and \code{count}, sorted by decreasing \code{weight}, and
+attributes \code{network_type}, \code{counting} and \code{similarity}. See
+\code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
 Constructs a network between publication sources (journals, book series).

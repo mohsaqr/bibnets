@@ -16,7 +16,7 @@
 #' @examples
 #' f <- system.file("extdata", "dimensions_sample.csv", package = "bibnets")
 #' data <- read_dimensions(f)
-#' head(data[, c("id", "title", "year", "journal")])
+#' subset(data, select = c(id, title, year, journal, authors))
 read_dimensions <- function(file, encoding = "UTF-8") {
   check_file(file)
 

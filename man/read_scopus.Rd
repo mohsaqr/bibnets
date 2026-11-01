@@ -25,5 +25,5 @@ data frame with list-columns for multi-valued fields.
 \examples{
 f <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
 data <- read_scopus(f)
-head(data[, c("id", "title", "year", "journal")])
+subset(data, select = c(id, title, year, journal, authors))
 }

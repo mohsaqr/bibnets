@@ -15,9 +15,10 @@ historiograph(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id}, a references column (list-column or
-delimited string), and \code{year}. Optionally \code{title}, \code{journal}, \code{doi},
-\code{cited_by_count}.}
+\item{data}{A data frame with one row per work, a references column
+(list-column or delimited string) whose values use the same identifiers
+as the works, and \code{year}. An \code{id} column is optional (see \code{id}).
+Optionally \code{title}, \code{journal}, \code{doi}, \code{cited_by_count}.}
 
 \item{n}{Integer. Number of top locally cited documents to include.
 Default 30.}
@@ -39,21 +40,32 @@ If \code{NULL} (default), an existing \code{id} column is used when present,
 otherwise row numbers are used.}
 }
 \value{
-A list with:
+A list of two data frames:
 \describe{
-\item{\verb{$nodes}}{Data frame of included documents with \code{id}, \code{lcs},
-\code{gcs}, \code{year}, \code{title}, \code{journal}, \code{doi}.}
-\item{\verb{$edges}}{Data frame of directed citation edges with \code{from}
-(citing), \code{to} (cited), \code{year_from}, \code{year_to}.}
+\item{\code{nodes}}{One row per included document (at most \code{n}, each with
+\code{lcs >= min_lcs}), with the \code{\link[=local_citations]{local_citations()}} columns (\code{id},
+\code{lcs}, \code{gcs} when available, \code{year}, and \code{title}, \code{journal}, \code{doi}
+when present), sorted by decreasing \code{lcs}.}
+\item{\code{edges}}{One row per distinct directed citation that points at
+an included document, with \code{from} (citing; any document in the
+data), \code{to} (cited), \code{year_from} and \code{year_to} (integer), sorted by
+\code{year_from} then \code{year_to}.}
 }
+Both are empty (zero rows) when no document reaches \code{min_lcs}.
 }
 \description{
-Constructs a Garfield-style historiograph: a directed citation network
-among the most locally cited documents, laid out chronologically.
+Constructs a Garfield-style historiograph: the \code{n} most locally cited
+documents and the within-corpus citations they receive, each edge
+carrying the publication years of both ends so the network can be laid
+out chronologically. The citing document of an edge may be any document
+in the data, not only one of the \code{n} selected.
 }
 \examples{
 data(biblio_data)
-h <- historiograph(biblio_data, n = 5)
-h$nodes
-h$edges
+historiograph(biblio_data, n = 5)
+}
+\references{
+Garfield, E. (2004). Historiographic mapping of knowledge domains
+literature. \emph{Journal of Information Science}, 30(2), 119--145.
+\doi{10.1177/0165551504042802}
 }

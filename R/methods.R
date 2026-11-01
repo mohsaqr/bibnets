@@ -1,9 +1,15 @@
 #' Print a bibnets network edge list
 #'
+#' Prints a one-line header (network type, number of nodes and edges,
+#' counting method and, when used, the similarity measure) followed by the
+#' first `n` edges, so a printed edge list always states how it was built.
+#'
 #' @param x A `bibnets_network` data frame.
 #' @param n Integer. Number of rows to show. Default 10.
 #' @param ... Ignored.
-#' @return Invisibly returns `x`.
+#' @return `x`, unchanged and invisibly (a `bibnets_network` data frame with
+#'   columns `from`, `to`, `weight`, `count`). Called for its printed
+#'   output.
 #' @examples
 #' data(biblio_data)
 #' edges <- author_network(biblio_data, "collaboration")
@@ -68,9 +74,15 @@ print.bibnets_network <- function(x, n = 10L, ...) {
 
 #' Summarise a bibnets network
 #'
+#' Prints the network type, counting and similarity methods, the number of
+#' nodes and edges, the density (edges over the `n (n - 1) / 2` possible
+#' undirected pairs), the minimum, median and maximum `weight`, and the five
+#' nodes with the most edges.
+#'
 #' @param object A `bibnets_network` data frame.
 #' @param ... Ignored.
-#' @return Invisibly returns `object`.
+#' @return `object`, unchanged and invisibly (a `bibnets_network` data
+#'   frame). Called for its printed output.
 #' @examples
 #' data(biblio_data)
 #' edges <- author_network(biblio_data, "collaboration")

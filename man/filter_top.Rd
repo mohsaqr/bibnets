@@ -9,10 +9,13 @@ filter_top(edges, n)
 \arguments{
 \item{edges}{A data frame with at least \code{from}, \code{to}, \code{weight} columns.}
 
-\item{n}{Integer. Number of top nodes to keep.}
+\item{n}{Integer. Number of top nodes to keep (ties in edge count are
+broken by the order of \code{table()}, i.e. alphabetically).}
 }
 \value{
-A filtered data frame with edges among the top \code{n} nodes.
+The edge data frame restricted to edges whose two endpoints are
+both among the top \code{n} nodes, with the same class and columns as the
+input, sorted by decreasing \code{weight}.
 }
 \description{
 Keeps only edges between the most frequent nodes. Node frequency is

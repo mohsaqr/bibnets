@@ -2,10 +2,13 @@
 #'
 #' Constructs a network between documents (papers) in the dataset.
 #'
-#' @param data A data frame with `id` and a references column (list-column
-#'   or delimited string).
+#' @param data A data frame with one row per work and a references column
+#'   (list-column or delimited string). An `id` column is optional (see `id`);
+#'   direct citation needs the references to use the same identifiers.
 #' @param references Character. Name of the column containing cited references.
 #'   Default `"references"`.
+#' @param sep Character. Separator used to split the references column when
+#'   it is a plain character column. Default `";"`. Ignored for list-columns.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each reference.
 #' @param id Optional. Name of the column to use as the work identifier
@@ -16,22 +19,44 @@
 #'     \item{`"coupling"`}{Bibliographic coupling: documents linked when they
 #'       share cited references.}
 #'     \item{`"citation"`}{Direct citation: directed edges from citing to
-#'       cited documents (internal citations only).}
-#'     \item{`"co_citation"`}{Co-citation: documents linked when they are
-#'       cited together by other documents in the dataset.}
-#'     \item{`"equivalence"`}{Profile similarity of reference vectors.}
+#'       cited documents (internal citations only). `counting`,
+#'       `similarity`, `threshold` and `min_occur` are not applied; `top_n`
+#'       keeps the documents with the most citation edges.}
+#'     \item{`"co_citation"`}{Co-citation of the cited items: the nodes are
+#'       the values of the references column (as in [reference_network()]),
+#'       linked when the same document cites both. They are documents of the
+#'       dataset only when the references are document identifiers.}
+#'     \item{`"equivalence"`}{Cosine similarity of the documents' reference
+#'       vectors; `counting` and `similarity` are ignored.}
 #'   }
-#' @param counting Character. Counting method. Default `"full"`.
-#'   Position-dependent methods are not applicable to document networks.
+#' @param counting Character. Counting method: `"full"` (default),
+#'   `"fractional"`, `"paper"` or `"strength"`. Position-dependent methods
+#'   are not applicable to document networks.
 #' @param similarity Character. Similarity measure. Default `"none"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum reference frequency. Default 1.
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   and return the edges among them. Default `NULL` (all nodes).
 #' @inheritParams author_network
 #'
-#' @return Depends on `format`. For `type = "citation"`, edges are directed
-#'   (from = citing, to = cited) with `weight` and `count` both 1.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network` data frame with one row per edge, columns `from`,
+#'   `to`, `weight` and `count`, and attributes `network_type`, `counting`
+#'   and `similarity`; see [author_network()] for the other formats. For
+#'   `type = "citation"` the edges are directed (`from` = citing, `to` =
+#'   cited) with `weight` and `count` both 1, in data order; the other
+#'   types are undirected and sorted by decreasing `weight`.
+#'
+#' @references
+#' Kessler, M. M. (1963). Bibliographic coupling between scientific
+#' papers. *American Documentation*, 14(1), 10--25.
+#' \doi{10.1002/asi.5090140103}
+#'
+#' Small, H. (1973). Co-citation in the scientific literature: A new
+#' measure of the relationship between two documents. *Journal of the
+#' American Society for Information Science*, 24(4), 265--269.
+#' \doi{10.1002/asi.4630240406}
 #'
 #' @export
 #' @examples

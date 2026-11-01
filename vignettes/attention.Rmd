@@ -27,17 +27,23 @@ the same link weight as distant collaborators. This can make long lists produce
 dense networks in which close and distant relations are not distinguished.
 
 Attention weighting addresses this by borrowing the principle behind attention
-mechanisms in large language models and graph attention networks: a node attends
-most strongly to nearby neighbours, and influence decays with distance
-(López-Pernas et al., 2025). In `bibnets`, this is most natural for keyword
-co-occurrence and collaboration networks where list order carries information
-about how strongly two items are related. Instead of giving every co-occurring
-pair the same weight, attention weighting makes nearby items influence each
-other more strongly than distant items.
+mechanisms in large language models and graph attention networks: attention is
+a normalised distribution over the items of a sequence that concentrates on
+the positions that matter (López-Pernas et al., 2025). In `bibnets`, each item
+of a paper's ordered list receives a positional weight from the chosen
+profile, the weights of one list sum to one, and a co-occurrence link receives
+the product of its two items' weights. Instead of giving every co-occurring
+pair the same weight, attention weighting makes links between highly weighted
+positions count more than links between lightly weighted ones. This is most
+natural for keyword co-occurrence and collaboration networks where list order
+carries information.
 
-Each paper's total contribution is normalised to sum to one, so a long list
-contributes the same total as a short list and no single paper can dominate the
-network. The weights are a fixed positional rule, not learned content-based
+Because the weights of one list sum to one, a paper's total link weight is
+`(1 - sum(w^2)) / 2`, which stays below one half however long the list is. A
+long list therefore adds somewhat more than a short one (0.16 for two authors
+under `"lead"`, 0.48 for fifty) but can no longer swamp the network, as it
+does under full counting, where fifty authors create 1,225 full-strength
+pairs. The weights are a fixed positional rule, not learned content-based
 attention, and the profile you choose states the ordering assumption
 explicitly.
 
@@ -50,7 +56,7 @@ is distributed over ordered items, then normalises the result to sum to one.
 |---|---|---|
 | `"lead"` | early positions | weight is highest at the first position and falls quadratically down the list |
 | `"last"` | late positions | weight rises quadratically toward the final position |
-| `"proximity"` | nearby item pairs | each co-occurrence link is weighted by how close the two items are to each other in the list; influence decays with pairwise distance, suiting keywords and collaborations where nearness encodes relatedness |
+| `"proximity"` | the middle of the list | weight rises linearly from both ends toward the centre (`min(position, n + 1 - position)`), so links among central items are strongest; the weight of a link depends on where its two items sit, not on how far apart they are |
 | `"circular"` | both ends of the list | weight is highest at the first and last positions and lower toward the middle |
 
 ## A worked example
@@ -102,12 +108,18 @@ of the corpus.
 
 `attention` and `counting` are mutually exclusive. When `attention` is set, the
 network is built directly from positional weights and the `type` and `counting`
-arguments are ignored; the result is labelled with the profile so a saved edge
-list records the assumption that produced it:
+arguments are ignored; the result is labelled with the profile, and the
+header of the printed edge list shows it, so a saved edge list records the
+assumption that produced it:
 
 ```{r label}
-attr(author_network(papers, attention = "proximity"), "counting")
+author_network(papers, attention = "proximity")
 ```
+
+The header reads `author_attention_proximity` and `counting: proximity`.
+Alice sits in the middle of P3 and is one of only two authors on P2, so her
+links take the largest share: Alice and Dave, the sole pair of a two-author
+paper, top the list.
 
 Leave `attention` unset (the default) to use ordinary counting, where you can
 choose `"full"`, `"fractional"`, or one of the position-aware counting methods
@@ -126,16 +138,19 @@ institution_network(data, attention = "last")
 ```
 
 For keyword, country, and institution networks the "position" is the order in
-which the field is listed for each paper. Proximity is the most direct profile
-when near neighbours in the list are expected to be more related than distant
-ones.
+which the field is listed for each paper. Proximity fits lists whose central
+items are the focal ones; `"lead"` fits lists ordered by importance, such as
+keywords entered most-important first.
 
 ## How it works
 
-For each paper, attention applies the selected ordering rule and normalises the
-paper's contribution to sum to one, then uses those weights when the network is
-projected. Because every paper's contribution sums to one, no single paper —
-however many items it lists — can dominate the result.
+For each paper, attention applies the selected ordering rule to the list
+positions and normalises the resulting weights to sum to one. These weights
+fill the paper's row of the works × entities matrix, and the projection
+multiplies them, so a link's weight is the sum, over the papers the two items
+share, of the product of their positional weights. Because each paper's
+weights sum to one, its total link weight stays below one half, and no single
+paper — however many items it lists — can dominate the result.
 
 ## References
 

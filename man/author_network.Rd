@@ -26,9 +26,11 @@ author_network(
 )
 }
 \arguments{
-\item{data}{A data frame with at least \code{id} and an author column
-(list-column or delimited string, order preserved). For
-coupling/co-citation, also needs \code{references}.}
+\item{data}{A data frame with one row per work and an author column
+(list-column or delimited string, byline order preserved). An \code{id}
+column is optional (see \code{id}). \code{type = "coupling"} also needs a
+\code{references} column; \code{type = "co_citation"} needs a
+\code{cited_first_authors} list-column.}
 
 \item{type}{Character. Relationship type:
 \describe{
@@ -39,24 +41,28 @@ authors linked when they cite the same references.}
 \item{\code{"co_citation"}}{Author co-citation: authors linked when they
 are cited together by the same paper. Requires a
 \code{cited_first_authors} list-column.}
-\item{\code{"equivalence"}}{Profile similarity: cosine similarity of
-authors' full collaboration/citation profiles.}
+\item{\code{"equivalence"}}{Profile similarity: cosine similarity of the
+authors' paper-incidence vectors. \code{counting} and \code{similarity} are
+ignored (always cosine).}
 }}
 
 \item{counting}{Character. Counting method. Position-independent methods
 (\code{"full"}, \code{"fractional"}, \code{"paper"}, \code{"strength"}) work for all types.
 Position-dependent methods (\code{"harmonic"}, \code{"arithmetic"}, \code{"geometric"},
 \code{"adaptive_geometric"}, \code{"golden"}, \code{"first"}, \code{"last"},
-\code{"first_last"}, \code{"position_weighted"}) are available for
-\code{type = "collaboration"}.}
+\code{"first_last"}, \code{"position_weighted"}) apply to
+\code{type = "collaboration"}; for the other types they fall back to
+\code{"full"}.}
 
 \item{similarity}{Character. Similarity measure: \code{"none"}, \code{"association"},
 \code{"cosine"}, \code{"jaccard"}, \code{"inclusion"}, \code{"equivalence"}.}
 
-\item{threshold}{Numeric. Minimum edge weight. Default 0.}
+\item{threshold}{Numeric. Minimum edge weight; edges with
+\code{weight < threshold} are dropped. Default 0 (keep all).}
 
 \item{min_occur}{Integer. Minimum number of papers for an author to be
-included. Default 1.}
+included. Default 1. Not applied with a position-dependent \code{counting}
+method or with \code{attention}.}
 
 \item{position_weights}{Numeric vector. Custom weights for
 \code{counting = "position_weighted"}. Default \code{c(1, 0.8, 0.6, 0.4)}.}
@@ -68,16 +74,21 @@ Default 2.}
 \code{type} and \code{counting}. One of \code{"proximity"} (center authors weighted most),
 \code{"lead"} (first author dominates, quadratic drop), \code{"last"} (last author
 dominates, quadratic rise), \code{"circular"} (first and last both prominent).
-Default \code{NULL} (disabled).}
+The weights of one paper sum to 1 and an edge receives the product of
+its two endpoints' weights. When \code{attention} is set, \code{type} and
+\code{counting} are ignored. Default \code{NULL} (disabled).}
 
-\item{top_n}{Integer or NULL. Return only the top n edges by weight.
-Default NULL (all edges).}
+\item{top_n}{Integer or NULL. Keep only the \code{top_n} most frequent nodes
+(largest diagonal of the projected matrix, i.e. the number of papers
+under full counting) and return the edges among them. Default \code{NULL}
+(all nodes).}
 
 \item{self_loops}{Logical. If \code{TRUE}, include self-loops (an entity linked
-to itself). Default \code{FALSE}.}
+to itself). Default \code{FALSE}. Only takes effect with
+\code{similarity = "none"}; every similarity measure zeroes the diagonal.}
 
 \item{deduplicate}{Logical. If \code{TRUE} (default), each \verb{(paper, entity)}
-pair is counted at most once — duplicate entries in the source data
+pair is counted at most once -- duplicate entries in the source data
 (e.g., the same author listed twice on a paper) are treated as one
 occurrence. Set to \code{FALSE} to count every raw occurrence.}
 
@@ -96,11 +107,12 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \code{"authors"}. Use this to point at any column of a custom data set,
 e.g. \code{authors = "Author Names"}.}
 
-\item{sep}{Character. Separator used to split the entity column when it
-is a plain character column rather than a list-column, e.g. \code{sep = ","}
-or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
-applies only to the author column; the references column uses
-\code{references_sep}.}
+\item{sep}{Character. Separator used to split the entity column (the one
+named by the column argument, e.g. \code{authors}) when it is a plain
+character column rather than a list-column, e.g. \code{sep = ","} or
+\code{sep = " and "}. Default \code{";"}. Ignored for list-columns. In coupling
+networks the references column is split with \code{references_sep}
+instead.}
 
 \item{references_sep}{Character. Separator for the \code{references} column in
 \code{type = "coupling"}. Default \code{";"} (reference strings usually contain
@@ -117,9 +129,14 @@ quotes as part of the label.}
 column is used when present, otherwise row numbers are used.}
 }
 \value{
-Depends on \code{format}: a \code{bibnets_network} data frame (default),
-a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-sparse matrix.
+Depends on \code{format}. The default \code{"edgelist"} returns a
+\code{bibnets_network}: a data frame with one row per undirected edge and
+columns \code{from}, \code{to} (character), \code{weight} (numeric) and \code{count}
+(integer raw co-occurrence), sorted by decreasing \code{weight}, with
+attributes \code{network_type}, \code{counting} and \code{similarity}.
+\code{"gephi"} returns a plain data frame with columns \code{Source}, \code{Target},
+\code{Weight}, \code{Count}, \code{Type}; \code{"igraph"} an igraph graph; \code{"cograph"} a
+\code{cograph_network}; \code{"matrix"} a symmetric sparse \code{dgCMatrix}.
 }
 \description{
 Constructs a network between authors using one of four relationship types
@@ -138,4 +155,15 @@ d <- data.frame(id = 1:3,
                 Researchers = c("Smith J, Doe A", "Smith J, Lee K",
                                 "Doe A, Lee K"))
 author_network(d, authors = "Researchers", sep = ",")
+}
+\references{
+Perianes-Rodriguez, A., Waltman, L., & van Eck, N. J. (2016).
+Constructing bibliometric networks: A comparison between full and
+fractional counting. \emph{Journal of Informetrics}, 10(4), 1178--1195.
+\doi{10.1016/j.joi.2016.10.006}
+
+Hagen, N. T. (2008). Harmonic allocation of authorship credit:
+Source-level correction of bibliometric bias assures accurate
+publication and citation analysis. \emph{PLoS ONE}, 3(12), e4021.
+\doi{10.1371/journal.pone.0004021}
 }

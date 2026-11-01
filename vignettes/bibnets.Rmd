@@ -51,13 +51,14 @@ name.
 
 Counting methods determine each publication's contribution to an edge. They
 range from full and fractional counting to position-aware schemes (harmonic,
-geometric, golden-ratio, first, last, and first–last), and six similarity
+geometric, golden-ratio, first, last, and first–last), and five similarity
 measures — cosine, association strength, Jaccard, inclusion, and equivalence —
-rescale the projected weights.
+rescale the projected weights (`similarity = "none"` keeps them raw).
 
-Attention weighting assigns each author a positional weight that sums to one
-across the byline, so a publication's credit is distributed by byline position
-rather than equally and a large author list does not dominate the network.
+Attention weighting assigns each author a positional weight, and the weights of
+one byline sum to one, so a publication's credit is distributed by byline
+position rather than equally and a large author list cannot dominate the
+network.
 Aggregation pools the references or members of a group to construct
 collaboration and coupling networks among countries, institutions, or sources
 rather than individuals. Temporal construction applies any builder over fixed,
@@ -197,13 +198,14 @@ Readers return a common set of columns:
 ```{r schema}
 data(scopus_quantum_cloud)
 sc <- scopus_quantum_cloud
-names(sc)[1:12]
+names(sc)
 ```
 
 The columns that matter for network construction are `id`, the list-columns
 `authors` / `references` / `keywords`, and `year` (used by
 `temporal_network()`). Source-specific extras such as `countries`,
-`affiliations`, and `keywords_plus` are kept when available.
+`affiliations`, and `keywords_plus` are kept when available; this Scopus
+sample carries `affiliations`.
 
 ## Datasets used here
 
@@ -277,10 +279,11 @@ name is an honest analogy to the attention mechanism in large language
 models: just as a transformer assigns a normalized probability distribution
 across the tokens in a sequence — concentrating weight on what matters,
 spreading it thin over the rest — `bibnets` assigns each author on a paper a
-positional weight that sums to one across the full byline. A fifty-author
-paper therefore contributes exactly one unit of connection budget, the same
-as a two-author paper, and the distribution of that budget reflects
-authorship conventions: `"lead"` concentrates weight on the first author,
+positional weight, and the weights of one byline sum to one. An edge receives
+the product of its two authors' weights, so a paper's total edge weight is
+`(1 - sum(w^2)) / 2`, which never reaches one half: a fifty-author paper adds
+less than 0.5 to the network, against 1,225 full-strength pairs under full
+counting. The distribution of the weights reflects authorship conventions: `"lead"` concentrates weight on the first author,
 `"last"` on the senior or PI position, `"proximity"` rewards the central
 authors, and `"circular"` rewards both ends jointly. The weights are a fixed
 positional prior, not learned content-based attention, but they carry real
@@ -378,10 +381,8 @@ The same raw counts support different similarity scores; only `weight`
 changes, `count` does not:
 
 ```{r normalize}
-none <- keyword_network(sc, min_occur = 2, similarity = "none")
-cos  <- keyword_network(sc, min_occur = 2, similarity = "cosine")
-head(none[, c("from", "to", "weight", "count")], 3)
-head(cos[,  c("from", "to", "weight", "count")], 3)
+head(keyword_network(sc, min_occur = 2, similarity = "none"), 3)
+head(keyword_network(sc, min_occur = 2, similarity = "cosine"), 3)
 ```
 
 `normalize()` uses the diagonal of the projected matrix as each node's total
@@ -435,19 +436,23 @@ window becomes a warning labelled with that window.
 ## Local citations and historiographs
 
 `local_citations()` counts how often each document is cited by others in the
-same corpus; `historiograph()` builds the directed citation graph among the
-top-cited documents:
+same corpus; `historiograph()` keeps the most locally cited documents and the
+directed citations they receive, with the years of both ends for a
+chronological layout:
 
 ```{r historiograph}
-head(local_citations(sc), 5)
+local_citations(small)
 
-h <- historiograph(sc, n = 10)
-h$nodes
-head(h$edges, 5)
+historiograph(small, n = 5)
 ```
 
-Both require reference strings or IDs to match document IDs in the data; if
-the cited works are external, local counts stay low.
+Both require the references to use the same identifiers as the documents.
+In `small`, papers cite W1, W2, W3 and W5 by their IDs, so W1, cited by seven
+of the other nine papers, anchors the history. The Scopus sample `sc` stores
+references as formatted citation strings rather than EIDs, so every local
+citation score there is zero and its historiograph is empty; OpenAlex data
+fetched with `read_openalex()`, whose references are Work IDs, is the usual
+source for these two analyses.
 
 ## Author-name normalization
 
@@ -469,11 +474,9 @@ The edge list is already usable; converters cover the common targets:
 ```{r export}
 edges <- keyword_network(sc, min_occur = 2)
 
-m <- to_matrix(edges)            # sparse adjacency matrix
-m[1:4, 1:4]
+dim(to_matrix(edges))            # sparse adjacency matrix, one row per keyword
 
-gephi <- to_gephi(edges)         # Gephi node/edge tables
-head(gephi$edges, 3)
+to_gephi(head(edges, 3))         # Gephi node and edge tables
 
 cat(substr(to_graphml(edges), 1, 200))   # GraphML, no XML dependency
 ```
@@ -483,19 +486,20 @@ cat(substr(to_graphml(edges), 1, 200))   # GraphML, no XML dependency
 
 ## Reading a `bibnets_network`
 
-The object records how it was built, as attributes:
+The object records how it was built (network type, counting and similarity
+are stored with it), and both `print()` and `summary()` report them:
 
 ```{r attrs}
 edges <- author_network(oa, type = "collaboration", counting = "harmonic")
-c(type     = attr(edges, "network_type"),
-  counting = attr(edges, "counting"),
-  sim      = attr(edges, "similarity"))
-
 summary(edges)
 ```
 
 `print()` reports the network type, node and edge counts, and the counting
 and similarity methods — so a saved edge list always says how it was made.
+`summary()` adds the density, the weight range and the best-connected nodes.
+Under harmonic counting each weight is a sum, over the shared papers, of the
+product of the two authors' credit shares; every share is below one, so each
+weight falls below the raw `count`.
 
 ## References
 

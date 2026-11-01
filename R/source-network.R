@@ -2,32 +2,43 @@
 #'
 #' Constructs a network between publication sources (journals, book series).
 #'
-#' @param data A data frame with `id` and `journal` (character column).
-#'   For coupling, also needs `references`. For co-citation, needs a
+#' @param data A data frame with one row per work and a journal column
+#'   (one value per work). An `id` column is optional (see `id`). Coupling
+#'   and equivalence also need `references`; co-citation needs a
 #'   `cited_journals` list-column.
 #' @param journal Character. Name of the column containing the publication
 #'   source. Default `"journal"`. Use this to point at any column of a
 #'   custom data set, e.g. `journal = "Source title"`.
+#' @param sep Character. Not used: the journal column holds one value per
+#'   work and is never split. Kept for a signature consistent with the other
+#'   builders.
 #' @param references_sep Character. Separator for the `references` column in
-#'   `type = "coupling"`. Default `";"`.
+#'   `type = "coupling"` and `"equivalence"`. Default `";"`.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each entity.
 #' @param id Optional. Name of the column to use as the work identifier
 #'   (the matrix-row dimension). If `NULL` (default), an existing `id`
 #'   column is used when present, otherwise row numbers are used.
-#' @param type Character. `"coupling"` (default), `"co_citation"`, or
-#'   `"equivalence"`.
-#' @param counting Character. Counting method. Default `"full"`.
+#' @param type Character. `"coupling"` (default; sources linked by the
+#'   references their papers share), `"co_citation"` (sources cited together,
+#'   from `cited_journals`), or `"equivalence"` (cosine similarity of the
+#'   sources' pooled reference vectors; `counting` and `similarity` are
+#'   ignored).
+#' @param counting Character. Counting method: `"full"` (default),
+#'   `"fractional"`, `"paper"` or `"strength"`.
 #' @param similarity Character. Similarity measure. Default `"none"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum papers per source. Default 1.
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   and return the edges among them. Default `NULL` (all nodes).
 #' @inheritParams author_network
 #'
-#' @return Depends on `format`: a `bibnets_network` data frame (default),
-#'   a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-#'   sparse matrix.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network` data frame with one row per undirected edge, columns
+#'   `from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+#'   attributes `network_type`, `counting` and `similarity`. See
+#'   [author_network()] for the other formats.
 #'
 #' @export
 #' @examples

@@ -18,9 +18,12 @@ column. All other columns are included as Gephi node attributes.}
 \item{directed}{Logical. Sets the \code{Type} column. Default \code{FALSE}.}
 }
 \value{
-If \code{file = NULL}: a list with \verb{$nodes} and \verb{$edges} data frames.
-If \code{file} is a directory path: writes two CSV files invisibly and returns
-the file paths.
+If \code{file = NULL}, a list of two plain data frames: \code{nodes} (one
+row per node, columns \code{Id}, \code{Label}, then any extra node attributes) and
+\code{edges} (one row per edge, columns \code{Source}, \code{Target}, \code{Weight}, \code{Type},
+then the remaining edge columns such as \code{count}). If \code{file} is an
+existing directory, writes \code{nodes.csv} and \code{edges.csv} there, reports
+the paths with a message, and returns the two paths invisibly.
 }
 \description{
 Converts a bibnets edge list (and optional node table) to the CSV format
@@ -30,6 +33,11 @@ conventions (\code{Source}, \code{Target}, \code{Weight}, \code{Id}, \code{Label
 \examples{
 data(biblio_data)
 edges <- author_network(biblio_data, "collaboration")
-gephi <- to_gephi(edges)
-head(gephi$edges)
+to_gephi(head(edges, 3))
+
+# Write nodes.csv and edges.csv into a directory
+out_dir <- tempfile("gephi")
+dir.create(out_dir)
+to_gephi(edges, file = out_dir)
+unlink(out_dir, recursive = TRUE)
 }

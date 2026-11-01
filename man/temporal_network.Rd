@@ -42,12 +42,24 @@ Default \code{"year"}. Works with any numeric time unit: years, months,
 quarters, semesters, weeks, etc. (e.g., \code{"month"}, \code{"quarter"}, \code{"time"}).}
 }
 \value{
-A named list of data frames (edge lists). Names are window
-labels like \code{"2018-2020"}.
+A named list with one element per non-empty window, named by the
+window label (\code{"start-end"}, e.g. \code{"2018-2020"}). Each element is the
+edge list returned by \code{network_fun} (a \code{bibnets_network} for the
+package builders with the default \code{format}) with an extra character
+column \code{window}. Windows with fewer than two records or no edges are
+omitted; if \code{network_fun} fails in a window, a warning naming the
+window is raised and that window is omitted. An empty list is returned
+when the time column has no non-missing values.
 }
 \description{
 Splits data by time windows and builds a separate network for each
-window using any network function.
+window using any network function, so the same construction can be
+compared across periods. The time column is coerced to integer before
+windows are formed.
+}
+\details{
+\code{network_fun} must return a data frame, so keep the builder's
+default \code{format = "edgelist"}.
 }
 \examples{
 data(biblio_data)

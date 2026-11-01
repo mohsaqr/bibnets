@@ -14,10 +14,14 @@
 \item{...}{Ignored.}
 }
 \value{
-Invisibly returns \code{x}.
+\code{x}, unchanged and invisibly (a \code{bibnets_network} data frame with
+columns \code{from}, \code{to}, \code{weight}, \code{count}). Called for its printed
+output.
 }
 \description{
-Print a bibnets network edge list
+Prints a one-line header (network type, number of nodes and edges,
+counting method and, when used, the similarity measure) followed by the
+first \code{n} edges, so a printed edge list always states how it was built.
 }
 \examples{
 data(biblio_data)

@@ -13,8 +13,10 @@ Must be an undirected edge list (each pair appears once).}
 \item{alpha}{Numeric. Significance threshold in (0, 1). Default \code{0.05}.}
 }
 \value{
-The filtered edge data frame with an added \code{alpha} column (the
-minimum alpha from the two endpoints).
+The input edge data frame (same class and columns) restricted to
+the retained edges, with an added numeric \code{alpha} column (the smaller
+of the two endpoint alphas), one row per retained edge, sorted by
+decreasing \code{weight}.
 }
 \description{
 Applies the disparity filter to a weighted edge list. For each edge, it
@@ -37,4 +39,10 @@ edges <- data.frame(
   weight = c(10,   1,   1,   8,   1)
 )
 backbone(edges, alpha = 0.05)
+}
+\references{
+Serrano, M. A., Boguna, M., & Vespignani, A. (2009). Extracting the
+multiscale backbone of complex weighted networks. \emph{Proceedings of the
+National Academy of Sciences}, 106(16), 6483--6488.
+\doi{10.1073/pnas.0808904106}
 }

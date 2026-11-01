@@ -16,8 +16,16 @@
 #'   Must be an undirected edge list (each pair appears once).
 #' @param alpha Numeric. Significance threshold in (0, 1). Default `0.05`.
 #'
-#' @return The filtered edge data frame with an added `alpha` column (the
-#'   minimum alpha from the two endpoints).
+#' @return The input edge data frame (same class and columns) restricted to
+#'   the retained edges, with an added numeric `alpha` column (the smaller
+#'   of the two endpoint alphas), one row per retained edge, sorted by
+#'   decreasing `weight`.
+#'
+#' @references
+#' Serrano, M. A., Boguna, M., & Vespignani, A. (2009). Extracting the
+#' multiscale backbone of complex weighted networks. *Proceedings of the
+#' National Academy of Sciences*, 106(16), 6483--6488.
+#' \doi{10.1073/pnas.0808904106}
 #'
 #' @export
 #' @examples

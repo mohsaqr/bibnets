@@ -24,17 +24,22 @@ institution_network(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and an affiliation column (list-column
-or delimited string). For coupling, also needs \code{references}.}
+\item{data}{A data frame with one row per work and an affiliation column (list-column
+or delimited string). An \code{id} column is optional (see \code{id}).
+For coupling, also needs \code{references}.}
 
 \item{type}{Character. \code{"collaboration"} (default), \code{"coupling"}, or
-\code{"equivalence"}.}
+\code{"equivalence"} (cosine similarity of paper-incidence vectors;
+\code{counting} and \code{similarity} are ignored). Ignored when \code{attention} is set.}
 
-\item{counting}{Character. Counting method. Default \code{"full"}.}
+\item{counting}{Character. Counting method: \code{"full"} (default),
+\code{"fractional"}, \code{"paper"} or \code{"strength"}. Ignored when \code{attention}
+is set.}
 
 \item{similarity}{Character. Similarity measure. Default \code{"none"}.}
 
-\item{threshold}{Numeric. Minimum edge weight. Default 0.}
+\item{threshold}{Numeric. Minimum edge weight; edges with
+\code{weight < threshold} are dropped. Default 0 (keep all).}
 
 \item{min_occur}{Integer. Minimum papers per institution. Default 1.}
 
@@ -42,16 +47,19 @@ or delimited string). For coupling, also needs \code{references}.}
 \code{type} and \code{counting}. One of \code{"proximity"} (center authors weighted most),
 \code{"lead"} (first author dominates, quadratic drop), \code{"last"} (last author
 dominates, quadratic rise), \code{"circular"} (first and last both prominent).
-Default \code{NULL} (disabled).}
+The weights of one paper sum to 1 and an edge receives the product of
+its two endpoints' weights. When \code{attention} is set, \code{type} and
+\code{counting} are ignored. Default \code{NULL} (disabled).}
 
-\item{top_n}{Integer or NULL. Return only the top n edges by weight.
-Default NULL (all edges).}
+\item{top_n}{Integer or NULL. Keep only the \code{top_n} most frequent nodes
+and return the edges among them. Default \code{NULL} (all nodes).}
 
 \item{self_loops}{Logical. If \code{TRUE}, include self-loops (an entity linked
-to itself). Default \code{FALSE}.}
+to itself). Default \code{FALSE}. Only takes effect with
+\code{similarity = "none"}; every similarity measure zeroes the diagonal.}
 
 \item{deduplicate}{Logical. If \code{TRUE} (default), each \verb{(paper, entity)}
-pair is counted at most once — duplicate entries in the source data
+pair is counted at most once -- duplicate entries in the source data
 (e.g., the same author listed twice on a paper) are treated as one
 occurrence. Set to \code{FALSE} to count every raw occurrence.}
 
@@ -69,11 +77,12 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{affiliations}{Character. Name of the column containing institutions.
 Default \code{"affiliations"}.}
 
-\item{sep}{Character. Separator used to split the entity column when it
-is a plain character column rather than a list-column, e.g. \code{sep = ","}
-or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
-applies only to the author column; the references column uses
-\code{references_sep}.}
+\item{sep}{Character. Separator used to split the entity column (the one
+named by the column argument, e.g. \code{authors}) when it is a plain
+character column rather than a list-column, e.g. \code{sep = ","} or
+\code{sep = " and "}. Default \code{";"}. Ignored for list-columns. In coupling
+networks the references column is split with \code{references_sep}
+instead.}
 
 \item{references_sep}{Character. Separator for the \code{references} column in
 \code{type = "coupling"}. Default \code{";"}.}
@@ -86,9 +95,11 @@ characters are removed from each entity.}
 column is used when present, otherwise row numbers are used.}
 }
 \value{
-Depends on \code{format}: a \code{bibnets_network} data frame (default),
-a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-sparse matrix.
+Depends on \code{format}. The default \code{"edgelist"} returns a
+\code{bibnets_network} data frame with one row per undirected edge, columns
+\code{from}, \code{to}, \code{weight} and \code{count}, sorted by decreasing \code{weight}, and
+attributes \code{network_type}, \code{counting} and \code{similarity}. See
+\code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
 Constructs a network between institutions (affiliations).

@@ -16,7 +16,7 @@
 #' @examples
 #' f <- system.file("extdata", "wos_sample.txt", package = "bibnets")
 #' data <- read_wos(f)
-#' head(data[, c("id", "title", "year", "journal")])
+#' subset(data, select = c(id, title, year, journal, authors))
 read_wos <- function(file, format = "plaintext") {
   check_file(file)
   check_choice(format, c("plaintext", "tab"), "format")

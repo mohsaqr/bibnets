@@ -16,14 +16,23 @@ build_author_bipartite(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and \code{authors} (list-column where
-author order is preserved).}
+\item{data}{A data frame with \code{id} and an ordered entity column
+(list-column or delimited string).}
+
+\item{field}{Character. Name of the entity column. Default \code{"authors"}.}
 
 \item{counting}{Character. Counting method.}
 
 \item{position_weights}{Numeric vector for \code{counting = "position_weighted"}.}
 
 \item{first_last_weight}{Numeric for \code{counting = "first_last"}.}
+
+\item{deduplicate}{Logical. Keep only the first position of an entity
+repeated within one paper.}
+
+\item{sep}{Character. Separator for a plain character column.}
+
+\item{strip_quotes}{Logical. Strip surrounding quotes from each entity.}
 }
 \value{
 A sparse weighted bipartite matrix (works x authors).

@@ -25,8 +25,8 @@ author name strings. It does two things:
    `suffix`), returned as the `"parts"` attribute.
 
 It is **not** called by any reader or network builder. bibnets matches
-entity labels verbatim; you opt in to normalisation by calling this
-function yourself.
+entity labels verbatim (after trimming and upper-casing); you opt in to
+normalisation by calling this function yourself.
 
 ```{r}
 parse_names(c("Saqr, Mohammed", "Lopez-Pernas, Sonsoles"))
@@ -90,12 +90,15 @@ data.frame(
 
 ## The `"parts"` attribute
 
-The parsed components ride along on every call, independent of `format`:
+The parsed components ride along on every call, independent of `format`,
+and `str()` shows them next to the formatted names:
 
 ```{r}
-x <- parse_names(c("van der Berg, Jan", "Smith, John, Jr."))
-attr(x, "parts")
+str(parse_names(c("van der Berg, Jan", "Smith, John, Jr.")))
 ```
+
+The particle (`van der`) and the suffix (`Jr`) are split off from the surname,
+so `last` holds `Berg` and `Smith` alone.
 
 `type` is one of `"person"`, `"organization"`, `"empty"`, `"missing"`.
 
@@ -109,12 +112,15 @@ variable number of authors, so the cell holds a *vector*, not a single
 string.
 
 ```{r}
-papers <- data.frame(id = c("P1", "P2", "P3"), stringsAsFactors = FALSE)
-papers$authors <- list(
-  c("Saqr, Mohammed", "Lopez, Ana"),
-  c("SAQR M",         "Lopez, Ana"),
-  c("Saqr, Mohammed", "Chen, Wei"))
-papers$authors
+papers <- data.frame(
+  id = c("P1", "P2", "P3"),
+  authors = I(list(
+    c("Saqr, Mohammed", "Lopez, Ana"),
+    c("SAQR M",         "Lopez, Ana"),
+    c("Saqr, Mohammed", "Chen, Wei")
+  ))
+)
+str(papers)
 ```
 
 Map the function over the list-column with `lapply()`:
@@ -122,7 +128,7 @@ Map the function over the list-column with `lapply()`:
 ```{r}
 papers$authors <- lapply(papers$authors, parse_names,
                           format = "last_initials")
-papers$authors
+papers
 ```
 
 A flat character column (or a network's `from` / `to`) is called
@@ -161,23 +167,20 @@ class(net)
 is.data.frame(net)
 ```
 
-You *can* relabel `from` / `to` directly, but `parse_names()` is
-graph-blind. Edges, pairing, `weight` and `count` are preserved, but:
+Relabelling its `from` / `to` columns after the build is possible, but
+`parse_names()` is graph-blind. Edges, pairing, `weight` and `count` are
+preserved, but:
 
-* Apply the **same call to both** endpoint columns, or the two ends use
-  different labels.
+* The **same call** has to be applied to both endpoint columns, or the two
+  ends use different labels.
 * The mapping is **many-to-one**: distinct authors can collapse onto one
   label (especially `"last_initials"`), and bibnets does **not**
-  re-aggregate the resulting duplicate edges.
+  re-aggregate the resulting duplicate edges, so two rows can then describe
+  the same pair with split weights.
 
-```{r}
-net$from <- as.vector(parse_names(net$from, format = "last"))
-net$to   <- as.vector(parse_names(net$to,   format = "last"))
-net
-```
-
-Use `as.vector()` when assigning back so the `"parts"` attribute is not
-carried on the column.
+Normalising the `authors` column before `author_network()`, as above, avoids
+both problems: the merge happens before projection, so every count and weight
+is computed on the merged node.
 
 ## Limitations
 

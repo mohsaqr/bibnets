@@ -25,5 +25,5 @@ standardized bibliometric data frame.
 \examples{
 f <- system.file("extdata", "wos_sample.txt", package = "bibnets")
 data <- read_wos(f)
-head(data[, c("id", "title", "year", "journal")])
+subset(data, select = c(id, title, year, journal, authors))
 }

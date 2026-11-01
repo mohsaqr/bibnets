@@ -32,14 +32,12 @@ raw <- data.frame(
   so = c("Journal A", "Journal B"),
   doi = c("https://doi.org/10.1/a", "https://doi.org/10.2/b"),
   cited_by_count = c(5L, 12L),
-  stringsAsFactors = FALSE
+  author = I(list(
+    data.frame(au_display_name = c("Smith J", "Jones A")),
+    data.frame(au_display_name = "Davis M")
+  )),
+  referenced_works = I(list(c("W100", "W200"), "W123"))
 )
-raw$author <- list(
-  data.frame(au_display_name = c("Smith J", "Jones A"),
-             stringsAsFactors = FALSE),
-  data.frame(au_display_name = "Davis M", stringsAsFactors = FALSE)
-)
-raw$referenced_works <- list(c("W100", "W200"), "W123")
 data <- read_openalex(raw)
-head(data[, c("id", "title", "year", "journal", "doi")])
+subset(data, select = c(id, title, year, doi, authors, references))
 }

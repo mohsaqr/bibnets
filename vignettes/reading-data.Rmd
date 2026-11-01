@@ -98,8 +98,7 @@ generic <- read_biblio(
   keywords = "primary_topic.display_name",
   sep      = "|"
 )
-generic$authors[[1]]
-generic$keywords[[1]]
+str(head(subset(generic, select = c(id, authors, keywords)), 2))
 ```
 
 Each mapped column is split on `sep` and stored under its standard name as a
@@ -119,7 +118,6 @@ one call.
 
 ```{r custom-columns}
 papers <- data.frame(
-  id            = 1:4,
   `Author Names`= c("Smith J, Doe A, Lee K", "Smith J, Lee K",
                     "Doe A, Lee K", "Smith J, Doe A"),
   Tags          = c("ml, ai", "ml, nlp", "ai, nlp", "ml, ai"),
@@ -236,9 +234,12 @@ data <- read_biblio("file.csv", format = "scopus")   # force a format
 ```
 
 When given a directory, `read_biblio()` collects every `.csv`, `.txt`,
-`.bib`, `.ris`, `.xls`, and `.xlsx` file in it, reads each one, and
-combines the results with `rbind()`. For more than one file a summary
-message is emitted:
+`.bib`, `.ris`, `.xls`, and `.xlsx` file in it, reads each one, aligns
+their columns (a column missing from one source is filled with `NA`, or
+with empty vectors for list-columns), and combines the results with
+`rbind()`. No reader parses spreadsheets, so a folder that contains an
+`.xls` or `.xlsx` file stops with the format-detection error; save such
+files as CSV first. For more than one file a summary message is emitted:
 
 ```
 Read 3 files: 1247 rows total
@@ -293,7 +294,7 @@ bibnets schema:
 | `References` (`;`-delimited) | `references` (list) |
 | `Author Keywords` (`;`-delimited) | `keywords` (list) |
 | `Index Keywords` (`;`-delimited) | `index_keywords` (list, extra) |
-| `Affiliations` (`;`-delimited) | `affiliations` (list, extra) |
+| `Affiliations` | `affiliations` (character, extra; one string per record) |
 | `Language of Original Document` | `language` (extra) |
 
 Scopus stores each cited reference as one semicolon-delimited string in a
@@ -425,15 +426,13 @@ Multi-valued fields use `|` as the delimiter.
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 oa <- read_openalex_csv(f)
 str(oa, max.level = 1)
-head(oa[, c("id", "title", "year", "journal", "type")], 5)
+head(subset(oa, select = c(id, title, year, journal, type)), 5)
 ```
 
-The list-columns:
+The list-columns hold one vector per work:
 
 ```{r openalex-csv-lists}
-oa$authors[[1]]
-oa$affiliations[[1]]
-oa$countries[[1]]
+str(head(subset(oa, select = c(id, authors, affiliations, countries)), 2))
 ```
 
 References and abstracts are absent from the OpenAlex flat export:
@@ -474,29 +473,28 @@ When data does not come from any of the supported sources, a
 bibnets-compatible data frame can be constructed directly. The
 requirement is: standard scalar columns are character or integer;
 multi-valued fields are list-columns whose elements are character
-vectors.
+vectors (wrap each list in `I()` so `data.frame()` keeps it as one column).
 
 ```{r manual-build}
 df <- data.frame(
   id    = c("p1", "p2", "p3"),
   title = c("Paper A", "Paper B", "Paper C"),
   year  = c(2020L, 2021L, 2022L),
-  stringsAsFactors = FALSE
-)
-df$authors <- list(
-  c("ALICE", "BOB"),
-  c("BOB", "CAROL"),
-  c("ALICE", "CAROL", "DAVE")
-)
-df$references <- list(
-  c("R1", "R2"),
-  c("R1", "R3"),
-  c("R2", "R3", "R4")
-)
-df$keywords <- list(
-  c("graph", "network"),
-  c("network", "embedding"),
-  c("graph", "embedding", "neural")
+  authors = I(list(
+    c("ALICE", "BOB"),
+    c("BOB", "CAROL"),
+    c("ALICE", "CAROL", "DAVE")
+  )),
+  references = I(list(
+    c("R1", "R2"),
+    c("R1", "R3"),
+    c("R2", "R3", "R4")
+  )),
+  keywords = I(list(
+    c("graph", "network"),
+    c("network", "embedding"),
+    c("graph", "embedding", "neural")
+  ))
 )
 
 author_network(df, "collaboration")
@@ -527,31 +525,32 @@ custom pipelines.
 ## 13. Combining data from multiple sources
 
 Different readers expose different extras: WoS provides `keywords_plus`,
-Scopus provides `index_keywords`, OpenAlex provides `countries`. To
-combine sources, restrict each frame to the standard columns and bind:
+Scopus provides `index_keywords`, OpenAlex provides `countries`. Passing
+several files to `read_biblio()` combines them in one call: the standard
+columns line up, and each extra is kept and filled with `NA` (or empty
+vectors) for the sources that lack it:
 
 ```{r combine-sources}
-common <- c("id", "title", "year", "journal", "doi", "cited_by_count",
-            "abstract", "type", "authors", "references", "keywords")
-
-data(biblio_data)
-b1 <- biblio_data
-b2 <- biblio_data
-b2$id <- paste0(b2$id, "_dup")
-
-cols <- intersect(common, names(b1))
-combined <- rbind(b1[, cols], b2[, cols])
-nrow(combined)
+f_scopus <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
+f_wos    <- system.file("extdata", "wos_sample.txt",    package = "bibnets")
+combined <- read_biblio(c(f_scopus, f_wos))
+str(combined, max.level = 1)
 ```
+
+The two Scopus records keep their `index_keywords`, the two WoS records
+their `keywords_plus`, and each is empty on the other source's rows.
 
 Two practical notes:
 
-1. When document IDs overlap across sources (which occurs when Scopus and
-   WoS both index the same article), prefixing the IDs as shown
-   prevents duplicate documents from inflating co-occurrence counts.
-2. Source-specific extras (e.g. WoS `keywords_plus`) should be retained
-   on the per-source frame and merged selectively rather than coerced
-   into the combined frame.
+1. `read_biblio()` does not de-duplicate. When the same article is
+   indexed by both Scopus and WoS it appears twice, under two different
+   IDs, and inflates co-occurrence counts. The bundled samples show it:
+   the two WoS records are the two Scopus articles again (same titles and
+   DOIs). Remove such duplicates (for example by DOI) before building
+   networks.
+2. Source-specific extras (e.g. WoS `keywords_plus`) are only populated
+   for that source's rows, so a network built from an extra covers that
+   source alone.
 
 ## 14. Inspecting and sanity-checking
 
@@ -567,10 +566,15 @@ range(lengths(sc$authors))
 range(lengths(sc$references))
 range(lengths(sc$keywords))
 
-head(sort(table(sc$journal), decreasing = TRUE), 5)
-range(sc$year, na.rm = TRUE)
+summary(factor(sc$journal), maxsum = 6)
+range(sc$year)
 table(sc$type)
 ```
+
+All three list-columns have a minimum length of 0: some records carry no
+authors, no references or no author keywords, and those records drop out of
+the corresponding networks. The five most frequent venues are IEEE outlets,
+and the years fall inside the 2020--2025 search window.
 
 Indicators to check:
 
@@ -589,7 +593,7 @@ Indicators to check:
 | `Could not detect file format` | First line doesn't match any signature | Pass `format = "scopus"` (etc.) explicitly, or name the entity columns (`authors`, `keywords`, ...) to read it as a generic CSV |
 | Empty `references` list on every row | BibTeX/RIS or OpenAlex flat CSV — these don't carry citations | Use Scopus/WoS, OpenAlex via `oa_fetch()`, Dimensions, Lens, or Crossref |
 | `Invalid multibyte string` on read | Wrong encoding | Most readers accept `encoding = "latin1"`; pass it through `read_biblio(..., encoding = "latin1")` |
-| Author names look like `LASTNAME, F.J.` not `FJ LASTNAME` | Default is `flip_names = FALSE` | The reader returns names as-is from the source. Cluster them by string match downstream, or pass `flip_names = TRUE` if all names follow `Last, First` |
+| One author appears under several labels (e.g. `SAQR, MOHAMMED` and `SAQR M`) | Sources write names differently; readers keep the source's name order and only upper-case them and drop the dots from initials | Normalise the `authors` list-column with `parse_names()` before building (see `vignette("parsing-author-names")`) |
 | Dimensions file silently fails | "About the data" preamble removed and column header edited | `read_dimensions()` detects the standard preamble and falls back to header-token detection; the failure mode requires the column header itself to have been edited |
 | Co-authorship network contains duplicate nodes (e.g. `"Alice"` and `"ALICE"`) | Mixed casing in the source | The standard readers and `build_bipartite()` apply `toupper(trimws(...))` to entity labels. Manually constructed frames should apply the same normalisation |
 
@@ -602,8 +606,10 @@ Indicators to check:
 - All network builders (`author_network()`, `keyword_network()`,
   `reference_network()`, `document_network()`, `source_network()`,
   `country_network()`, `institution_network()`, `conetwork()`) accept
-  the same core arguments (`type`, `counting`, `similarity`,
-  `threshold`, `top_n`, `format`) plus the custom-column arguments
-  shown above (`id`, the entity column, `sep`, `references_sep`,
-  `strip_quotes`), so switching between network types on data already
-  in the standard schema requires only a function-name change.
+  the same core arguments (`counting`, `similarity`, `threshold`,
+  `min_occur`, `top_n`, `format`, plus `type` on every builder except
+  `keyword_network()` and `conetwork()`) and the custom-column arguments
+  shown above (`id`, the entity column, `sep`, `strip_quotes`, and
+  `references_sep` on the coupling builders), so switching between
+  network types on data already in the standard schema requires only a
+  function-name change.

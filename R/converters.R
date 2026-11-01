@@ -1,16 +1,20 @@
 #' Convert edge data frame to igraph
 #'
+#' Requires the suggested package igraph.
+#'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns,
 #'   as returned by any network function in bibnets.
 #' @param directed Logical. Default `FALSE`.
 #'
-#' @return An igraph graph object.
+#' @return An `igraph` graph with one vertex per node label and one edge per
+#'   row of `edges`; the remaining columns (`weight`, `count`, ...) become
+#'   edge attributes.
 #'
 #' @export
 #' @examplesIf requireNamespace("igraph", quietly = TRUE)
 #' data(biblio_data)
 #' edges <- author_network(biblio_data, "collaboration")
-#' g <- to_igraph(edges)
+#' to_igraph(edges)
 to_igraph <- function(edges, directed = FALSE) {
   if (!requireNamespace("igraph", quietly = TRUE)) {
     stop("Package 'igraph' is required. Install it with: ",
@@ -23,16 +27,19 @@ to_igraph <- function(edges, directed = FALSE) {
 
 #' Convert edge data frame to tbl_graph
 #'
+#' Requires the suggested packages tidygraph and igraph.
+#'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param directed Logical. Default `FALSE`.
 #'
-#' @return A tbl_graph object (tidygraph).
+#' @return A `tbl_graph` (tidygraph) with the edge columns as edge data and
+#'   one node row per node label.
 #'
 #' @export
 #' @examplesIf requireNamespace("tidygraph", quietly = TRUE)
 #' data(biblio_data)
 #' edges <- keyword_network(biblio_data)
-#' tg <- to_tbl_graph(edges)
+#' to_tbl_graph(edges)
 to_tbl_graph <- function(edges, directed = FALSE) {
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
     stop("Package 'tidygraph' is required. Install it with: ",
@@ -46,9 +53,11 @@ to_tbl_graph <- function(edges, directed = FALSE) {
 #' Convert edge data frame to adjacency matrix
 #'
 #' @param edges A data frame with `from`, `to`, `weight` columns.
-#' @param symmetric Logical. If `TRUE` (default), produces a symmetric matrix.
+#' @param symmetric Logical. If `TRUE` (default), produces a symmetric matrix
+#'   (each edge is entered in both directions).
 #'
-#' @return A sparse Matrix.
+#' @return A square sparse `dgCMatrix` of edge weights with one row and
+#'   column per node label (dimnames are the node labels).
 #'
 #' @export
 #' @examples
@@ -74,16 +83,24 @@ to_matrix <- function(edges, symmetric = TRUE) {
 #'   `edges.csv` into that directory. If `NULL` (default), returns a list.
 #' @param directed Logical. Sets the `Type` column. Default `FALSE`.
 #'
-#' @return If `file = NULL`: a list with `$nodes` and `$edges` data frames.
-#'   If `file` is a directory path: writes two CSV files invisibly and returns
-#'   the file paths.
+#' @return If `file = NULL`, a list of two plain data frames: `nodes` (one
+#'   row per node, columns `Id`, `Label`, then any extra node attributes) and
+#'   `edges` (one row per edge, columns `Source`, `Target`, `Weight`, `Type`,
+#'   then the remaining edge columns such as `count`). If `file` is an
+#'   existing directory, writes `nodes.csv` and `edges.csv` there, reports
+#'   the paths with a message, and returns the two paths invisibly.
 #'
 #' @export
 #' @examples
 #' data(biblio_data)
 #' edges <- author_network(biblio_data, "collaboration")
-#' gephi <- to_gephi(edges)
-#' head(gephi$edges)
+#' to_gephi(head(edges, 3))
+#'
+#' # Write nodes.csv and edges.csv into a directory
+#' out_dir <- tempfile("gephi")
+#' dir.create(out_dir)
+#' to_gephi(edges, file = out_dir)
+#' unlink(out_dir, recursive = TRUE)
 to_gephi <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
   check_edges(edges)
 
@@ -140,7 +157,7 @@ to_gephi <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 #' Export to GraphML
 #'
 #' Writes a bibnets edge list (and optional node attributes) to a GraphML
-#' file using pure base R — no XML package required.
+#' file using base R only, without an XML package.
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param nodes Optional data frame of node attributes with an `id` column.
@@ -148,8 +165,9 @@ to_gephi <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 #'   as a character string.
 #' @param directed Logical. Default `FALSE`.
 #'
-#' @return If `file = NULL`: GraphML as a character string. Otherwise writes
-#'   the file and returns the path invisibly.
+#' @return If `file = NULL`, the GraphML document as a single character
+#'   string. Otherwise writes the file, reports the path with a message, and
+#'   returns the path invisibly.
 #'
 #' @export
 #' @examples
@@ -272,23 +290,26 @@ to_graphml <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param nodes Optional data frame of node attributes with an `id` column
-#'   (e.g., output of [local_citations()]). All columns are merged into the
-#'   `cograph_network$nodes` table and become available as aesthetic mappings.
+#'   (e.g., output of [local_citations()]). All other columns are merged into
+#'   the node table of the `cograph_network` and become available as
+#'   aesthetic mappings.
 #' @param directed Logical. Default `FALSE`.
 #'
-#' @return A `cograph_network` object (S3 list with `$nodes` and `$edges`).
+#' @return A `cograph_network` (a list whose `nodes` and `edges` components
+#'   are data frames); with `nodes` supplied, its node table gains every
+#'   non-`id` column of `nodes`, matched by node label (`NA` where a node
+#'   has no metadata row).
 #'
 #' @export
 #' @examplesIf requireNamespace("cograph", quietly = TRUE)
 #' data(biblio_data)
 #'
-#' # Without metadata: splot() accepts bibnets edges directly
-#' edges <- author_network(biblio_data, "collaboration")
+#' # Without metadata
+#' to_cograph(author_network(biblio_data, "collaboration"))
 #'
-#' # With metadata: document network + local citation scores as node size
-#' edges <- document_network(biblio_data, type = "coupling")
-#' nodes <- local_citations(biblio_data)   # keyed by document id
-#' net   <- to_cograph(edges, nodes = nodes)
+#' # With metadata: local citation scores attached to a document network
+#' to_cograph(document_network(biblio_data, type = "coupling"),
+#'            nodes = local_citations(biblio_data))
 to_cograph <- function(edges, nodes = NULL, directed = FALSE) {
   if (!requireNamespace("cograph", quietly = TRUE)) {
     stop("Package 'cograph' is required. Install it with: ",

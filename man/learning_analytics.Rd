@@ -21,9 +21,9 @@ the OpenAlex flat export; one name per authorship slot).}
 \item{keywords}{List-column with one element: the primary OpenAlex
 topic for the work (e.g. \code{"Online Learning and Analytics"}).}
 \item{affiliations}{List-column of institution display names (one
-entry per authorship–institution pair).}
+entry per authorship-institution pair).}
 \item{countries}{List-column of two-letter ISO country codes (one
-entry per authorship–institution pair).}
+entry per authorship-institution pair).}
 }
 }
 \source{

@@ -17,12 +17,13 @@ as a character string.}
 \item{directed}{Logical. Default \code{FALSE}.}
 }
 \value{
-If \code{file = NULL}: GraphML as a character string. Otherwise writes
-the file and returns the path invisibly.
+If \code{file = NULL}, the GraphML document as a single character
+string. Otherwise writes the file, reports the path with a message, and
+returns the path invisibly.
 }
 \description{
 Writes a bibnets edge list (and optional node attributes) to a GraphML
-file using pure base R — no XML package required.
+file using base R only, without an XML package.
 }
 \examples{
 data(biblio_data)

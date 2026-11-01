@@ -74,19 +74,27 @@ aggregate_by_entity <- function(data, entity_field, value_field, min_freq = 1L) 
 }
 
 
-#' Parse semicolon-delimited strings into list-column
+#' Split delimited strings into a list-column
 #'
-#' Splits semicolon-separated strings (common in Scopus/WoS exports) into
-#' character vectors, trimming whitespace.
+#' Splits delimited strings (semicolons are common in Scopus/WoS exports)
+#' into character vectors, trimming whitespace around each piece and
+#' dropping empty pieces. This is the operation every reader and builder
+#' applies to a multi-valued character column; use it to prepare a
+#' list-column yourself.
 #'
-#' @param x A character vector of semicolon-delimited strings.
-#' @param sep Character. Delimiter. Default `";"`.
+#' @param x A character vector (a factor is coerced to character) of
+#'   delimited strings.
+#' @param sep Character. Literal delimiter (not a regular expression).
+#'   Default `";"`.
 #'
-#' @return A list of character vectors.
+#' @return A list the same length as `x`; element `i` is the character
+#'   vector of pieces of `x[i]`. `NA` and empty strings give
+#'   `character(0)`.
 #'
 #' @export
 #' @examples
 #' split_field(c("Alice; Bob; Carol", "Dave; Eve"))
+#' split_field(c("a|b|c", "d||e", NA), sep = "|")
 split_field <- function(x, sep = ";") {
   x <- as.character(x)
   lapply(x, function(s) {
@@ -121,12 +129,12 @@ strip_surrounding_quotes <- function(x) {
 #' Standardize author names
 #'
 #' Uppercase, whitespace normalisation, and dot removal from initials
-#' (`F.J.` → `FJ`). Name order and format are preserved — consistent with
+#' (`F.J.` -> `FJ`). Name order and format are preserved, consistent with
 #' how bibliometrix handles multi-source data.
 #'
 #' @param x Character vector of author names.
 #' @param flip_names Logical. If `TRUE`, names in `Last, First` format are
-#'   reordered to `First Last`. Off by default — enable only when all names
+#'   reordered to `First Last`. Off by default; enable only when all names
 #'   in `x` reliably follow the `Last, First` convention.
 #' @return Character vector, uppercased and cleaned.
 #' @keywords internal

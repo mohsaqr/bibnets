@@ -1,7 +1,9 @@
 #' Build time-windowed networks
 #'
 #' Splits data by time windows and builds a separate network for each
-#' window using any network function.
+#' window using any network function, so the same construction can be
+#' compared across periods. The time column is coerced to integer before
+#' windows are formed.
 #'
 #' @param data A data frame with a numeric time column.
 #' @param network_fun Function or character string naming a network function
@@ -23,8 +25,17 @@
 #'   Default `"year"`. Works with any numeric time unit: years, months,
 #'   quarters, semesters, weeks, etc. (e.g., `"month"`, `"quarter"`, `"time"`).
 #'
-#' @return A named list of data frames (edge lists). Names are window
-#'   labels like `"2018-2020"`.
+#' @return A named list with one element per non-empty window, named by the
+#'   window label (`"start-end"`, e.g. `"2018-2020"`). Each element is the
+#'   edge list returned by `network_fun` (a `bibnets_network` for the
+#'   package builders with the default `format`) with an extra character
+#'   column `window`. Windows with fewer than two records or no edges are
+#'   omitted; if `network_fun` fails in a window, a warning naming the
+#'   window is raised and that window is omitted. An empty list is returned
+#'   when the time column has no non-missing values.
+#'
+#' @details `network_fun` must return a data frame, so keep the builder's
+#'   default `format = "edgelist"`.
 #'
 #' @export
 #' @examples

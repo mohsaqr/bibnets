@@ -22,27 +22,32 @@ reference_network(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and a references column (list-column
-or delimited string).}
+\item{data}{A data frame with one row per work and a references column
+(list-column or delimited string). An \code{id} column is optional (see \code{id}).}
 
-\item{type}{Character. \code{"co_citation"} (default) or \code{"equivalence"}.}
+\item{type}{Character. \code{"co_citation"} (default) or \code{"equivalence"}
+(cosine similarity of the references' citing-paper vectors; \code{counting}
+and \code{similarity} are ignored).}
 
-\item{counting}{Character. Counting method. Default \code{"full"}.}
+\item{counting}{Character. Counting method: \code{"full"} (default),
+\code{"fractional"}, \code{"paper"} or \code{"strength"}.}
 
 \item{similarity}{Character. Similarity measure. Default \code{"none"}.}
 
-\item{threshold}{Numeric. Minimum edge weight. Default 0.}
+\item{threshold}{Numeric. Minimum edge weight; edges with
+\code{weight < threshold} are dropped. Default 0 (keep all).}
 
 \item{min_occur}{Integer. Minimum times a reference must be cited. Default 1.}
 
-\item{top_n}{Integer or NULL. Return only the top n edges by weight.
-Default NULL (all edges).}
+\item{top_n}{Integer or NULL. Keep only the \code{top_n} most frequent nodes
+and return the edges among them. Default \code{NULL} (all nodes).}
 
 \item{self_loops}{Logical. If \code{TRUE}, include self-loops (an entity linked
-to itself). Default \code{FALSE}.}
+to itself). Default \code{FALSE}. Only takes effect with
+\code{similarity = "none"}; every similarity measure zeroes the diagonal.}
 
 \item{deduplicate}{Logical. If \code{TRUE} (default), each \verb{(paper, entity)}
-pair is counted at most once — duplicate entries in the source data
+pair is counted at most once -- duplicate entries in the source data
 (e.g., the same author listed twice on a paper) are treated as one
 occurrence. Set to \code{FALSE} to count every raw occurrence.}
 
@@ -60,11 +65,8 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{references}{Character. Name of the column containing cited references.
 Default \code{"references"}.}
 
-\item{sep}{Character. Separator used to split the entity column when it
-is a plain character column rather than a list-column, e.g. \code{sep = ","}
-or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
-applies only to the author column; the references column uses
-\code{references_sep}.}
+\item{sep}{Character. Separator used to split the references column when
+it is a plain character column. Default \code{";"}. Ignored for list-columns.}
 
 \item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
 characters are removed from each reference.}
@@ -74,9 +76,11 @@ characters are removed from each reference.}
 column is used when present, otherwise row numbers are used.}
 }
 \value{
-Depends on \code{format}: a \code{bibnets_network} data frame (default),
-a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-sparse matrix.
+Depends on \code{format}. The default \code{"edgelist"} returns a
+\code{bibnets_network} data frame with one row per undirected edge, columns
+\code{from}, \code{to}, \code{weight} and \code{count}, sorted by decreasing \code{weight}, and
+attributes \code{network_type}, \code{counting} and \code{similarity}. See
+\code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
 Constructs a co-citation or equivalence network among cited references.

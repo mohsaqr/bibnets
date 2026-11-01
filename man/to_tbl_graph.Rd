@@ -12,15 +12,16 @@ to_tbl_graph(edges, directed = FALSE)
 \item{directed}{Logical. Default \code{FALSE}.}
 }
 \value{
-A tbl_graph object (tidygraph).
+A \code{tbl_graph} (tidygraph) with the edge columns as edge data and
+one node row per node label.
 }
 \description{
-Convert edge data frame to tbl_graph
+Requires the suggested packages tidygraph and igraph.
 }
 \examples{
 \dontshow{if (requireNamespace("tidygraph", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 data(biblio_data)
 edges <- keyword_network(biblio_data)
-tg <- to_tbl_graph(edges)
+to_tbl_graph(edges)
 \dontshow{\}) # examplesIf}
 }

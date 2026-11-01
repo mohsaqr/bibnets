@@ -23,5 +23,5 @@ data frame.
 \examples{
 f <- system.file("extdata", "lens_sample.csv", package = "bibnets")
 data <- read_lens(f)
-head(data[, c("id", "title", "year", "journal")])
+subset(data, select = c(id, title, year, journal, authors))
 }

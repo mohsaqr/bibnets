@@ -22,37 +22,46 @@ document_network(
 )
 }
 \arguments{
-\item{data}{A data frame with \code{id} and a references column (list-column
-or delimited string).}
+\item{data}{A data frame with one row per work and a references column
+(list-column or delimited string). An \code{id} column is optional (see \code{id});
+direct citation needs the references to use the same identifiers.}
 
 \item{type}{Character. Relationship type:
 \describe{
 \item{\code{"coupling"}}{Bibliographic coupling: documents linked when they
 share cited references.}
 \item{\code{"citation"}}{Direct citation: directed edges from citing to
-cited documents (internal citations only).}
-\item{\code{"co_citation"}}{Co-citation: documents linked when they are
-cited together by other documents in the dataset.}
-\item{\code{"equivalence"}}{Profile similarity of reference vectors.}
+cited documents (internal citations only). \code{counting},
+\code{similarity}, \code{threshold} and \code{min_occur} are not applied; \code{top_n}
+keeps the documents with the most citation edges.}
+\item{\code{"co_citation"}}{Co-citation of the cited items: the nodes are
+the values of the references column (as in \code{\link[=reference_network]{reference_network()}}),
+linked when the same document cites both. They are documents of the
+dataset only when the references are document identifiers.}
+\item{\code{"equivalence"}}{Cosine similarity of the documents' reference
+vectors; \code{counting} and \code{similarity} are ignored.}
 }}
 
-\item{counting}{Character. Counting method. Default \code{"full"}.
-Position-dependent methods are not applicable to document networks.}
+\item{counting}{Character. Counting method: \code{"full"} (default),
+\code{"fractional"}, \code{"paper"} or \code{"strength"}. Position-dependent methods
+are not applicable to document networks.}
 
 \item{similarity}{Character. Similarity measure. Default \code{"none"}.}
 
-\item{threshold}{Numeric. Minimum edge weight. Default 0.}
+\item{threshold}{Numeric. Minimum edge weight; edges with
+\code{weight < threshold} are dropped. Default 0 (keep all).}
 
 \item{min_occur}{Integer. Minimum reference frequency. Default 1.}
 
-\item{top_n}{Integer or NULL. Return only the top n edges by weight.
-Default NULL (all edges).}
+\item{top_n}{Integer or NULL. Keep only the \code{top_n} most frequent nodes
+and return the edges among them. Default \code{NULL} (all nodes).}
 
 \item{self_loops}{Logical. If \code{TRUE}, include self-loops (an entity linked
-to itself). Default \code{FALSE}.}
+to itself). Default \code{FALSE}. Only takes effect with
+\code{similarity = "none"}; every similarity measure zeroes the diagonal.}
 
 \item{deduplicate}{Logical. If \code{TRUE} (default), each \verb{(paper, entity)}
-pair is counted at most once — duplicate entries in the source data
+pair is counted at most once -- duplicate entries in the source data
 (e.g., the same author listed twice on a paper) are treated as one
 occurrence. Set to \code{FALSE} to count every raw occurrence.}
 
@@ -70,11 +79,8 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}.}
 \item{references}{Character. Name of the column containing cited references.
 Default \code{"references"}.}
 
-\item{sep}{Character. Separator used to split the entity column when it
-is a plain character column rather than a list-column, e.g. \code{sep = ","}
-or \code{sep = " and "}. Default \code{";"}. Ignored for list-columns. \code{sep}
-applies only to the author column; the references column uses
-\code{references_sep}.}
+\item{sep}{Character. Separator used to split the references column when
+it is a plain character column. Default \code{";"}. Ignored for list-columns.}
 
 \item{strip_quotes}{Logical. If \code{TRUE} (default), surrounding quote
 characters are removed from each reference.}
@@ -84,8 +90,13 @@ characters are removed from each reference.}
 column is used when present, otherwise row numbers are used.}
 }
 \value{
-Depends on \code{format}. For \code{type = "citation"}, edges are directed
-(from = citing, to = cited) with \code{weight} and \code{count} both 1.
+Depends on \code{format}. The default \code{"edgelist"} returns a
+\code{bibnets_network} data frame with one row per edge, columns \code{from},
+\code{to}, \code{weight} and \code{count}, and attributes \code{network_type}, \code{counting}
+and \code{similarity}; see \code{\link[=author_network]{author_network()}} for the other formats. For
+\code{type = "citation"} the edges are directed (\code{from} = citing, \code{to} =
+cited) with \code{weight} and \code{count} both 1, in data order; the other
+types are undirected and sorted by decreasing \code{weight}.
 }
 \description{
 Constructs a network between documents (papers) in the dataset.
@@ -94,4 +105,14 @@ Constructs a network between documents (papers) in the dataset.
 data(biblio_data)
 document_network(biblio_data, "coupling")
 document_network(biblio_data, "coupling", counting = "strength")
+}
+\references{
+Kessler, M. M. (1963). Bibliographic coupling between scientific
+papers. \emph{American Documentation}, 14(1), 10--25.
+\doi{10.1002/asi.5090140103}
+
+Small, H. (1973). Co-citation in the scientific literature: A new
+measure of the relationship between two documents. \emph{Journal of the
+American Society for Information Science}, 24(4), 265--269.
+\doi{10.1002/asi.4630240406}
 }

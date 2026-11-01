@@ -7,24 +7,30 @@
 #' Fields can be list-columns (already split) or character columns with
 #' delimiters (auto-split via `sep`).
 #'
-#' @param data A data frame with column `id` and the specified field(s).
-#' @param field Character. The entity field — determines what the nodes are.
+#' @param data A data frame with one row per work and the specified
+#'   field(s). An `id` column is optional (see `id`).
+#' @param field Character. The entity field; its values become the nodes.
 #' @param by Character or `NULL`. What links the nodes. If `NULL` (default),
 #'   entities are linked by co-occurring in the same document. If specified,
 #'   entities are linked when they share values from the `by` field.
-#' @param sep Character or `NULL`. Delimiter for splitting character columns.
-#'   Default `";"`. Set to `NULL` if columns are already list-columns.
-#' @param counting Character. Counting method. Default `"full"`.
+#' @param sep Character or `NULL`. Delimiter for splitting character columns
+#'   (applied to both `field` and `by`). Default `";"`. List-columns are
+#'   never split. `NULL` keeps each character value as a single entity.
+#' @param counting Character. Counting method: `"full"` (default),
+#'   `"fractional"`, `"paper"` or `"strength"`.
 #' @param similarity Character. Normalization method. Default `"none"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum entity frequency. Default 1.
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   and return the edges among them. Default `NULL` (all nodes).
 #' @inheritParams author_network
 #'
-#' @return Depends on `format`: a `bibnets_network` data frame (default),
-#'   a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-#'   sparse matrix.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network` data frame with one row per undirected edge, columns
+#'   `from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+#'   attributes `network_type`, `counting` and `similarity`. See
+#'   [author_network()] for the other formats.
 #'
 #' @export
 #' @examples

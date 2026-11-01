@@ -141,11 +141,16 @@ author_weights <- function(n, counting = "fractional",
 #' For position-dependent counting methods, this replaces the binary bipartite
 #' matrix entries with positional weights derived from author order.
 #'
-#' @param data A data frame with `id` and `authors` (list-column where
-#'   author order is preserved).
+#' @param data A data frame with `id` and an ordered entity column
+#'   (list-column or delimited string).
+#' @param field Character. Name of the entity column. Default `"authors"`.
 #' @param counting Character. Counting method.
 #' @param position_weights Numeric vector for `counting = "position_weighted"`.
 #' @param first_last_weight Numeric for `counting = "first_last"`.
+#' @param deduplicate Logical. Keep only the first position of an entity
+#'   repeated within one paper.
+#' @param sep Character. Separator for a plain character column.
+#' @param strip_quotes Logical. Strip surrounding quotes from each entity.
 #'
 #' @return A sparse weighted bipartite matrix (works x authors).
 #' @keywords internal

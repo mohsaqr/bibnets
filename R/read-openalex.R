@@ -24,16 +24,14 @@
 #'   so = c("Journal A", "Journal B"),
 #'   doi = c("https://doi.org/10.1/a", "https://doi.org/10.2/b"),
 #'   cited_by_count = c(5L, 12L),
-#'   stringsAsFactors = FALSE
+#'   author = I(list(
+#'     data.frame(au_display_name = c("Smith J", "Jones A")),
+#'     data.frame(au_display_name = "Davis M")
+#'   )),
+#'   referenced_works = I(list(c("W100", "W200"), "W123"))
 #' )
-#' raw$author <- list(
-#'   data.frame(au_display_name = c("Smith J", "Jones A"),
-#'              stringsAsFactors = FALSE),
-#'   data.frame(au_display_name = "Davis M", stringsAsFactors = FALSE)
-#' )
-#' raw$referenced_works <- list(c("W100", "W200"), "W123")
 #' data <- read_openalex(raw)
-#' head(data[, c("id", "title", "year", "journal", "doi")])
+#' subset(data, select = c(id, title, year, doi, authors, references))
 read_openalex <- function(data) {
   stopifnot(is.data.frame(data))
 
@@ -153,13 +151,15 @@ read_openalex <- function(data) {
 #' @return A data frame in the standard bibnets format: `id`, `title`,
 #'   `year`, `journal`, `doi`, `cited_by_count`, `abstract`, `type`,
 #'   plus list-columns `authors`, `references`, `keywords`, `affiliations`,
-#'   `countries`. `abstract` and `references` are always `NA` / empty
-#'   (not available in the flat export).
+#'   `countries`, one row per work. `abstract` is always `NA` and every
+#'   `references` element is empty, because the flat export carries
+#'   neither.
 #'
 #' @export
 #' @examples
 #' f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 #' data <- read_openalex_csv(f)
+#' head(subset(data, select = c(id, year, authors, countries)))
 read_openalex_csv <- function(file, sep = "|") {
   check_file(file)
 

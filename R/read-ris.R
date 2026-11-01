@@ -25,7 +25,7 @@
 #' f <- tempfile(fileext = ".ris")
 #' writeLines(ris, f)
 #' data <- read_ris(f)
-#' data[, c("id", "title", "year", "journal", "doi")]
+#' subset(data, select = c(id, title, year, journal, doi, authors))
 #' unlink(f)
 read_ris <- function(file, encoding = "UTF-8") {
   check_file(file)

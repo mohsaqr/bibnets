@@ -22,33 +22,38 @@ conetwork(
 )
 }
 \arguments{
-\item{data}{A data frame with column \code{id} and the specified field(s).}
+\item{data}{A data frame with one row per work and the specified
+field(s). An \code{id} column is optional (see \code{id}).}
 
-\item{field}{Character. The entity field — determines what the nodes are.}
+\item{field}{Character. The entity field; its values become the nodes.}
 
 \item{by}{Character or \code{NULL}. What links the nodes. If \code{NULL} (default),
 entities are linked by co-occurring in the same document. If specified,
 entities are linked when they share values from the \code{by} field.}
 
-\item{sep}{Character or \code{NULL}. Delimiter for splitting character columns.
-Default \code{";"}. Set to \code{NULL} if columns are already list-columns.}
+\item{sep}{Character or \code{NULL}. Delimiter for splitting character columns
+(applied to both \code{field} and \code{by}). Default \code{";"}. List-columns are
+never split. \code{NULL} keeps each character value as a single entity.}
 
-\item{counting}{Character. Counting method. Default \code{"full"}.}
+\item{counting}{Character. Counting method: \code{"full"} (default),
+\code{"fractional"}, \code{"paper"} or \code{"strength"}.}
 
 \item{similarity}{Character. Normalization method. Default \code{"none"}.}
 
-\item{threshold}{Numeric. Minimum edge weight. Default 0.}
+\item{threshold}{Numeric. Minimum edge weight; edges with
+\code{weight < threshold} are dropped. Default 0 (keep all).}
 
 \item{min_occur}{Integer. Minimum entity frequency. Default 1.}
 
-\item{top_n}{Integer or NULL. Return only the top n edges by weight.
-Default NULL (all edges).}
+\item{top_n}{Integer or NULL. Keep only the \code{top_n} most frequent nodes
+and return the edges among them. Default \code{NULL} (all nodes).}
 
 \item{self_loops}{Logical. If \code{TRUE}, include self-loops (an entity linked
-to itself). Default \code{FALSE}.}
+to itself). Default \code{FALSE}. Only takes effect with
+\code{similarity = "none"}; every similarity measure zeroes the diagonal.}
 
 \item{deduplicate}{Logical. If \code{TRUE} (default), each \verb{(paper, entity)}
-pair is counted at most once — duplicate entries in the source data
+pair is counted at most once -- duplicate entries in the source data
 (e.g., the same author listed twice on a paper) are treated as one
 occurrence. Set to \code{FALSE} to count every raw occurrence.}
 
@@ -73,9 +78,11 @@ quotes as part of the label.}
 column is used when present, otherwise row numbers are used.}
 }
 \value{
-Depends on \code{format}: a \code{bibnets_network} data frame (default),
-a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-sparse matrix.
+Depends on \code{format}. The default \code{"edgelist"} returns a
+\code{bibnets_network} data frame with one row per undirected edge, columns
+\code{from}, \code{to}, \code{weight} and \code{count}, sorted by decreasing \code{weight}, and
+attributes \code{network_type}, \code{counting} and \code{similarity}. See
+\code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
 With one field, entities are linked when they co-occur in the same

@@ -4,17 +4,20 @@
 #' and any of 13 counting methods, including 9 position-dependent methods
 #' that respect author byline order.
 #'
-#' @param data A data frame with at least `id` and an author column
-#'   (list-column or delimited string, order preserved). For
-#'   coupling/co-citation, also needs `references`.
+#' @param data A data frame with one row per work and an author column
+#'   (list-column or delimited string, byline order preserved). An `id`
+#'   column is optional (see `id`). `type = "coupling"` also needs a
+#'   `references` column; `type = "co_citation"` needs a
+#'   `cited_first_authors` list-column.
 #' @param authors Character. Name of the column containing authors. Default
 #'   `"authors"`. Use this to point at any column of a custom data set,
 #'   e.g. `authors = "Author Names"`.
-#' @param sep Character. Separator used to split the entity column when it
-#'   is a plain character column rather than a list-column, e.g. `sep = ","`
-#'   or `sep = " and "`. Default `";"`. Ignored for list-columns. `sep`
-#'   applies only to the author column; the references column uses
-#'   `references_sep`.
+#' @param sep Character. Separator used to split the entity column (the one
+#'   named by the column argument, e.g. `authors`) when it is a plain
+#'   character column rather than a list-column, e.g. `sep = ","` or
+#'   `sep = " and "`. Default `";"`. Ignored for list-columns. In coupling
+#'   networks the references column is split with `references_sep`
+#'   instead.
 #' @param references_sep Character. Separator for the `references` column in
 #'   `type = "coupling"`. Default `";"` (reference strings usually contain
 #'   internal commas, so this is kept independent of `sep`). Set it when
@@ -35,20 +38,24 @@
 #'     \item{`"co_citation"`}{Author co-citation: authors linked when they
 #'       are cited together by the same paper. Requires a
 #'       `cited_first_authors` list-column.}
-#'     \item{`"equivalence"`}{Profile similarity: cosine similarity of
-#'       authors' full collaboration/citation profiles.}
+#'     \item{`"equivalence"`}{Profile similarity: cosine similarity of the
+#'       authors' paper-incidence vectors. `counting` and `similarity` are
+#'       ignored (always cosine).}
 #'   }
 #' @param counting Character. Counting method. Position-independent methods
 #'   (`"full"`, `"fractional"`, `"paper"`, `"strength"`) work for all types.
 #'   Position-dependent methods (`"harmonic"`, `"arithmetic"`, `"geometric"`,
 #'   `"adaptive_geometric"`, `"golden"`, `"first"`, `"last"`,
-#'   `"first_last"`, `"position_weighted"`) are available for
-#'   `type = "collaboration"`.
+#'   `"first_last"`, `"position_weighted"`) apply to
+#'   `type = "collaboration"`; for the other types they fall back to
+#'   `"full"`.
 #' @param similarity Character. Similarity measure: `"none"`, `"association"`,
 #'   `"cosine"`, `"jaccard"`, `"inclusion"`, `"equivalence"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum number of papers for an author to be
-#'   included. Default 1.
+#'   included. Default 1. Not applied with a position-dependent `counting`
+#'   method or with `attention`.
 #' @param position_weights Numeric vector. Custom weights for
 #'   `counting = "position_weighted"`. Default `c(1, 0.8, 0.6, 0.4)`.
 #' @param first_last_weight Numeric. Multiplier for `counting = "first_last"`.
@@ -57,13 +64,18 @@
 #'   `type` and `counting`. One of `"proximity"` (center authors weighted most),
 #'   `"lead"` (first author dominates, quadratic drop), `"last"` (last author
 #'   dominates, quadratic rise), `"circular"` (first and last both prominent).
-#'   Default `NULL` (disabled).
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#'   The weights of one paper sum to 1 and an edge receives the product of
+#'   its two endpoints' weights. When `attention` is set, `type` and
+#'   `counting` are ignored. Default `NULL` (disabled).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   (largest diagonal of the projected matrix, i.e. the number of papers
+#'   under full counting) and return the edges among them. Default `NULL`
+#'   (all nodes).
 #' @param self_loops Logical. If `TRUE`, include self-loops (an entity linked
-#'   to itself). Default `FALSE`.
+#'   to itself). Default `FALSE`. Only takes effect with
+#'   `similarity = "none"`; every similarity measure zeroes the diagonal.
 #' @param deduplicate Logical. If `TRUE` (default), each `(paper, entity)`
-#'   pair is counted at most once — duplicate entries in the source data
+#'   pair is counted at most once -- duplicate entries in the source data
 #'   (e.g., the same author listed twice on a paper) are treated as one
 #'   occurrence. Set to `FALSE` to count every raw occurrence.
 #' @param format Character. Output format:
@@ -77,9 +89,25 @@
 #'     \item{`"matrix"`}{A sparse adjacency matrix.}
 #'   }
 #'
-#' @return Depends on `format`: a `bibnets_network` data frame (default),
-#'   a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-#'   sparse matrix.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network`: a data frame with one row per undirected edge and
+#'   columns `from`, `to` (character), `weight` (numeric) and `count`
+#'   (integer raw co-occurrence), sorted by decreasing `weight`, with
+#'   attributes `network_type`, `counting` and `similarity`.
+#'   `"gephi"` returns a plain data frame with columns `Source`, `Target`,
+#'   `Weight`, `Count`, `Type`; `"igraph"` an igraph graph; `"cograph"` a
+#'   `cograph_network`; `"matrix"` a symmetric sparse `dgCMatrix`.
+#'
+#' @references
+#' Perianes-Rodriguez, A., Waltman, L., & van Eck, N. J. (2016).
+#' Constructing bibliometric networks: A comparison between full and
+#' fractional counting. *Journal of Informetrics*, 10(4), 1178--1195.
+#' \doi{10.1016/j.joi.2016.10.006}
+#'
+#' Hagen, N. T. (2008). Harmonic allocation of authorship credit:
+#' Source-level correction of bibliometric bias assures accurate
+#' publication and citation analysis. *PLoS ONE*, 3(12), e4021.
+#' \doi{10.1371/journal.pone.0004021}
 #'
 #' @export
 #' @examples

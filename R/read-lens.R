@@ -14,7 +14,7 @@
 #' @examples
 #' f <- system.file("extdata", "lens_sample.csv", package = "bibnets")
 #' data <- read_lens(f)
-#' head(data[, c("id", "title", "year", "journal")])
+#' subset(data, select = c(id, title, year, journal, authors))
 read_lens <- function(file, encoding = "UTF-8") {
   check_file(file)
 

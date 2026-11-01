@@ -3,7 +3,7 @@
 \docType{data}
 \name{scopus_quantum_cloud}
 \alias{scopus_quantum_cloud}
-\title{Scopus dataset — Green Cloud Computing and Quantization (2020–2025)}
+\title{Scopus dataset: green cloud computing and quantization (2020--2025)}
 \format{
 A data frame with 499 rows and 12 columns:
 \describe{
@@ -29,9 +29,13 @@ Scopus bibliometric export. Dataset archived at
 scopus_quantum_cloud
 }
 \description{
-First 500 records from a Scopus bibliometric export on the intersection of
-green cloud computing and quantization, covering 2020–2025. Includes full
-references, author keywords, index keywords, and affiliations.
+A 499-record subset of a Scopus bibliometric export on the intersection
+of green cloud computing and quantization, covering 2020--2025. Includes
+full reference strings, author keywords, and affiliations. The
+references are formatted citation strings, not Scopus EIDs, so they do
+not match the \code{id} column: use this dataset for co-citation, coupling,
+keyword and collaboration networks, not for local citations or
+historiographs.
 }
 \examples{
 data(scopus_quantum_cloud)

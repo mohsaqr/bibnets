@@ -1,3 +1,29 @@
+# bibnets 0.6.2
+
+## Documentation
+
+- Reference pages corrected against the code: `top_n` on every builder keeps
+  the most frequent *nodes* (it was described as the top edges); `min_occur`
+  is not applied with position-dependent counting or `attention`;
+  `self_loops` only takes effect with `similarity = "none"`;
+  `document_network(type = "co_citation")` links cited items, not documents;
+  `source_network()`'s `sep` is unused; `id` is optional on every builder.
+  Every exported function and method now documents the structure of its
+  return value, and the counting, normalization, backbone, coupling,
+  co-citation and historiograph methods carry `@references`.
+- Examples no longer subset results with `[` or `$`; readers show a
+  `subset()` of their columns, `to_gephi()` writes to `tempdir()` and cleans
+  up, and the `biblio_data` and `scopus_quantum_cloud` descriptions match the
+  data (13 unique references including in-corpus IDs; 23 keywords; 499
+  records, no index keywords).
+- Vignettes: the attention vignette now describes what the profiles compute
+  (`"proximity"` weights central positions; a paper's total edge weight is
+  bounded below one half rather than fixed at one); the Getting Started
+  historiograph uses `biblio_data`, whose references match document IDs;
+  the reading-data vignette combines sources with `read_biblio()`, corrects
+  the Scopus `affiliations` type and the author-name troubleshooting row.
+  README lists all four vignettes.
+
 # bibnets 0.6.0
 
 ## Breaking changes

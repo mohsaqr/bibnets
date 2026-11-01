@@ -2,8 +2,9 @@
 #'
 #' Constructs a network between institutions (affiliations).
 #'
-#' @param data A data frame with `id` and an affiliation column (list-column
-#'   or delimited string). For coupling, also needs `references`.
+#' @param data A data frame with one row per work and an affiliation column (list-column
+#'   or delimited string). An `id` column is optional (see `id`).
+#'   For coupling, also needs `references`.
 #' @param affiliations Character. Name of the column containing institutions.
 #'   Default `"affiliations"`.
 #' @param references_sep Character. Separator for the `references` column in
@@ -14,18 +15,24 @@
 #'   (the matrix-row dimension). If `NULL` (default), an existing `id`
 #'   column is used when present, otherwise row numbers are used.
 #' @param type Character. `"collaboration"` (default), `"coupling"`, or
-#'   `"equivalence"`.
-#' @param counting Character. Counting method. Default `"full"`.
+#'   `"equivalence"` (cosine similarity of paper-incidence vectors;
+#'   `counting` and `similarity` are ignored). Ignored when `attention` is set.
+#' @param counting Character. Counting method: `"full"` (default),
+#'   `"fractional"`, `"paper"` or `"strength"`. Ignored when `attention`
+#'   is set.
 #' @param similarity Character. Similarity measure. Default `"none"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum papers per institution. Default 1.
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   and return the edges among them. Default `NULL` (all nodes).
 #' @inheritParams author_network
 #'
-#' @return Depends on `format`: a `bibnets_network` data frame (default),
-#'   a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-#'   sparse matrix.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network` data frame with one row per undirected edge, columns
+#'   `from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+#'   attributes `network_type`, `counting` and `similarity`. See
+#'   [author_network()] for the other formats.
 #'
 #' @export
 #' @examples

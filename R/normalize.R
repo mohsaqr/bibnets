@@ -2,7 +2,11 @@
 #'
 #' Applies a similarity normalization to a square co-occurrence matrix.
 #' The diagonal of the input matrix is used as the total occurrence count
-#' for each item. Operates entirely in sparse representation.
+#' \eqn{w_i} of each item (a zero diagonal entry is treated as 1). Matrices
+#' with 500 or more rows are processed in sparse triplet form, so no dense
+#' outer product is allocated. Every network builder calls this through its
+#' `similarity` argument; call it directly to normalize a matrix you built
+#' yourself.
 #'
 #' @param A A square symmetric matrix (dense or sparse) representing
 #'   co-occurrence counts.
@@ -22,7 +26,15 @@
 #'       \eqn{s_{ij} = c_{ij}^2 / (w_i \cdot w_j)}.}
 #'   }
 #'
-#' @return A normalized sparse matrix of the same dimensions.
+#' @return For `method = "none"`, `A` unchanged. Otherwise a sparse
+#'   `Matrix` of the same dimensions and dimnames holding \eqn{s_{ij}},
+#'   with a zero diagonal.
+#'
+#' @references
+#' van Eck, N. J., & Waltman, L. (2009). How to normalize cooccurrence
+#' data? An analysis of some well-known similarity measures. *Journal of
+#' the American Society for Information Science and Technology*, 60(8),
+#' 1635--1651. \doi{10.1002/asi.21075}
 #'
 #' @export
 #' @examples

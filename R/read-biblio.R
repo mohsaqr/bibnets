@@ -21,8 +21,9 @@
 #'       Inferred automatically when any of those arguments is supplied, so
 #'       `format = "generic"` is optional in that case.}
 #'   }
-#' @param id Character. Column name for document identifier. Only used
-#'   when `format = "generic"`. Default `NULL` (uses row numbers).
+#' @param id Character. Column name for the document identifier. Only used
+#'   when `format = "generic"`. Default `NULL`: an existing `id` column is
+#'   kept, otherwise row numbers are used.
 #' @param authors,keywords,references,countries,affiliations Character. For
 #'   `format = "generic"`, the name of the source column to map onto that
 #'   standard field. Its cells are split on `sep` into a list-column. For
@@ -35,24 +36,34 @@
 #' @param list_cols Character vector. For `format = "generic"`, additional
 #'   columns to split into list-columns *in place* (keeping their original
 #'   names), for fields without a dedicated argument above.
-#' @param ... Additional arguments passed to the format-specific reader.
+#' @param ... Additional arguments passed to the format-specific reader
+#'   (for example `encoding` for [read_scopus()]). Not used by the generic
+#'   reader.
 #' @param actors Deprecated. Use the entity arguments (`authors`, `keywords`,
 #'   ...) or `list_cols` instead.
 #'
-#' @return A data frame.
+#' @return A data frame with one row per record. The format-specific
+#'   readers return the standard bibnets columns `id`, `title`, `year`,
+#'   `journal`, `doi`, `cited_by_count`, `abstract`, `type` and the
+#'   list-columns `authors`, `references`, `keywords`, followed by any
+#'   source-specific extras. When several files are read, their columns are
+#'   aligned (missing scalar columns filled with `NA`, missing list-columns
+#'   with empty vectors), the rows are bound, and a message reports the
+#'   number of files and rows. The generic reader keeps every source column
+#'   and adds `id` plus the mapped standard fields.
 #'
 #' @export
 #' @examples
 #' # Auto-detect format from file content (here: a bundled OpenAlex CSV)
 #' f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 #' data <- read_biblio(f)
-#' head(data[, c("id", "title", "year", "journal")])
+#' head(subset(data, select = c(id, title, year, journal)))
 #'
 #' # Read multiple files at once; auto-detects each format
 #' f_scopus <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
 #' f_wos    <- system.file("extdata", "wos_sample.txt",  package = "bibnets")
 #' combined <- read_biblio(c(f_scopus, f_wos))
-#' head(combined[, c("id", "title", "year", "journal")])
+#' head(subset(combined, select = c(id, title, year, journal)))
 #'
 #' # Read every supported export in a directory (here: the bundled extdata)
 #' folder <- system.file("extdata", package = "bibnets")
@@ -72,7 +83,8 @@
 #'                        authors = "Authors",
 #'                        keywords = "Keywords",
 #'                        sep = ";")
-#' head(generic)
+#' generic
+#' unlink(tmp)
 read_biblio <- function(path,
                         format = "auto",
                         id = NULL,

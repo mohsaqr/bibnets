@@ -12,10 +12,14 @@
 \item{...}{Ignored.}
 }
 \value{
-Invisibly returns \code{object}.
+\code{object}, unchanged and invisibly (a \code{bibnets_network} data
+frame). Called for its printed output.
 }
 \description{
-Summarise a bibnets network
+Prints the network type, counting and similarity methods, the number of
+nodes and edges, the density (edges over the \code{n (n - 1) / 2} possible
+undirected pairs), the minimum, median and maximum \code{weight}, and the five
+nodes with the most edges.
 }
 \examples{
 data(biblio_data)

@@ -35,6 +35,6 @@ bib <- '@article{smith2020,
 f <- tempfile(fileext = ".bib")
 writeLines(bib, f)
 data <- read_bibtex(f)
-data[, c("id", "title", "year", "journal", "doi")]
+subset(data, select = c(id, title, year, journal, doi, authors))
 unlink(f)
 }

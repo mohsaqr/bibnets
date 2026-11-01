@@ -26,12 +26,15 @@ by the counting method.}
 
 \item{top_n}{Integer or \code{NULL}. If specified, keep only the top \code{n}
 most frequent nodes and return all edges among them.}
+
+\item{self_loops}{Logical. Keep diagonal entries as self-loops. Only
+honoured with \code{similarity = "none"}.}
 }
 \value{
 A data frame with columns \code{from}, \code{to}, \code{weight}, \code{count}.
 }
 \description{
 The unified engine for all bibliometric networks. Operates entirely in
-sparse representation — never allocates a dense n x n matrix.
+sparse representation and never allocates a dense n x n matrix.
 }
 \keyword{internal}

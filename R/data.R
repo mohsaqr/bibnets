@@ -14,9 +14,12 @@
 #'   \item{doi}{DOI string.}
 #'   \item{cited_by_count}{Times cited.}
 #'   \item{authors}{List-column of author name strings (6 unique authors).}
-#'   \item{references}{List-column of cited reference IDs (10 unique refs,
-#'     R1--R10). Each paper cites exactly 4 references.}
-#'   \item{keywords}{List-column of keyword strings (24 unique keywords).
+#'   \item{references}{List-column of cited reference IDs (13 unique
+#'     values): external references R1--R10 (R8 unused) and the in-corpus
+#'     document IDs W1, W2, W3 and W5, which give the direct-citation,
+#'     local-citation and historiograph examples something to find. Each
+#'     paper cites exactly 4 references.}
+#'   \item{keywords}{List-column of keyword strings (23 unique keywords).
 #'     Each paper has 3 keywords.}
 #' }
 #'
@@ -52,9 +55,9 @@
 #'   \item{keywords}{List-column with one element: the primary OpenAlex
 #'     topic for the work (e.g. \code{"Online Learning and Analytics"}).}
 #'   \item{affiliations}{List-column of institution display names (one
-#'     entry per authorship–institution pair).}
+#'     entry per authorship-institution pair).}
 #'   \item{countries}{List-column of two-letter ISO country codes (one
-#'     entry per authorship–institution pair).}
+#'     entry per authorship-institution pair).}
 #' }
 #'
 #' @source OpenAlex \url{https://openalex.org}, CC0 licence.
@@ -66,11 +69,15 @@
 "learning_analytics"
 
 
-#' Scopus dataset — Green Cloud Computing and Quantization (2020–2025)
+#' Scopus dataset: green cloud computing and quantization (2020--2025)
 #'
-#' First 500 records from a Scopus bibliometric export on the intersection of
-#' green cloud computing and quantization, covering 2020–2025. Includes full
-#' references, author keywords, index keywords, and affiliations.
+#' A 499-record subset of a Scopus bibliometric export on the intersection
+#' of green cloud computing and quantization, covering 2020--2025. Includes
+#' full reference strings, author keywords, and affiliations. The
+#' references are formatted citation strings, not Scopus EIDs, so they do
+#' not match the `id` column: use this dataset for co-citation, coupling,
+#' keyword and collaboration networks, not for local citations or
+#' historiographs.
 #'
 #' @format A data frame with 499 rows and 12 columns:
 #' \describe{

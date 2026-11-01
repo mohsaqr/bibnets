@@ -3,27 +3,35 @@
 #' Constructs a co-citation or equivalence network among cited references.
 #' Two references are linked when they are cited together by the same paper.
 #'
-#' @param data A data frame with `id` and a references column (list-column
-#'   or delimited string).
-#' @param type Character. `"co_citation"` (default) or `"equivalence"`.
+#' @param data A data frame with one row per work and a references column
+#'   (list-column or delimited string). An `id` column is optional (see `id`).
+#' @param type Character. `"co_citation"` (default) or `"equivalence"`
+#'   (cosine similarity of the references' citing-paper vectors; `counting`
+#'   and `similarity` are ignored).
 #' @param references Character. Name of the column containing cited references.
 #'   Default `"references"`.
+#' @param sep Character. Separator used to split the references column when
+#'   it is a plain character column. Default `";"`. Ignored for list-columns.
 #' @param strip_quotes Logical. If `TRUE` (default), surrounding quote
 #'   characters are removed from each reference.
 #' @param id Optional. Name of the column to use as the work identifier
 #'   (the matrix-row dimension). If `NULL` (default), an existing `id`
 #'   column is used when present, otherwise row numbers are used.
-#' @param counting Character. Counting method. Default `"full"`.
+#' @param counting Character. Counting method: `"full"` (default),
+#'   `"fractional"`, `"paper"` or `"strength"`.
 #' @param similarity Character. Similarity measure. Default `"none"`.
-#' @param threshold Numeric. Minimum edge weight. Default 0.
+#' @param threshold Numeric. Minimum edge weight; edges with
+#'   `weight < threshold` are dropped. Default 0 (keep all).
 #' @param min_occur Integer. Minimum times a reference must be cited. Default 1.
-#' @param top_n Integer or NULL. Return only the top n edges by weight.
-#'   Default NULL (all edges).
+#' @param top_n Integer or NULL. Keep only the `top_n` most frequent nodes
+#'   and return the edges among them. Default `NULL` (all nodes).
 #' @inheritParams author_network
 #'
-#' @return Depends on `format`: a `bibnets_network` data frame (default),
-#'   a Gephi-ready data frame, an igraph graph, a cograph_network, or a
-#'   sparse matrix.
+#' @return Depends on `format`. The default `"edgelist"` returns a
+#'   `bibnets_network` data frame with one row per undirected edge, columns
+#'   `from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+#'   attributes `network_type`, `counting` and `similarity`. See
+#'   [author_network()] for the other formats.
 #'
 #' @export
 #' @examples

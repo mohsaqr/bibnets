@@ -13,15 +13,17 @@ as returned by any network function in bibnets.}
 \item{directed}{Logical. Default \code{FALSE}.}
 }
 \value{
-An igraph graph object.
+An \code{igraph} graph with one vertex per node label and one edge per
+row of \code{edges}; the remaining columns (\code{weight}, \code{count}, ...) become
+edge attributes.
 }
 \description{
-Convert edge data frame to igraph
+Requires the suggested package igraph.
 }
 \examples{
 \dontshow{if (requireNamespace("igraph", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 data(biblio_data)
 edges <- author_network(biblio_data, "collaboration")
-g <- to_igraph(edges)
+to_igraph(edges)
 \dontshow{\}) # examplesIf}
 }

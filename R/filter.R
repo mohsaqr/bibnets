@@ -4,9 +4,12 @@
 #' determined by how many edges each node participates in.
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
-#' @param n Integer. Number of top nodes to keep.
+#' @param n Integer. Number of top nodes to keep (ties in edge count are
+#'   broken by the order of `table()`, i.e. alphabetically).
 #'
-#' @return A filtered data frame with edges among the top `n` nodes.
+#' @return The edge data frame restricted to edges whose two endpoints are
+#'   both among the top `n` nodes, with the same class and columns as the
+#'   input, sorted by decreasing `weight`.
 #'
 #' @export
 #' @examples

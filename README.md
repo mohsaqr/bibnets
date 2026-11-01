@@ -168,8 +168,11 @@ numbers (each row is treated as one document). To use a differently-named
 identifier column, name it with `id`:
 
 ```r
-papers$paper_id <- c("A1", "A2", "A3", "A4")
-author_network(papers, authors = "Author Names", sep = ",", id = "paper_id")
+papers2 <- data.frame(
+  paper_id = c("A1", "A2", "A3"),
+  authors  = c("Alice, Bob", "Alice, Carol", "Bob, Carol")
+)
+author_network(papers2, sep = ",", id = "paper_id")
 ```
 
 `sep` is any literal delimiter, so BibTeX-style `" and "` or pipe-delimited
@@ -259,7 +262,11 @@ author_network(data, attention = "circular")   # first and last upweighted
 
 `attention` and `counting` are mutually exclusive: when `attention` is
 non-NULL, the network is built directly from positional weights and the
-`type`/`counting` arguments are ignored.
+`type`/`counting` arguments are ignored. The weights of one paper sum to
+one and an edge receives the product of its two endpoints' weights, so a
+paper's total edge weight stays below one half however long its list is.
+`"proximity"` weights the central positions most; it does not depend on
+how far apart two items are in the list.
 
 ### Reference Co-citation
 
@@ -353,6 +360,8 @@ backbone_net <- backbone(edges, alpha = 0.05)
 
 Use:
 
+- `top_n = k` on any builder to keep the `k` most frequent nodes before the
+  edges are extracted.
 - `prune(threshold = x)` for an absolute edge-weight cutoff.
 - `prune(top_n = k)` to retain locally strong edges for each node.
 - `filter_top(n = k)` to keep only the most connected nodes.
@@ -375,7 +384,10 @@ window cannot be built, it warns with the window label instead of silently
 dismissing the failure.
 
 `local_citations()` counts within-corpus citations. `historiograph()` then
-builds a directed network among the top locally cited documents.
+keeps the top locally cited documents and the directed citations they
+receive. Both need references that use the same identifiers as the
+documents (OpenAlex Work IDs, for example); formatted reference strings
+such as Scopus's give zero local citations.
 
 ## Export
 
@@ -414,7 +426,7 @@ It recognizes three conventions — `Last, First` (comma), `SURNAME Initials`
 
 ## Vignettes
 
-Three vignettes ship with the package:
+Four vignettes ship with the package:
 
 - `vignette("bibnets")` — end-to-end workflow: builders, counting and
   similarity options, attention weighting, network reduction, temporal
@@ -423,6 +435,8 @@ Three vignettes ship with the package:
   supported source (Scopus, Web of Science, OpenAlex JSON and flat CSV,
   BibTeX, RIS, Lens, Dimensions, Crossref), the standard schema, generic
   CSV input, custom columns and separators, and multi-source merging.
+- `vignette("attention", package = "bibnets")` — attention weighting: the
+  four positional profiles, a worked example, and when each fits.
 - `vignette("parsing-author-names", package = "bibnets")` — `parse_names()`:
   name conventions, output styles, the `"parts"` attribute, and the
   normalize-before-building workflow.

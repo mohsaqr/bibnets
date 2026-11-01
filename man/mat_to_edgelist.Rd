@@ -17,8 +17,8 @@ A data frame with columns \code{from}, \code{to}, \code{weight}, sorted by
 descending weight.
 }
 \description{
-Extracts non-zero entries directly from the sparse representation —
-no dense matrix allocation. For undirected networks, only the upper
+Extracts non-zero entries directly from the sparse representation,
+without a dense matrix allocation. For undirected networks, only the upper
 triangle is returned.
 }
 \keyword{internal}

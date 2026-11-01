@@ -2,22 +2,30 @@
 % Please edit documentation in R/utils.R
 \name{split_field}
 \alias{split_field}
-\title{Parse semicolon-delimited strings into list-column}
+\title{Split delimited strings into a list-column}
 \usage{
 split_field(x, sep = ";")
 }
 \arguments{
-\item{x}{A character vector of semicolon-delimited strings.}
+\item{x}{A character vector (a factor is coerced to character) of
+delimited strings.}
 
-\item{sep}{Character. Delimiter. Default \code{";"}.}
+\item{sep}{Character. Literal delimiter (not a regular expression).
+Default \code{";"}.}
 }
 \value{
-A list of character vectors.
+A list the same length as \code{x}; element \code{i} is the character
+vector of pieces of \code{x[i]}. \code{NA} and empty strings give
+\code{character(0)}.
 }
 \description{
-Splits semicolon-separated strings (common in Scopus/WoS exports) into
-character vectors, trimming whitespace.
+Splits delimited strings (semicolons are common in Scopus/WoS exports)
+into character vectors, trimming whitespace around each piece and
+dropping empty pieces. This is the operation every reader and builder
+applies to a multi-valued character column; use it to prepare a
+list-column yourself.
 }
 \examples{
 split_field(c("Alice; Bob; Carol", "Dave; Eve"))
+split_field(c("a|b|c", "d||e", NA), sep = "|")
 }

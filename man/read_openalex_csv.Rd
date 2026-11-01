@@ -15,8 +15,9 @@ read_openalex_csv(file, sep = "|")
 A data frame in the standard bibnets format: \code{id}, \code{title},
 \code{year}, \code{journal}, \code{doi}, \code{cited_by_count}, \code{abstract}, \code{type},
 plus list-columns \code{authors}, \code{references}, \code{keywords}, \code{affiliations},
-\code{countries}. \code{abstract} and \code{references} are always \code{NA} / empty
-(not available in the flat export).
+\code{countries}, one row per work. \code{abstract} is always \code{NA} and every
+\code{references} element is empty, because the flat export carries
+neither.
 }
 \description{
 Reads the flat CSV format downloaded directly from the OpenAlex website
@@ -27,4 +28,5 @@ which is handled by \code{\link[=read_openalex]{read_openalex()}}.
 \examples{
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 data <- read_openalex_csv(f)
+head(subset(data, select = c(id, year, authors, countries)))
 }

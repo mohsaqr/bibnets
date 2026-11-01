@@ -3,9 +3,10 @@
 #' Counts how many times each document is cited by other documents
 #' within the dataset.
 #'
-#' @param data A data frame with `id` and a references column (list-column
-#'   or delimited string). Optionally `year`, `title`, `journal`, `doi`,
-#'   `cited_by_count`.
+#' @param data A data frame with one row per work and a references column
+#'   (list-column or delimited string) whose values use the same identifiers
+#'   as the works. An `id` column is optional (see `id`). Optionally `year`,
+#'   `title`, `journal`, `doi`, `cited_by_count`.
 #' @param references Character. Name of the column containing cited references.
 #'   Default `"references"`.
 #' @param sep Character. Separator used to split the references column when it is a plain
@@ -16,14 +17,17 @@
 #'   If `NULL` (default), an existing `id` column is used when present,
 #'   otherwise row numbers are used.
 #'
-#' @return A data frame with columns:
+#' @return A data frame with one row per document, sorted by decreasing
+#'   `lcs`, with columns:
 #'   \describe{
-#'     \item{`id`}{Document identifier.}
-#'     \item{`lcs`}{Local Citation Score: times cited within the dataset.}
-#'     \item{`gcs`}{Global Citation Score: `cited_by_count` if available.}
+#'     \item{`id`}{Document identifier (character).}
+#'     \item{`lcs`}{Local Citation Score (integer): times cited by other
+#'       documents in the dataset.}
+#'     \item{`gcs`}{Global Citation Score (integer): `cited_by_count`; only
+#'       when that column is present.}
 #'   }
-#'   Plus any metadata columns present in the input (`title`, `year`,
-#'   `journal`, `doi`).
+#'   followed by `year` (integer), `title`, `journal` and `doi` when present
+#'   in the input.
 #'
 #' @export
 #' @examples
@@ -75,32 +79,44 @@ local_citations <- function(data, references = "references", sep = ";",
 
 #' Build a historiograph (chronological citation network)
 #'
-#' Constructs a Garfield-style historiograph: a directed citation network
-#' among the most locally cited documents, laid out chronologically.
+#' Constructs a Garfield-style historiograph: the `n` most locally cited
+#' documents and the within-corpus citations they receive, each edge
+#' carrying the publication years of both ends so the network can be laid
+#' out chronologically. The citing document of an edge may be any document
+#' in the data, not only one of the `n` selected.
 #'
-#' @param data A data frame with `id`, a references column (list-column or
-#'   delimited string), and `year`. Optionally `title`, `journal`, `doi`,
-#'   `cited_by_count`.
+#' @param data A data frame with one row per work, a references column
+#'   (list-column or delimited string) whose values use the same identifiers
+#'   as the works, and `year`. An `id` column is optional (see `id`).
+#'   Optionally `title`, `journal`, `doi`, `cited_by_count`.
 #' @param n Integer. Number of top locally cited documents to include.
 #'   Default 30.
 #' @param min_lcs Integer. Minimum local citation score for inclusion.
 #'   Default 1.
 #' @inheritParams local_citations
 #'
-#' @return A list with:
+#' @return A list of two data frames:
 #'   \describe{
-#'     \item{`$nodes`}{Data frame of included documents with `id`, `lcs`,
-#'       `gcs`, `year`, `title`, `journal`, `doi`.}
-#'     \item{`$edges`}{Data frame of directed citation edges with `from`
-#'       (citing), `to` (cited), `year_from`, `year_to`.}
+#'     \item{`nodes`}{One row per included document (at most `n`, each with
+#'       `lcs >= min_lcs`), with the [local_citations()] columns (`id`,
+#'       `lcs`, `gcs` when available, `year`, and `title`, `journal`, `doi`
+#'       when present), sorted by decreasing `lcs`.}
+#'     \item{`edges`}{One row per distinct directed citation that points at
+#'       an included document, with `from` (citing; any document in the
+#'       data), `to` (cited), `year_from` and `year_to` (integer), sorted by
+#'       `year_from` then `year_to`.}
 #'   }
+#'   Both are empty (zero rows) when no document reaches `min_lcs`.
+#'
+#' @references
+#' Garfield, E. (2004). Historiographic mapping of knowledge domains
+#' literature. *Journal of Information Science*, 30(2), 119--145.
+#' \doi{10.1177/0165551504042802}
 #'
 #' @export
 #' @examples
 #' data(biblio_data)
-#' h <- historiograph(biblio_data, n = 5)
-#' h$nodes
-#' h$edges
+#' historiograph(biblio_data, n = 5)
 historiograph <- function(data, n = 30, min_lcs = 1,
                           references = "references", sep = ";",
                           strip_quotes = TRUE, id = NULL) {
