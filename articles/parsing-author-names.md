@@ -2,7 +2,7 @@
 
 ## What `parse_names()` is
 
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 is an **optional, standalone utility** for cleaning author name strings.
 It does two things:
 
@@ -11,8 +11,8 @@ It does two things:
     `suffix`), returned as the `"parts"` attribute.
 
 It is **not** called by any reader or network builder. bibnets matches
-entity labels verbatim; you opt in to normalisation by calling this
-function yourself.
+entity labels verbatim (after trimming and upper-casing); you opt in to
+normalisation by calling this function yourself.
 
 ``` r
 
@@ -27,7 +27,7 @@ parse_names(c("Saqr, Mohammed", "Lopez-Pernas, Sonsoles"))
 ## The three name conventions
 
 Bibliometric exports use three incompatible conventions.
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 recognises all three; the rule is decided per string.
 
 | Input | Convention | Detected by |
@@ -120,22 +120,31 @@ data.frame(
 
 ## The `"parts"` attribute
 
-The parsed components ride along on every call, independent of `format`:
+The parsed components ride along on every call, independent of `format`,
+and [`str()`](https://rdrr.io/r/utils/str.html) shows them next to the
+formatted names:
 
 ``` r
 
-x <- parse_names(c("van der Berg, Jan", "Smith, John, Jr."))
-attr(x, "parts")
-#>            original first  last particle suffix   type
-#> 1 van der Berg, Jan   Jan  Berg  van der   <NA> person
-#> 2  Smith, John, Jr.  John Smith     <NA>     Jr person
+str(parse_names(c("van der Berg, Jan", "Smith, John, Jr.")))
+#>  chr [1:2] "Jan van der Berg" "John Smith Jr"
+#>  - attr(*, "parts")='data.frame':    2 obs. of  6 variables:
+#>   ..$ original: chr [1:2] "van der Berg, Jan" "Smith, John, Jr."
+#>   ..$ first   : chr [1:2] "Jan" "John"
+#>   ..$ last    : chr [1:2] "Berg" "Smith"
+#>   ..$ particle: chr [1:2] "van der" NA
+#>   ..$ suffix  : chr [1:2] NA "Jr"
+#>   ..$ type    : chr [1:2] "person" "person"
 ```
+
+The particle (`van der`) and the suffix (`Jr`) are split off from the
+surname, so `last` holds `Berg` and `Smith` alone.
 
 `type` is one of `"person"`, `"organization"`, `"empty"`, `"missing"`.
 
 ## Input shape: vector, not data frame
 
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 works on **one flat character vector**. It is not a data-frame function.
 
 bibnets readers store authors as a **list-column**: each paper has a
@@ -144,20 +153,22 @@ string.
 
 ``` r
 
-papers <- data.frame(id = c("P1", "P2", "P3"), stringsAsFactors = FALSE)
-papers$authors <- list(
-  c("Saqr, Mohammed", "Lopez, Ana"),
-  c("SAQR M",         "Lopez, Ana"),
-  c("Saqr, Mohammed", "Chen, Wei"))
-papers$authors
-#> [[1]]
-#> [1] "Saqr, Mohammed" "Lopez, Ana"    
-#> 
-#> [[2]]
-#> [1] "SAQR M"     "Lopez, Ana"
-#> 
-#> [[3]]
-#> [1] "Saqr, Mohammed" "Chen, Wei"
+papers <- data.frame(
+  id = c("P1", "P2", "P3"),
+  authors = I(list(
+    c("Saqr, Mohammed", "Lopez, Ana"),
+    c("SAQR M",         "Lopez, Ana"),
+    c("Saqr, Mohammed", "Chen, Wei")
+  ))
+)
+str(papers)
+#> 'data.frame':    3 obs. of  2 variables:
+#>  $ id     : chr  "P1" "P2" "P3"
+#>  $ authors:List of 3
+#>   ..$ : chr  "Saqr, Mohammed" "Lopez, Ana"
+#>   ..$ : chr  "SAQR M" "Lopez, Ana"
+#>   ..$ : chr  "Saqr, Mohammed" "Chen, Wei"
+#>   ..- attr(*, "class")= chr "AsIs"
 ```
 
 Map the function over the list-column with
@@ -167,27 +178,11 @@ Map the function over the list-column with
 
 papers$authors <- lapply(papers$authors, parse_names,
                           format = "last_initials")
-papers$authors
-#> [[1]]
-#> [1] "Saqr M."  "Lopez A."
-#> attr(,"parts")
-#>         original    first  last particle suffix   type
-#> 1 Saqr, Mohammed Mohammed  Saqr     <NA>   <NA> person
-#> 2     Lopez, Ana      Ana Lopez     <NA>   <NA> person
-#> 
-#> [[2]]
-#> [1] "SAQR M."  "Lopez A."
-#> attr(,"parts")
-#>     original first  last particle suffix   type
-#> 1     SAQR M     M  SAQR     <NA>   <NA> person
-#> 2 Lopez, Ana   Ana Lopez     <NA>   <NA> person
-#> 
-#> [[3]]
-#> [1] "Saqr M." "Chen W."
-#> attr(,"parts")
-#>         original    first last particle suffix   type
-#> 1 Saqr, Mohammed Mohammed Saqr     <NA>   <NA> person
-#> 2      Chen, Wei      Wei Chen     <NA>   <NA> person
+papers
+#>   id           authors
+#> 1 P1 Saqr M., Lopez A.
+#> 2 P2 SAQR M., Lopez A.
+#> 3 P3  Saqr M., Chen W.
 ```
 
 A flat character column (or a network’s `from` / `to`) is called
@@ -208,7 +203,7 @@ parse_names(c("WANG Y", "AYALA-ROMERO JA"))
 Node identity in bibnets is fixed when the network is built (labels are
 upper-cased and matched verbatim). Two spellings of one author merge
 into a single node **only if normalised before**
-[`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md).
+[`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md).
 
 Here `"Saqr, Mohammed"` and `"SAQR M"` are the same person written two
 ways. After normalising they both become `SAQR M.`, so the Saqr–Lopez
@@ -225,7 +220,7 @@ net
 ```
 
 Had we built the network first and called
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 on `from` / `to` afterwards, the two spellings would already have been
 counted as two separate nodes — too late to merge by relabelling.
 
@@ -242,29 +237,21 @@ is.data.frame(net)
 #> [1] TRUE
 ```
 
-You *can* relabel `from` / `to` directly, but
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+Relabelling its `from` / `to` columns after the build is possible, but
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 is graph-blind. Edges, pairing, `weight` and `count` are preserved, but:
 
-- Apply the **same call to both** endpoint columns, or the two ends use
-  different labels.
+- The **same call** has to be applied to both endpoint columns, or the
+  two ends use different labels.
 - The mapping is **many-to-one**: distinct authors can collapse onto one
   label (especially `"last_initials"`), and bibnets does **not**
-  re-aggregate the resulting duplicate edges.
+  re-aggregate the resulting duplicate edges, so two rows can then
+  describe the same pair with split weights.
 
-``` r
-
-net$from <- as.vector(parse_names(net$from, format = "last"))
-net$to   <- as.vector(parse_names(net$to,   format = "last"))
-net
-#> # bibnets network: author_collaboration | 3 nodes · 2 edges | counting: full 
-#>    from   to    weight  count
-#> 1  LOPEZ  SAQR       2      2
-#> 2  CHEN   SAQR       1      1
-```
-
-Use [`as.vector()`](https://rdrr.io/r/base/vector.html) when assigning
-back so the `"parts"` attribute is not carried on the column.
+Normalising the `authors` column before
+[`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md),
+as above, avoids both problems: the merge happens before projection, so
+every count and weight is computed on the merged node.
 
 ## Limitations
 
@@ -282,7 +269,7 @@ back so the `"parts"` attribute is not carried on the column.
 - `parse_names(x)` — vector in, vector out, with a `"parts"` attribute.
 - `lapply(df$authors, parse_names)` — for the authors list-column.
 - Normalise **before**
-  [`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md)
+  [`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md)
   for correct node merging.
 - `format` = `"first_last"` / `"last_initials"` / `"last"`;
   `surname_first` = `"auto"` / `"yes"` / `"no"`.

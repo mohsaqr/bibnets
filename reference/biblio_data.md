@@ -1,8 +1,8 @@
 # Example bibliometric dataset
 
-A small synthetic dataset of 10 scholarly papers with overlapping
-authors, references, and keywords. Designed for testing and
-demonstrating all network construction functions in bibnets.
+`biblio_data` is a small synthetic dataset of 10 scholarly papers with
+overlapping authors, references, and keywords, used in the examples of
+the network construction functions.
 
 ## Usage
 
@@ -45,12 +45,15 @@ A data frame with 10 rows and 9 columns:
 
 - references:
 
-  List-column of cited reference IDs (10 unique refs, R1–R10). Each
-  paper cites exactly 4 references.
+  List-column of cited reference IDs (13 unique values): external
+  references R1–R10 (R8 unused) and the in-corpus document IDs W1, W2,
+  W3 and W5, which give the direct-citation, local-citation and
+  historiograph examples something to find. Each paper cites exactly 4
+  references.
 
 - keywords:
 
-  List-column of keyword strings (24 unique keywords). Each paper has 3
+  List-column of keyword strings (23 unique keywords). Each paper has 3
   keywords.
 
 ## Examples

@@ -1,6 +1,11 @@
 # Convert edge list to a square sparse matrix
 
-Convert edge list to a square sparse matrix
+`edgelist_to_mat()` converts an edge list to a square sparse matrix of
+edge weights, one row and column per node. With `symmetric = TRUE` each
+edge is entered in both directions. It is the inverse of
+[`mat_to_edgelist()`](https://pak.dynasite.org/bibnets-pkg/reference/mat_to_edgelist.md)
+and the engine behind
+[`to_matrix()`](https://pak.dynasite.org/bibnets-pkg/reference/to_matrix.md).
 
 ## Usage
 

@@ -1,8 +1,10 @@
 # Build a bipartite incidence matrix from bibliometric data
 
-Constructs a sparse works x entities two-mode matrix from a data frame
-with a list-column. This is the core engine behind all network
-construction functions.
+`build_bipartite()` builds a sparse works x entities two-mode matrix
+from a data frame with a list-column. This is the core engine behind all
+network construction functions: each network is a projection of this
+matrix (see
+[`multiply_bipartite()`](https://pak.dynasite.org/bibnets-pkg/reference/multiply_bipartite.md)).
 
 ## Usage
 
@@ -47,3 +49,9 @@ build_bipartite(
 
 A sparse `dgCMatrix` with rows = works (named by `id`) and columns =
 unique entities.
+
+## Details
+
+It returns a `dgCMatrix` with one row per work and one column per unique
+entity. When the data are already in long form, use
+[`build_bipartite_long()`](https://pak.dynasite.org/bibnets-pkg/reference/build_bipartite_long.md).

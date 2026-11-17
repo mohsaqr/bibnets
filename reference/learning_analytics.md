@@ -1,10 +1,10 @@
 # Learning analytics dataset (OpenAlex)
 
-A corpus of 1,508 gold open-access scholarly works on learning
-analytics, retrieved from OpenAlex (CC0 licence). All records have a
-verified title, publication year, and at least one author. Journal names
-are present for works published in a named source; preprints and book
-chapters may have `NA` in `journal`.
+`learning_analytics` is a corpus of 1,508 gold open-access scholarly
+works on learning analytics, retrieved from OpenAlex (CC0 licence). All
+records have a verified title, publication year, and at least one
+author. Journal names are present for works published in a named source;
+preprints and book chapters may have `NA` in `journal`.
 
 ## Usage
 
@@ -58,12 +58,12 @@ A data frame with 1,508 rows and 11 columns:
 - affiliations:
 
   List-column of institution display names (one entry per
-  authorship–institution pair).
+  authorship-institution pair).
 
 - countries:
 
   List-column of two-letter ISO country codes (one entry per
-  authorship–institution pair).
+  authorship-institution pair).
 
 ## Source
 

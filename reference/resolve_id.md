@@ -1,7 +1,7 @@
 # Resolve the work-identifier column
 
-Materializes a top-level `id` column that the network pipeline uses to
-index works (matrix rows). Resolution rules:
+`resolve_id()` materializes a top-level `id` column that the network
+pipeline uses to index works (matrix rows). Resolution rules:
 
 ## Usage
 

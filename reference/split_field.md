@@ -1,7 +1,10 @@
-# Parse semicolon-delimited strings into list-column
+# Split delimited strings into a list-column
 
-Splits semicolon-separated strings (common in Scopus/WoS exports) into
-character vectors, trimming whitespace.
+`split_field()` splits delimited strings (semicolons are common in
+Scopus/WoS exports) into character vectors, trimming whitespace around
+each piece and dropping empty pieces. This is the operation every reader
+and builder applies to a multi-valued character column; use it to
+prepare a list-column yourself.
 
 ## Usage
 
@@ -13,15 +16,18 @@ split_field(x, sep = ";")
 
 - x:
 
-  A character vector of semicolon-delimited strings.
+  A character vector (a factor is coerced to character) of delimited
+  strings.
 
 - sep:
 
-  Character. Delimiter. Default `";"`.
+  Character. Literal delimiter (not a regular expression). Default
+  `";"`.
 
 ## Value
 
-A list of character vectors.
+A list the same length as `x`; element `i` is the character vector of
+pieces of `x[i]`. `NA` and empty strings give `character(0)`.
 
 ## Examples
 
@@ -32,5 +38,15 @@ split_field(c("Alice; Bob; Carol", "Dave; Eve"))
 #> 
 #> [[2]]
 #> [1] "Dave" "Eve" 
+#> 
+split_field(c("a|b|c", "d||e", NA), sep = "|")
+#> [[1]]
+#> [1] "a" "b" "c"
+#> 
+#> [[2]]
+#> [1] "d" "e"
+#> 
+#> [[3]]
+#> character(0)
 #> 
 ```

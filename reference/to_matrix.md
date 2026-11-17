@@ -1,6 +1,8 @@
 # Convert edge data frame to adjacency matrix
 
-Convert edge data frame to adjacency matrix
+`to_matrix()` converts a bibnets edge list to a square sparse adjacency
+matrix of edge weights, one row and column per node. By default each
+edge is entered in both directions, so the matrix is symmetric.
 
 ## Usage
 
@@ -16,11 +18,13 @@ to_matrix(edges, symmetric = TRUE)
 
 - symmetric:
 
-  Logical. If `TRUE` (default), produces a symmetric matrix.
+  Logical. If `TRUE` (default), produces a symmetric matrix (each edge
+  is entered in both directions).
 
 ## Value
 
-A sparse Matrix.
+A square sparse `dgCMatrix` of edge weights with one row and column per
+node label (dimnames are the node labels).
 
 ## Examples
 

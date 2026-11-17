@@ -1,9 +1,10 @@
 # Convert OpenAlex data to bibnets format
 
-Takes the output of
+`read_openalex()` converts the output of
 [`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html)
-(a tibble/data frame of works) and converts it to the standardized
-bibnets format with list-columns.
+(a tibble/data frame of works) to the standardized bibnets format with
+list-columns. For a flat CSV downloaded from the OpenAlex website, use
+[`read_openalex_csv()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex_csv.md).
 
 ## Usage
 
@@ -39,17 +40,15 @@ raw <- data.frame(
   so = c("Journal A", "Journal B"),
   doi = c("https://doi.org/10.1/a", "https://doi.org/10.2/b"),
   cited_by_count = c(5L, 12L),
-  stringsAsFactors = FALSE
+  author = I(list(
+    data.frame(au_display_name = c("Smith J", "Jones A")),
+    data.frame(au_display_name = "Davis M")
+  )),
+  referenced_works = I(list(c("W100", "W200"), "W123"))
 )
-raw$author <- list(
-  data.frame(au_display_name = c("Smith J", "Jones A"),
-             stringsAsFactors = FALSE),
-  data.frame(au_display_name = "Davis M", stringsAsFactors = FALSE)
-)
-raw$referenced_works <- list(c("W100", "W200"), "W123")
 data <- read_openalex(raw)
-head(data[, c("id", "title", "year", "journal", "doi")])
-#>     id        title year   journal    doi
-#> 1 W123  First paper 2022 Journal A 10.1/a
-#> 2 W456 Second paper 2021 Journal B 10.2/b
+subset(data, select = c(id, title, year, doi, authors, references))
+#>     id        title year    doi          authors references
+#> 1 W123  First paper 2022 10.1/a SMITH J, JONES A W100, W200
+#> 2 W456 Second paper 2021 10.2/b          DAVIS M       W123
 ```

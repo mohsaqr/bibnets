@@ -1,7 +1,9 @@
 # Read an RIS file
 
-Parses a `.ris` file into a standardized bibliometric data frame. Like
-BibTeX, standard RIS does not include cited references.
+`read_ris()` parses a `.ris` file into a standardized bibliometric data
+frame. Like BibTeX, standard RIS does not include cited references.
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
+reads several files at once and detects the format.
 
 ## Usage
 
@@ -41,8 +43,10 @@ ER  - "
 f <- tempfile(fileext = ".ris")
 writeLines(ris, f)
 data <- read_ris(f)
-data[, c("id", "title", "year", "journal", "doi")]
+subset(data, select = c(id, title, year, journal, doi, authors))
 #>             id                 title year      journal          doi
 #> 1 10.1000/test Bibliometric networks 2020 Test Journal 10.1000/test
+#>              authors
+#> 1 SMITH, J, JONES, K
 unlink(f)
 ```

@@ -1,7 +1,8 @@
 # Build time-windowed networks
 
-Splits data by time windows and builds a separate network for each
-window using any network function.
+`temporal_network()` splits data by time windows and builds a separate
+network for each window using any network function, so the same
+construction can be compared across periods.
 
 ## Usage
 
@@ -67,8 +68,24 @@ temporal_network(
 
 ## Value
 
-A named list of data frames (edge lists). Names are window labels like
-`"2018-2020"`.
+A named list with one element per non-empty window, named by the window
+label (`"start-end"`, e.g. `"2018-2020"`). Each element is the edge list
+returned by `network_fun` (a `bibnets_network` for the package builders
+with the default `format`) with an extra character column `window`.
+Windows with fewer than two records or no edges are omitted; if
+`network_fun` fails in a window, a warning naming the window is raised
+and that window is omitted. An empty list is returned when the time
+column has no non-missing values.
+
+## Details
+
+The time column is coerced to integer before windows are formed. Windows
+are fixed (disjoint), sliding (overlapping, advancing by `step`) or
+cumulative (each starting at the earliest value), of width `window`. It
+returns a named list with one edge list per non-empty window.
+
+`network_fun` must return a data frame, so keep the builder's default
+`format = "edgelist"`.
 
 ## Examples
 

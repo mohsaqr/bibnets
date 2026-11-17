@@ -4,42 +4,40 @@
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-`bibnets` is an R package for importing, constructing, and exporting
-bibliometric networks. It reads scholarly export formats from Scopus,
-Web of Science, OpenAlex, BibTeX, RIS, Lens.org, Dimensions, and
-Crossref; converts multi-valued fields such as authors, references,
-keywords, countries, and affiliations into sparse incidence matrices;
-returns edge lists for co-authorship, co-citation, bibliographic
-coupling, keyword co-occurrence, direct citation, historiograph, and
-custom co-occurrence analyses; and exports to igraph, tidygraph,
-cograph, Gephi CSV, GraphML, and sparse matrix formats.
+`bibnets` builds bibliometric networks from the exports of scholarly
+databases. A bibliometric network links authors, documents, references,
+keywords, journals, institutions or countries through the records they
+share: co-authorship links authors who write together, co-citation links
+references cited together (Small, 1973), and bibliographic coupling
+links documents that cite the same work (Kessler, 1963). These networks
+show how a research field is organized: its collaborating groups, its
+intellectual base and its topics. The weight of a link can be normalized
+for how active each entity is, by association strength, cosine, Jaccard,
+inclusion or equivalence, and authorship credit can be counted in full,
+fractionally or by author position. Networks can be built for fixed,
+sliding or cumulative time windows, reduced to their backbone with the
+disparity filter (Serrano et al., 2009), and traced over time with a
+historiograph of the most locally cited documents (Garfield, 2004).
 
-Beyond construction, `bibnets` supports similarity and dissimilarity
-normalizations (association strength, cosine, Jaccard, inclusion,
-equivalence, and raw counts); counting methods including fractional,
-paper, and position-aware authorship credit (harmonic, arithmetic,
-geometric, adaptive geometric, golden-ratio, first-author, last-author,
-first-last, custom); attention-style position weights (lead, last,
-proximity, circular) for author, keyword, country, and institution
-networks; temporal network construction with fixed, sliding, and
-cumulative time windows; disparity-filter backbone extraction for
-multiscale weighted networks; Garfield-style historiograph construction
-over the most locally cited documents; local citation scoring; and
-threshold and top-n pruning utilities.
+Records are read from Scopus, Web of Science, OpenAlex, BibTeX, RIS,
+Lens.org, Dimensions and Crossref exports, or from any data frame with
+its own column names and separators. Every builder returns an edge list
+with `from`, `to`, `weight` and `count` columns, which exports to
+igraph, tidygraph, cograph, Gephi CSV, GraphML and sparse matrices.
 
 ## Main Features
 
 - **Dedicated network builders plus a generic builder**:
-  [`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md),
-  [`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md),
-  [`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md),
-  [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md),
-  [`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md),
-  [`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md),
-  [`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md),
-  [`historiograph()`](https://saqr.me/bibnets-pkg/reference/historiograph.md),
+  [`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md),
+  [`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md),
+  [`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md),
+  [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md),
+  [`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md),
+  [`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md),
+  [`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md),
+  [`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md),
   and
-  [`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md).
+  [`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md).
 - **Counting methods** for full, fractional, paper-level, strength, and
   position-aware authorship weighting, including harmonic, arithmetic,
   geometric, adaptive geometric, golden-ratio, first-author,
@@ -59,23 +57,23 @@ threshold and top-n pruning utilities.
   and delimiter works in one call — no reader and no pre-splitting
   required.
 - **Network reduction and export**:
-  [`backbone()`](https://saqr.me/bibnets-pkg/reference/backbone.md),
-  [`prune()`](https://saqr.me/bibnets-pkg/reference/prune.md),
-  [`filter_top()`](https://saqr.me/bibnets-pkg/reference/filter_top.md),
-  [`to_gephi()`](https://saqr.me/bibnets-pkg/reference/to_gephi.md),
-  [`to_graphml()`](https://saqr.me/bibnets-pkg/reference/to_graphml.md),
-  [`to_igraph()`](https://saqr.me/bibnets-pkg/reference/to_igraph.md),
-  [`to_tbl_graph()`](https://saqr.me/bibnets-pkg/reference/to_tbl_graph.md),
-  [`to_matrix()`](https://saqr.me/bibnets-pkg/reference/to_matrix.md),
+  [`backbone()`](https://pak.dynasite.org/bibnets-pkg/reference/backbone.md),
+  [`prune()`](https://pak.dynasite.org/bibnets-pkg/reference/prune.md),
+  [`filter_top()`](https://pak.dynasite.org/bibnets-pkg/reference/filter_top.md),
+  [`to_gephi()`](https://pak.dynasite.org/bibnets-pkg/reference/to_gephi.md),
+  [`to_graphml()`](https://pak.dynasite.org/bibnets-pkg/reference/to_graphml.md),
+  [`to_igraph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_igraph.md),
+  [`to_tbl_graph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_tbl_graph.md),
+  [`to_matrix()`](https://pak.dynasite.org/bibnets-pkg/reference/to_matrix.md),
   and
-  [`to_cograph()`](https://saqr.me/bibnets-pkg/reference/to_cograph.md).
+  [`to_cograph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_cograph.md).
 - **Temporal and historical analysis**:
-  [`temporal_network()`](https://saqr.me/bibnets-pkg/reference/temporal_network.md),
-  [`local_citations()`](https://saqr.me/bibnets-pkg/reference/local_citations.md),
+  [`temporal_network()`](https://pak.dynasite.org/bibnets-pkg/reference/temporal_network.md),
+  [`local_citations()`](https://pak.dynasite.org/bibnets-pkg/reference/local_citations.md),
   and
-  [`historiograph()`](https://saqr.me/bibnets-pkg/reference/historiograph.md).
+  [`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md).
 - **Author-name parsing**:
-  [`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+  [`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
   reorders and splits author names (`Last, First`, `SURNAME Initials`,
   or `First Last`) into `first` / `last` / `particle` / `suffix`
   components — useful for normalizing labels before building author
@@ -131,7 +129,7 @@ normalization is used, they intentionally diverge.
 ## Reading Data
 
 Use
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 when you have a file, a vector of files, or a directory:
 
 ``` r
@@ -204,8 +202,11 @@ document). To use a differently-named identifier column, name it with
 
 ``` r
 
-papers$paper_id <- c("A1", "A2", "A3", "A4")
-author_network(papers, authors = "Author Names", sep = ",", id = "paper_id")
+papers2 <- data.frame(
+  paper_id = c("A1", "A2", "A3"),
+  authors  = c("Alice, Bob", "Alice, Carol", "Bob, Carol")
+)
+author_network(papers2, sep = ",", id = "paper_id")
 ```
 
 `sep` is any literal delimiter, so BibTeX-style `" and "` or
@@ -222,13 +223,13 @@ schema need no extra arguments:
 
 | Builder | Column argument (default) |
 |----|----|
-| [`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md) | `authors = "authors"` |
-| [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md) | `keywords = "keywords"` |
-| [`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md) | `references = "references"` |
-| [`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md) | `references = "references"` |
-| [`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md) | `journal = "journal"` |
-| [`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md) | `countries = "countries"` |
-| [`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md) | `affiliations = "affiliations"` |
+| [`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md) | `authors = "authors"` |
+| [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md) | `keywords = "keywords"` |
+| [`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md) | `references = "references"` |
+| [`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md) | `references = "references"` |
+| [`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md) | `journal = "journal"` |
+| [`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md) | `countries = "countries"` |
+| [`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md) | `affiliations = "affiliations"` |
 
 A few related controls:
 
@@ -254,12 +255,12 @@ A few related controls:
   which appear inside valid single labels.
 
 > The `field =` argument of
-> [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md)
+> [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md)
 > is deprecated in favor of `keywords =`; the old argument still works
 > (with a warning).
 
 See the “Custom columns and separators” section of
-[`vignette("reading-data", package = "bibnets")`](https://saqr.me/bibnets-pkg/articles/reading-data.md)
+[`vignette("reading-data", package = "bibnets")`](https://pak.dynasite.org/bibnets-pkg/articles/reading-data.md)
 for the full treatment.
 
 ## Network Builders
@@ -293,10 +294,10 @@ author_network(my_df, authors = "Author Names", id = "paper_id", sep = ",")
 Use `attention` instead of `counting` when the goal is position-based
 weighting independent of the standard counting families. The same option
 is available on
-[`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md),
-[`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md),
+[`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md),
+[`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md),
 and
-[`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md):
+[`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md):
 
 ``` r
 
@@ -308,7 +309,11 @@ author_network(data, attention = "circular")   # first and last upweighted
 
 `attention` and `counting` are mutually exclusive: when `attention` is
 non-NULL, the network is built directly from positional weights and the
-`type`/`counting` arguments are ignored.
+`type`/`counting` arguments are ignored. The weights of one paper sum to
+one and an edge receives the product of its two endpoints’ weights, so a
+paper’s total edge weight stays below one half however long its list is.
+`"proximity"` weights the central positions most; it does not depend on
+how far apart two items are in the list.
 
 ### Reference Co-citation
 
@@ -348,8 +353,8 @@ that minor casing differences do not create separate nodes.
 
 ### Generic Co-networks
 
-[`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md) is
-useful when a dedicated wrapper is not needed:
+[`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md)
+is useful when a dedicated wrapper is not needed:
 
 ``` r
 
@@ -414,6 +419,8 @@ backbone_net <- backbone(edges, alpha = 0.05)
 
 Use:
 
+- `top_n = k` on any builder to keep the `k` most frequent nodes before
+  the edges are extracted.
 - `prune(threshold = x)` for an absolute edge-weight cutoff.
 - `prune(top_n = k)` to retain locally strong edges for each node.
 - `filter_top(n = k)` to keep only the most connected nodes.
@@ -432,15 +439,18 @@ lcs <- local_citations(data)
 h   <- historiograph(data, n = 30)
 ```
 
-[`temporal_network()`](https://saqr.me/bibnets-pkg/reference/temporal_network.md)
+[`temporal_network()`](https://pak.dynasite.org/bibnets-pkg/reference/temporal_network.md)
 supports fixed, sliding, and cumulative windows. If a window cannot be
 built, it warns with the window label instead of silently dismissing the
 failure.
 
-[`local_citations()`](https://saqr.me/bibnets-pkg/reference/local_citations.md)
+[`local_citations()`](https://pak.dynasite.org/bibnets-pkg/reference/local_citations.md)
 counts within-corpus citations.
-[`historiograph()`](https://saqr.me/bibnets-pkg/reference/historiograph.md)
-then builds a directed network among the top locally cited documents.
+[`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md)
+then keeps the top locally cited documents and the directed citations
+they receive. Both need references that use the same identifiers as the
+documents (OpenAlex Work IDs, for example); formatted reference strings
+such as Scopus’s give zero local citations.
 
 ## Export
 
@@ -464,7 +474,7 @@ their output formats are requested.
 
 The same author can appear under different spellings across sources
 (`"Saqr, Mohammed"`, `"SAQR M"`, `"Mohammed Saqr"`).
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 reorders and splits names so they can be normalized to a single label
 *before* building a network — node identity is fixed at build time, so
 merging spellings afterward is not possible.
@@ -484,20 +494,23 @@ no reader or builder calls it.
 
 ## Vignettes
 
-Three vignettes ship with the package:
+Four vignettes ship with the package:
 
-- [`vignette("bibnets")`](https://saqr.me/bibnets-pkg/articles/bibnets.md)
+- [`vignette("bibnets")`](https://pak.dynasite.org/bibnets-pkg/articles/bibnets.md)
   — end-to-end workflow: builders, counting and similarity options,
   attention weighting, network reduction, temporal windows,
   historiograph, and exports.
-- [`vignette("reading-data", package = "bibnets")`](https://saqr.me/bibnets-pkg/articles/reading-data.md)
+- [`vignette("reading-data", package = "bibnets")`](https://pak.dynasite.org/bibnets-pkg/articles/reading-data.md)
   — readers for each supported source (Scopus, Web of Science, OpenAlex
   JSON and flat CSV, BibTeX, RIS, Lens, Dimensions, Crossref), the
   standard schema, generic CSV input, custom columns and separators, and
   multi-source merging.
-- [`vignette("parsing-author-names", package = "bibnets")`](https://saqr.me/bibnets-pkg/articles/parsing-author-names.md)
+- [`vignette("attention", package = "bibnets")`](https://pak.dynasite.org/bibnets-pkg/articles/attention.md)
+  — attention weighting: the four positional profiles, a worked example,
+  and when each fits.
+- [`vignette("parsing-author-names", package = "bibnets")`](https://pak.dynasite.org/bibnets-pkg/articles/parsing-author-names.md)
   —
-  [`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md):
+  [`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md):
   name conventions, output styles, the `"parts"` attribute, and the
   normalize-before-building workflow.
 
@@ -512,25 +525,25 @@ MIT
 Import metadata from Scopus, Web of Science, OpenAlex, BibTeX, RIS,
 Lens.org, Dimensions, Crossref, and generic CSV files.
 
-- [`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+- [`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
   : Read bibliometric data
-- [`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+- [`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md)
   : Read Scopus CSV export
-- [`read_wos()`](https://saqr.me/bibnets-pkg/reference/read_wos.md) :
-  Read Web of Science plaintext or tab-delimited export
-- [`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+- [`read_wos()`](https://pak.dynasite.org/bibnets-pkg/reference/read_wos.md)
+  : Read Web of Science plaintext or tab-delimited export
+- [`read_openalex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex.md)
   : Convert OpenAlex data to bibnets format
-- [`read_openalex_csv()`](https://saqr.me/bibnets-pkg/reference/read_openalex_csv.md)
+- [`read_openalex_csv()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex_csv.md)
   : Read a flat OpenAlex CSV export
-- [`read_bibtex()`](https://saqr.me/bibnets-pkg/reference/read_bibtex.md)
+- [`read_bibtex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_bibtex.md)
   : Read a BibTeX file
-- [`read_ris()`](https://saqr.me/bibnets-pkg/reference/read_ris.md) :
-  Read an RIS file
-- [`read_lens()`](https://saqr.me/bibnets-pkg/reference/read_lens.md) :
-  Read Lens.org CSV export
-- [`read_dimensions()`](https://saqr.me/bibnets-pkg/reference/read_dimensions.md)
+- [`read_ris()`](https://pak.dynasite.org/bibnets-pkg/reference/read_ris.md)
+  : Read an RIS file
+- [`read_lens()`](https://pak.dynasite.org/bibnets-pkg/reference/read_lens.md)
+  : Read Lens.org CSV export
+- [`read_dimensions()`](https://pak.dynasite.org/bibnets-pkg/reference/read_dimensions.md)
   : Read Dimensions CSV export
-- [`read_crossref()`](https://saqr.me/bibnets-pkg/reference/read_crossref.md)
+- [`read_crossref()`](https://pak.dynasite.org/bibnets-pkg/reference/read_crossref.md)
   : Convert Crossref API data to bibnets format
 
 ## Build networks
@@ -538,67 +551,67 @@ Lens.org, Dimensions, Crossref, and generic CSV files.
 Construct co-authorship, co-citation, bibliographic coupling, keyword
 co-occurrence, source, country, institution, and custom co-networks.
 
-- [`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md)
+- [`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md)
   : Build an author network
-- [`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md)
+- [`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md)
   : Build a document network
-- [`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md)
+- [`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md)
   : Build a reference network
-- [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md)
+- [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md)
   : Build a keyword co-occurrence network
-- [`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md)
+- [`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md)
   : Build a source (journal) network
-- [`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md)
+- [`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md)
   : Build an institution network
-- [`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md)
+- [`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md)
   : Build a country network
-- [`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md) :
-  Build a co-occurrence network from any field
+- [`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md)
+  : Build a co-occurrence network from any field
 
 ## Temporal and historical analysis
 
 Sliding, fixed, and cumulative temporal windows; Garfield
 historiographs; local citation scoring.
 
-- [`temporal_network()`](https://saqr.me/bibnets-pkg/reference/temporal_network.md)
+- [`temporal_network()`](https://pak.dynasite.org/bibnets-pkg/reference/temporal_network.md)
   : Build time-windowed networks
-- [`historiograph()`](https://saqr.me/bibnets-pkg/reference/historiograph.md)
+- [`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md)
   : Build a historiograph (chronological citation network)
-- [`local_citations()`](https://saqr.me/bibnets-pkg/reference/local_citations.md)
+- [`local_citations()`](https://pak.dynasite.org/bibnets-pkg/reference/local_citations.md)
   : Compute local citation scores
 
 ## Reduce and filter networks
 
 Backbone extraction, edge thresholding, and top-node filtering.
 
-- [`backbone()`](https://saqr.me/bibnets-pkg/reference/backbone.md) :
-  Extract network backbone using the disparity filter
-- [`prune()`](https://saqr.me/bibnets-pkg/reference/prune.md) : Prune a
-  weighted edge list
-- [`filter_top()`](https://saqr.me/bibnets-pkg/reference/filter_top.md)
+- [`backbone()`](https://pak.dynasite.org/bibnets-pkg/reference/backbone.md)
+  : Extract network backbone using the disparity filter
+- [`prune()`](https://pak.dynasite.org/bibnets-pkg/reference/prune.md) :
+  Prune a weighted edge list
+- [`filter_top()`](https://pak.dynasite.org/bibnets-pkg/reference/filter_top.md)
   : Filter edges to top-n nodes
 
 ## Normalize edge weights
 
-- [`normalize()`](https://saqr.me/bibnets-pkg/reference/normalize.md) :
-  Normalize a co-occurrence matrix
+- [`normalize()`](https://pak.dynasite.org/bibnets-pkg/reference/normalize.md)
+  : Normalize a co-occurrence matrix
 
 ## Export networks
 
 Convert edge lists to igraph, tidygraph, cograph, Gephi CSV, GraphML,
 and sparse matrices.
 
-- [`to_gephi()`](https://saqr.me/bibnets-pkg/reference/to_gephi.md) :
-  Export to Gephi node and edge tables
-- [`to_graphml()`](https://saqr.me/bibnets-pkg/reference/to_graphml.md)
+- [`to_gephi()`](https://pak.dynasite.org/bibnets-pkg/reference/to_gephi.md)
+  : Export to Gephi node and edge tables
+- [`to_graphml()`](https://pak.dynasite.org/bibnets-pkg/reference/to_graphml.md)
   : Export to GraphML
-- [`to_igraph()`](https://saqr.me/bibnets-pkg/reference/to_igraph.md) :
-  Convert edge data frame to igraph
-- [`to_tbl_graph()`](https://saqr.me/bibnets-pkg/reference/to_tbl_graph.md)
+- [`to_igraph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_igraph.md)
+  : Convert edge data frame to igraph
+- [`to_tbl_graph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_tbl_graph.md)
   : Convert edge data frame to tbl_graph
-- [`to_matrix()`](https://saqr.me/bibnets-pkg/reference/to_matrix.md) :
-  Convert edge data frame to adjacency matrix
-- [`to_cograph()`](https://saqr.me/bibnets-pkg/reference/to_cograph.md)
+- [`to_matrix()`](https://pak.dynasite.org/bibnets-pkg/reference/to_matrix.md)
+  : Convert edge data frame to adjacency matrix
+- [`to_cograph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_cograph.md)
   : Prepare network for cograph::splot()
 
 ## Author names
@@ -606,25 +619,25 @@ and sparse matrices.
 Reorder and split author names into components before building author
 networks.
 
-- [`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+- [`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
   : Reorder and parse author names
 
 ## Utilities
 
-- [`split_field()`](https://saqr.me/bibnets-pkg/reference/split_field.md)
-  : Parse semicolon-delimited strings into list-column
-- [`print(`*`<bibnets_network>`*`)`](https://saqr.me/bibnets-pkg/reference/print.bibnets_network.md)
+- [`split_field()`](https://pak.dynasite.org/bibnets-pkg/reference/split_field.md)
+  : Split delimited strings into a list-column
+- [`print(`*`<bibnets_network>`*`)`](https://pak.dynasite.org/bibnets-pkg/reference/print.bibnets_network.md)
   : Print a bibnets network edge list
-- [`summary(`*`<bibnets_network>`*`)`](https://saqr.me/bibnets-pkg/reference/summary.bibnets_network.md)
+- [`summary(`*`<bibnets_network>`*`)`](https://pak.dynasite.org/bibnets-pkg/reference/summary.bibnets_network.md)
   : Summarise a bibnets network
 
 ## Datasets
 
-- [`biblio_data`](https://saqr.me/bibnets-pkg/reference/biblio_data.md)
+- [`biblio_data`](https://pak.dynasite.org/bibnets-pkg/reference/biblio_data.md)
   : Example bibliometric dataset
-- [`scopus_quantum_cloud`](https://saqr.me/bibnets-pkg/reference/scopus_quantum_cloud.md)
-  : Scopus dataset — Green Cloud Computing and Quantization (2020–2025)
-- [`learning_analytics`](https://saqr.me/bibnets-pkg/reference/learning_analytics.md)
+- [`scopus_quantum_cloud`](https://pak.dynasite.org/bibnets-pkg/reference/scopus_quantum_cloud.md)
+  : Scopus dataset: green cloud computing and quantization (2020–2025)
+- [`learning_analytics`](https://pak.dynasite.org/bibnets-pkg/reference/learning_analytics.md)
   : Learning analytics dataset (OpenAlex)
 
 # Articles
@@ -632,10 +645,10 @@ networks.
 ### Vignettes
 
 - [Getting Started with
-  bibnets](https://saqr.me/bibnets-pkg/articles/bibnets.md):
+  bibnets](https://pak.dynasite.org/bibnets-pkg/articles/bibnets.md):
 - [Reading bibliometric data into
-  bibnets](https://saqr.me/bibnets-pkg/articles/reading-data.md):
+  bibnets](https://pak.dynasite.org/bibnets-pkg/articles/reading-data.md):
 - [Attention
-  weighting](https://saqr.me/bibnets-pkg/articles/attention.md):
+  weighting](https://pak.dynasite.org/bibnets-pkg/articles/attention.md):
 - [Parsing and normalising author
-  names](https://saqr.me/bibnets-pkg/articles/parsing-author-names.md):
+  names](https://pak.dynasite.org/bibnets-pkg/articles/parsing-author-names.md):

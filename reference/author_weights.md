@@ -1,10 +1,12 @@
 # Compute positional author weights for a single paper
 
-Given the number of authors and their positions, returns a weight vector
-for positional counting methods. All methods normalize weights to sum to
-1 per paper. Position-independent methods (fractional, paper, strength)
-are handled by
-[`apply_counting()`](https://saqr.me/bibnets-pkg/reference/apply_counting.md)
+`author_weights()` computes the weight of each byline position on a
+paper with `n` authors under a positional counting method, such as
+harmonic counting, where the author in position \\i\\ receives \\1/i\\,
+rescaled. All methods normalize weights to sum to 1 per paper.
+Position-independent methods (fractional, paper, strength) are handled
+by
+[`apply_counting()`](https://pak.dynasite.org/bibnets-pkg/reference/apply_counting.md)
 instead.
 
 ## Usage

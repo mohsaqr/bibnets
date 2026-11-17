@@ -1,7 +1,12 @@
 # Filter edges to top-n nodes
 
-Keeps only edges between the most frequent nodes. Node frequency is
-determined by how many edges each node participates in.
+`filter_top()` keeps only the edges between the `n` most frequent nodes.
+Node frequency is determined by how many edges each node participates
+in. It returns the edges whose two endpoints are both among the top
+nodes. To prune by edge weight or keep each node's strongest edges, use
+[`prune()`](https://pak.dynasite.org/bibnets-pkg/reference/prune.md);
+for a statistical backbone, use
+[`backbone()`](https://pak.dynasite.org/bibnets-pkg/reference/backbone.md).
 
 ## Usage
 
@@ -17,11 +22,15 @@ filter_top(edges, n)
 
 - n:
 
-  Integer. Number of top nodes to keep.
+  Integer. Number of top nodes to keep (ties in edge count are broken by
+  the order of [`table()`](https://rdrr.io/r/base/table.html), i.e.
+  alphabetically).
 
 ## Value
 
-A filtered data frame with edges among the top `n` nodes.
+The edge data frame restricted to edges whose two endpoints are both
+among the top `n` nodes, with the same class and columns as the input,
+sorted by decreasing `weight`.
 
 ## Examples
 

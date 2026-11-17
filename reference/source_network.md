@@ -1,7 +1,11 @@
 # Build a source (journal) network
 
-Constructs a network between publication sources (journals, book
-series).
+`source_network()` builds a network between publication sources
+(journals, book series). By default two sources are linked by
+bibliographic coupling, when their papers share cited references; the
+other types are source co-citation (sources cited together, from a
+`cited_journals` column) and the cosine similarity of the sources'
+pooled reference vectors.
 
 ## Usage
 
@@ -29,18 +33,23 @@ source_network(
 
 - data:
 
-  A data frame with `id` and `journal` (character column). For coupling,
-  also needs `references`. For co-citation, needs a `cited_journals`
+  A data frame with one row per work and a journal column (one value per
+  work). An `id` column is optional (see `id`). Coupling and equivalence
+  also need `references`; co-citation needs a `cited_journals`
   list-column.
 
 - type:
 
-  Character. `"coupling"` (default), `"co_citation"`, or
-  `"equivalence"`.
+  Character. `"coupling"` (default; sources linked by the references
+  their papers share), `"co_citation"` (sources cited together, from
+  `cited_journals`), or `"equivalence"` (cosine similarity of the
+  sources' pooled reference vectors; `counting` and `similarity` are
+  ignored).
 
 - counting:
 
-  Character. Counting method. Default `"full"`.
+  Character. Counting method: `"full"` (default), `"fractional"`,
+  `"paper"` or `"strength"`.
 
 - similarity:
 
@@ -48,7 +57,8 @@ source_network(
 
 - threshold:
 
-  Numeric. Minimum edge weight. Default 0.
+  Numeric. Minimum edge weight; edges with `weight < threshold` are
+  dropped. Default 0 (keep all).
 
 - min_occur:
 
@@ -56,18 +66,19 @@ source_network(
 
 - top_n:
 
-  Integer or NULL. Return only the top n edges by weight. Default NULL
-  (all edges).
+  Integer or NULL. Keep only the `top_n` most frequent nodes and return
+  the edges among them. Default `NULL` (all nodes).
 
 - self_loops:
 
   Logical. If `TRUE`, include self-loops (an entity linked to itself).
-  Default `FALSE`.
+  Default `FALSE`. Only takes effect with `similarity = "none"`; every
+  similarity measure zeroes the diagonal.
 
 - deduplicate:
 
   Logical. If `TRUE` (default), each `(paper, entity)` pair is counted
-  at most once — duplicate entries in the source data (e.g., the same
+  at most once – duplicate entries in the source data (e.g., the same
   author listed twice on a paper) are treated as one occurrence. Set to
   `FALSE` to count every raw occurrence.
 
@@ -105,16 +116,14 @@ source_network(
 
 - sep:
 
-  Character. Separator used to split the entity column when it is a
-  plain character column rather than a list-column, e.g. `sep = ","` or
-  `sep = " and "`. Default `";"`. Ignored for list-columns. `sep`
-  applies only to the author column; the references column uses
-  `references_sep`.
+  Character. Not used: the journal column holds one value per work and
+  is never split. Kept for a signature consistent with the other
+  builders.
 
 - references_sep:
 
   Character. Separator for the `references` column in
-  `type = "coupling"`. Default `";"`.
+  `type = "coupling"` and `"equivalence"`. Default `";"`.
 
 - strip_quotes:
 
@@ -129,9 +138,20 @@ source_network(
 
 ## Value
 
-Depends on `format`: a `bibnets_network` data frame (default), a
-Gephi-ready data frame, an igraph graph, a cograph_network, or a sparse
-matrix.
+Depends on `format`. The default `"edgelist"` returns a
+`bibnets_network` data frame with one row per undirected edge, columns
+`from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+attributes `network_type`, `counting` and `similarity`. See
+[`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md)
+for the other formats.
+
+## Details
+
+`counting` and `similarity` weight the edges and `threshold`,
+`min_occur` and `top_n` prune them. It returns a `bibnets_network` edge
+list by default. To link sources by any other field, use
+`conetwork(data, "journal", by = ...)` (see
+[`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md)).
 
 ## Examples
 

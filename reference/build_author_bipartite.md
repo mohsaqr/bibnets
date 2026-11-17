@@ -1,8 +1,11 @@
 # Build a weighted bipartite matrix using positional counting
 
-For position-dependent counting methods, this replaces the binary
+`build_author_bipartite()` builds the works x authors two-mode matrix
+for position-dependent counting methods. It replaces the binary
 bipartite matrix entries with positional weights derived from author
-order.
+order (see
+[`author_weights()`](https://pak.dynasite.org/bibnets-pkg/reference/author_weights.md));
+authors with weight zero on a paper are dropped.
 
 ## Usage
 
@@ -23,8 +26,12 @@ build_author_bipartite(
 
 - data:
 
-  A data frame with `id` and `authors` (list-column where author order
-  is preserved).
+  A data frame with `id` and an ordered entity column (list-column or
+  delimited string).
+
+- field:
+
+  Character. Name of the entity column. Default `"authors"`.
 
 - counting:
 
@@ -37,6 +44,19 @@ build_author_bipartite(
 - first_last_weight:
 
   Numeric for `counting = "first_last"`.
+
+- deduplicate:
+
+  Logical. Keep only the first position of an entity repeated within one
+  paper.
+
+- sep:
+
+  Character. Separator for a plain character column.
+
+- strip_quotes:
+
+  Logical. Strip surrounding quotes from each entity.
 
 ## Value
 

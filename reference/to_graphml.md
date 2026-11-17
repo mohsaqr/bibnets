@@ -1,7 +1,8 @@
 # Export to GraphML
 
-Writes a bibnets edge list (and optional node attributes) to a GraphML
-file using pure base R — no XML package required.
+`to_graphml()` writes a bibnets edge list (and optional node attributes)
+to a GraphML file, or returns the document as a string, using base R
+only, without an XML package.
 
 ## Usage
 
@@ -30,8 +31,9 @@ to_graphml(edges, nodes = NULL, file = NULL, directed = FALSE)
 
 ## Value
 
-If `file = NULL`: GraphML as a character string. Otherwise writes the
-file and returns the path invisibly.
+If `file = NULL`, the GraphML document as a single character string.
+Otherwise writes the file, reports the path with a message, and returns
+the path invisibly.
 
 ## Examples
 

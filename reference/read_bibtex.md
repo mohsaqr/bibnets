@@ -1,9 +1,11 @@
 # Read a BibTeX file
 
-Parses a `.bib` file into a standardized bibliometric data frame. Note:
-standard BibTeX does not contain cited references, so the `references`
-column will be empty unless the file includes a non-standard
-`cited-references` or `note` field with reference data.
+`read_bibtex()` parses a `.bib` file into a standardized bibliometric
+data frame. Note: standard BibTeX does not contain cited references, so
+the `references` column will be empty unless the file includes a
+non-standard `cited-references` or `note` field with reference data.
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
+reads several files at once and detects the format.
 
 ## Usage
 
@@ -42,8 +44,10 @@ bib <- '@article{smith2020,
 f <- tempfile(fileext = ".bib")
 writeLines(bib, f)
 data <- read_bibtex(f)
-data[, c("id", "title", "year", "journal", "doi")]
+subset(data, select = c(id, title, year, journal, doi, authors))
 #>          id                 title year      journal          doi
 #> 1 smith2020 Bibliometric networks 2020 Test Journal 10.1000/test
+#>              authors
+#> 1 SMITH, J, JONES, K
 unlink(f)
 ```

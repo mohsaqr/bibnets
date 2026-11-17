@@ -1,7 +1,9 @@
 # Compute local citation scores
 
-Counts how many times each document is cited by other documents within
-the dataset.
+`local_citations()` computes the local citation score (LCS) of each
+document: how many times it is cited by other documents within the
+dataset. When the data carry `cited_by_count`, the global citation score
+(GCS) is reported beside it.
 
 ## Usage
 
@@ -19,9 +21,10 @@ local_citations(
 
 - data:
 
-  A data frame with `id` and a references column (list-column or
-  delimited string). Optionally `year`, `title`, `journal`, `doi`,
-  `cited_by_count`.
+  A data frame with one row per work and a references column
+  (list-column or delimited string) whose values use the same
+  identifiers as the works. An `id` column is optional (see `id`).
+  Optionally `year`, `title`, `journal`, `doi`, `cited_by_count`.
 
 - references:
 
@@ -46,22 +49,35 @@ local_citations(
 
 ## Value
 
-A data frame with columns:
+A data frame with one row per document, sorted by decreasing `lcs`, with
+columns:
 
 - `id`:
 
-  Document identifier.
+  Document identifier (character).
 
 - `lcs`:
 
-  Local Citation Score: times cited within the dataset.
+  Local Citation Score (integer): times cited by other documents in the
+  dataset.
 
 - `gcs`:
 
-  Global Citation Score: `cited_by_count` if available.
+  Global Citation Score (integer): `cited_by_count`; only when that
+  column is present.
 
-Plus any metadata columns present in the input (`title`, `year`,
-`journal`, `doi`).
+followed by `year` (integer), `title`, `journal` and `doi` when present
+in the input.
+
+## Details
+
+It returns one row per document, sorted by decreasing `lcs`. To lay the
+most locally cited documents out as a chronological citation network,
+use
+[`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md);
+for the full citation network, use `document_network(type = "citation")`
+(see
+[`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md)).
 
 ## Examples
 

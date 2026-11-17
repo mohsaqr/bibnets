@@ -1,9 +1,10 @@
 # Convert Crossref API data to bibnets format
 
-Takes the output of
+`read_crossref()` converts the output of
 [`rcrossref::cr_works()`](https://docs.ropensci.org/rcrossref/reference/cr_works.html)
-(the `$data` tibble/data frame) and converts it to the standardized
-bibnets format.
+(the `$data` tibble/data frame) to the standardized bibnets format. For
+exported files rather than data in R, use
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md).
 
 ## Usage
 
@@ -35,17 +36,14 @@ raw <- data.frame(
   container.title = c("Journal A", "Journal B"),
   is.referenced.by.count = c("3", "9"),
   type = c("journal-article", "journal-article"),
-  stringsAsFactors = FALSE
-)
-raw$author <- list(
-  data.frame(given = c("Jane", "Anne"),
-             family = c("Smith", "Jones"),
-             stringsAsFactors = FALSE),
-  data.frame(given = "Mark", family = "Davis", stringsAsFactors = FALSE)
+  author = I(list(
+    data.frame(given = c("Jane", "Anne"), family = c("Smith", "Jones")),
+    data.frame(given = "Mark", family = "Davis")
+  ))
 )
 data <- read_crossref(raw)
-head(data[, c("id", "title", "year", "journal")])
-#>       id        title year   journal
-#> 1 10.1/a  First paper 2022 Journal A
-#> 2 10.2/b Second paper 2021 Journal B
+subset(data, select = c(id, title, year, journal, authors))
+#>       id        title year   journal                authors
+#> 1 10.1/a  First paper 2022 Journal A SMITH JANE, JONES ANNE
+#> 2 10.2/b Second paper 2021 Journal B             DAVIS MARK
 ```

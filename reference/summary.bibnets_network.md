@@ -1,6 +1,10 @@
 # Summarise a bibnets network
 
-Summarise a bibnets network
+[`summary()`](https://rdrr.io/r/base/summary.html) describes a
+`bibnets_network` edge list. It prints the network type, counting and
+similarity methods, the number of nodes and edges, the density (edges
+over the `n (n - 1) / 2` possible undirected pairs), the minimum, median
+and maximum `weight`, and the five nodes with the most edges.
 
 ## Usage
 
@@ -21,7 +25,8 @@ summary(object, ...)
 
 ## Value
 
-Invisibly returns `object`.
+`object`, unchanged and invisibly (a `bibnets_network` data frame).
+Called for its printed output.
 
 ## Examples
 

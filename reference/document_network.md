@@ -1,6 +1,10 @@
 # Build a document network
 
-Constructs a network between documents (papers) in the dataset.
+`document_network()` builds a network between documents (papers) in the
+dataset. By default two documents are linked by bibliographic coupling,
+when they share cited references (Kessler, 1963); the other types are
+direct citation, co-citation of the cited items (Small, 1973) and the
+cosine similarity of the documents' reference vectors.
 
 ## Usage
 
@@ -27,8 +31,10 @@ document_network(
 
 - data:
 
-  A data frame with `id` and a references column (list-column or
-  delimited string).
+  A data frame with one row per work and a references column
+  (list-column or delimited string). An `id` column is optional (see
+  `id`); direct citation needs the references to use the same
+  identifiers.
 
 - type:
 
@@ -42,21 +48,28 @@ document_network(
   `"citation"`
 
   :   Direct citation: directed edges from citing to cited documents
-      (internal citations only).
+      (internal citations only). `counting`, `similarity`, `threshold`
+      and `min_occur` are not applied; `top_n` keeps the documents with
+      the most citation edges.
 
   `"co_citation"`
 
-  :   Co-citation: documents linked when they are cited together by
-      other documents in the dataset.
+  :   Co-citation of the cited items: the nodes are the values of the
+      references column (as in
+      [`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md)),
+      linked when the same document cites both. They are documents of
+      the dataset only when the references are document identifiers.
 
   `"equivalence"`
 
-  :   Profile similarity of reference vectors.
+  :   Cosine similarity of the documents' reference vectors; `counting`
+      and `similarity` are ignored.
 
 - counting:
 
-  Character. Counting method. Default `"full"`. Position-dependent
-  methods are not applicable to document networks.
+  Character. Counting method: `"full"` (default), `"fractional"`,
+  `"paper"` or `"strength"`. Position-dependent methods are not
+  applicable to document networks.
 
 - similarity:
 
@@ -64,7 +77,8 @@ document_network(
 
 - threshold:
 
-  Numeric. Minimum edge weight. Default 0.
+  Numeric. Minimum edge weight; edges with `weight < threshold` are
+  dropped. Default 0 (keep all).
 
 - min_occur:
 
@@ -72,18 +86,19 @@ document_network(
 
 - top_n:
 
-  Integer or NULL. Return only the top n edges by weight. Default NULL
-  (all edges).
+  Integer or NULL. Keep only the `top_n` most frequent nodes and return
+  the edges among them. Default `NULL` (all nodes).
 
 - self_loops:
 
   Logical. If `TRUE`, include self-loops (an entity linked to itself).
-  Default `FALSE`.
+  Default `FALSE`. Only takes effect with `similarity = "none"`; every
+  similarity measure zeroes the diagonal.
 
 - deduplicate:
 
   Logical. If `TRUE` (default), each `(paper, entity)` pair is counted
-  at most once — duplicate entries in the source data (e.g., the same
+  at most once – duplicate entries in the source data (e.g., the same
   author listed twice on a paper) are treated as one occurrence. Set to
   `FALSE` to count every raw occurrence.
 
@@ -120,11 +135,8 @@ document_network(
 
 - sep:
 
-  Character. Separator used to split the entity column when it is a
-  plain character column rather than a list-column, e.g. `sep = ","` or
-  `sep = " and "`. Default `";"`. Ignored for list-columns. `sep`
-  applies only to the author column; the references column uses
-  `references_sep`.
+  Character. Separator used to split the references column when it is a
+  plain character column. Default `";"`. Ignored for list-columns.
 
 - strip_quotes:
 
@@ -139,8 +151,41 @@ document_network(
 
 ## Value
 
-Depends on `format`. For `type = "citation"`, edges are directed (from =
-citing, to = cited) with `weight` and `count` both 1.
+Depends on `format`. The default `"edgelist"` returns a
+`bibnets_network` data frame with one row per edge, columns `from`,
+`to`, `weight` and `count`, and attributes `network_type`, `counting`
+and `similarity`; see
+[`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md)
+for the other formats. For `type = "citation"` the edges are directed
+(`from` = citing, `to` = cited) with `weight` and `count` both 1, in
+data order; the other types are undirected and sorted by decreasing
+`weight`.
+
+## Details
+
+The documents and their references form a two-mode matrix, projected
+onto the documents for coupling and onto the cited items for
+co-citation; `counting` and `similarity` weight the edges and
+`threshold`, `min_occur` and `top_n` prune them. It returns a
+`bibnets_network` edge list by default, directed for
+`type = "citation"`. For a co-citation network of the references
+themselves see
+[`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md);
+for local citation counts and a chronological citation network see
+[`local_citations()`](https://pak.dynasite.org/bibnets-pkg/reference/local_citations.md)
+and
+[`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md).
+
+## References
+
+Kessler, M. M. (1963). Bibliographic coupling between scientific papers.
+*American Documentation*, 14(1), 10–25.
+[doi:10.1002/asi.5090140103](https://doi.org/10.1002/asi.5090140103)
+
+Small, H. (1973). Co-citation in the scientific literature: A new
+measure of the relationship between two documents. *Journal of the
+American Society for Information Science*, 24(4), 265–269.
+[doi:10.1002/asi.4630240406](https://doi.org/10.1002/asi.4630240406)
 
 ## Examples
 

@@ -1,7 +1,9 @@
 # Read Lens.org CSV export
 
-Parses a CSV file exported from Lens.org into a standardized
-bibliometric data frame.
+`read_lens()` parses a CSV file exported from Lens.org into a
+standardized bibliometric data frame.
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
+reads several files at once and detects the format.
 
 ## Usage
 
@@ -30,11 +32,11 @@ list-columns `authors`, `references`, and `keywords`.
 ``` r
 f <- system.file("extdata", "lens_sample.csv", package = "bibnets")
 data <- read_lens(f)
-head(data[, c("id", "title", "year", "journal")])
+subset(data, select = c(id, title, year, journal, authors))
 #>            id                                       title year
 #> 1 000-111-222 Bibliometric networks in education research 2022
 #> 2 000-333-444  Co-citation analysis of learning analytics 2021
-#>                     journal
-#> 1 Journal of Scientometrics
-#> 2        Learning Analytics
+#>                     journal            authors
+#> 1 Journal of Scientometrics SMITH, J, JONES, A
+#> 2        Learning Analytics   DAVIS, M, LEE, K
 ```

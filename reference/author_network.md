@@ -1,8 +1,12 @@
 # Build an author network
 
-Constructs a network between authors using one of four relationship
-types and any of 13 counting methods, including 9 position-dependent
-methods that respect author byline order.
+`author_network()` builds a network between authors using one of four
+relationship types: co-authorship (`"collaboration"`), bibliographic
+coupling (`"coupling"`), author co-citation (`"co_citation"`) or profile
+similarity (`"equivalence"`). Edges are weighted by any of 13 counting
+methods, including 9 position-dependent methods that respect author
+byline order, such as harmonic counting (Hagen, 2008); full and
+fractional counting are described by Perianes-Rodriguez et al. (2016).
 
 ## Usage
 
@@ -33,9 +37,11 @@ author_network(
 
 - data:
 
-  A data frame with at least `id` and an author column (list-column or
-  delimited string, order preserved). For coupling/co-citation, also
-  needs `references`.
+  A data frame with one row per work and an author column (list-column
+  or delimited string, byline order preserved). An `id` column is
+  optional (see `id`). `type = "coupling"` also needs a `references`
+  column; `type = "co_citation"` needs a `cited_first_authors`
+  list-column.
 
 - type:
 
@@ -57,8 +63,9 @@ author_network(
 
   `"equivalence"`
 
-  :   Profile similarity: cosine similarity of authors' full
-      collaboration/citation profiles.
+  :   Profile similarity: cosine similarity of the authors'
+      paper-incidence vectors. `counting` and `similarity` are ignored
+      (always cosine).
 
 - counting:
 
@@ -66,8 +73,9 @@ author_network(
   `"fractional"`, `"paper"`, `"strength"`) work for all types.
   Position-dependent methods (`"harmonic"`, `"arithmetic"`,
   `"geometric"`, `"adaptive_geometric"`, `"golden"`, `"first"`,
-  `"last"`, `"first_last"`, `"position_weighted"`) are available for
-  `type = "collaboration"`.
+  `"last"`, `"first_last"`, `"position_weighted"`) apply to
+  `type = "collaboration"`; for the other types they fall back to
+  `"full"`.
 
 - similarity:
 
@@ -76,12 +84,14 @@ author_network(
 
 - threshold:
 
-  Numeric. Minimum edge weight. Default 0.
+  Numeric. Minimum edge weight; edges with `weight < threshold` are
+  dropped. Default 0 (keep all).
 
 - min_occur:
 
   Integer. Minimum number of papers for an author to be included.
-  Default 1.
+  Default 1. Not applied with a position-dependent `counting` method or
+  with `attention`.
 
 - position_weights:
 
@@ -98,22 +108,26 @@ author_network(
   `counting`. One of `"proximity"` (center authors weighted most),
   `"lead"` (first author dominates, quadratic drop), `"last"` (last
   author dominates, quadratic rise), `"circular"` (first and last both
-  prominent). Default `NULL` (disabled).
+  prominent). The weights of one paper sum to 1 and an edge receives the
+  product of its two endpoints' weights. When `attention` is set, `type`
+  and `counting` are ignored. Default `NULL` (disabled).
 
 - top_n:
 
-  Integer or NULL. Return only the top n edges by weight. Default NULL
-  (all edges).
+  Integer or NULL. Keep only the `top_n` most frequent nodes (largest
+  diagonal of the projected matrix, i.e. the number of papers under full
+  counting) and return the edges among them. Default `NULL` (all nodes).
 
 - self_loops:
 
   Logical. If `TRUE`, include self-loops (an entity linked to itself).
-  Default `FALSE`.
+  Default `FALSE`. Only takes effect with `similarity = "none"`; every
+  similarity measure zeroes the diagonal.
 
 - deduplicate:
 
   Logical. If `TRUE` (default), each `(paper, entity)` pair is counted
-  at most once — duplicate entries in the source data (e.g., the same
+  at most once – duplicate entries in the source data (e.g., the same
   author listed twice on a paper) are treated as one occurrence. Set to
   `FALSE` to count every raw occurrence.
 
@@ -151,11 +165,11 @@ author_network(
 
 - sep:
 
-  Character. Separator used to split the entity column when it is a
-  plain character column rather than a list-column, e.g. `sep = ","` or
-  `sep = " and "`. Default `";"`. Ignored for list-columns. `sep`
-  applies only to the author column; the references column uses
-  `references_sep`.
+  Character. Separator used to split the entity column (the one named by
+  the column argument, e.g. `authors`) when it is a plain character
+  column rather than a list-column, e.g. `sep = ","` or `sep = " and "`.
+  Default `";"`. Ignored for list-columns. In coupling networks the
+  references column is split with `references_sep` instead.
 
 - references_sep:
 
@@ -179,9 +193,43 @@ author_network(
 
 ## Value
 
-Depends on `format`: a `bibnets_network` data frame (default), a
-Gephi-ready data frame, an igraph graph, a cograph_network, or a sparse
-matrix.
+Depends on `format`. The default `"edgelist"` returns a
+`bibnets_network`: a data frame with one row per undirected edge and
+columns `from`, `to` (character), `weight` (numeric) and `count`
+(integer raw co-occurrence), sorted by decreasing `weight`, with
+attributes `network_type`, `counting` and `similarity`. `"gephi"`
+returns a plain data frame with columns `Source`, `Target`, `Weight`,
+`Count`, `Type`; `"igraph"` an igraph graph; `"cograph"` a
+`cograph_network`; `"matrix"` a symmetric sparse `dgCMatrix`.
+
+## Details
+
+The authors and the works form a two-mode matrix that is projected onto
+the authors; `similarity` normalizes the projected counts, `threshold`,
+`min_occur` and `top_n` prune the result, and `attention` replaces the
+counting method with an attention weighting of the byline. It returns a
+`bibnets_network` edge list by default, or the network in another
+`format`. For networks of other entities use
+[`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md),
+[`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md),
+[`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md),
+[`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md),
+[`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md),
+[`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md)
+or, for any column,
+[`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md).
+
+## References
+
+Perianes-Rodriguez, A., Waltman, L., & van Eck, N. J. (2016).
+Constructing bibliometric networks: A comparison between full and
+fractional counting. *Journal of Informetrics*, 10(4), 1178–1195.
+[doi:10.1016/j.joi.2016.10.006](https://doi.org/10.1016/j.joi.2016.10.006)
+
+Hagen, N. T. (2008). Harmonic allocation of authorship credit:
+Source-level correction of bibliometric bias assures accurate
+publication and citation analysis. *PLoS ONE*, 3(12), e4021.
+[doi:10.1371/journal.pone.0004021](https://doi.org/10.1371/journal.pone.0004021)
 
 ## Examples
 

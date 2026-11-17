@@ -1,8 +1,9 @@
 # Aggregate multi-valued fields by an entity
 
-Groups documents by a single-valued or list-column entity (e.g., author,
-journal) and pools all values from another list-column (e.g.,
-references, keywords) across documents belonging to that entity.
+`aggregate_by_entity()` groups documents by a single-valued or
+list-column entity (e.g., author, journal) and pools all values from
+another list-column (e.g., references, keywords) across documents
+belonging to that entity.
 
 ## Usage
 

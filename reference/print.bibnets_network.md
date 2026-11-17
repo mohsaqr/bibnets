@@ -1,6 +1,11 @@
 # Print a bibnets network edge list
 
-Print a bibnets network edge list
+[`print()`](https://rdrr.io/r/base/print.html) displays a
+`bibnets_network` edge list: a one-line header (network type, number of
+nodes and edges, counting method and, when used, the similarity measure)
+followed by the first `n` edges, so a printed edge list always states
+how it was built. For network-level statistics use
+[`summary.bibnets_network()`](https://pak.dynasite.org/bibnets-pkg/reference/summary.bibnets_network.md).
 
 ## Usage
 
@@ -25,7 +30,8 @@ print(x, n = 10L, ...)
 
 ## Value
 
-Invisibly returns `x`.
+`x`, unchanged and invisibly (a `bibnets_network` data frame with
+columns `from`, `to`, `weight`, `count`). Called for its printed output.
 
 ## Examples
 

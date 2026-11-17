@@ -1,8 +1,9 @@
 # Read bibliometric data
 
-Universal reader that handles files, folders, format detection, and
-generic CSV input. Accepts a single file, multiple files, or a
-directory.
+`read_biblio()` reads bibliometric exports into a standardized data
+frame. It is the universal reader: it handles files, folders, format
+detection, and generic CSV input, and accepts a single file, multiple
+files, or a directory.
 
 ## Usage
 
@@ -80,8 +81,9 @@ read_biblio(
 
 - id:
 
-  Character. Column name for document identifier. Only used when
-  `format = "generic"`. Default `NULL` (uses row numbers).
+  Character. Column name for the document identifier. Only used when
+  `format = "generic"`. Default `NULL`: an existing `id` column is kept,
+  otherwise row numbers are used.
 
 - authors, keywords, references, countries, affiliations:
 
@@ -108,7 +110,10 @@ read_biblio(
 
 - ...:
 
-  Additional arguments passed to the format-specific reader.
+  Additional arguments passed to the format-specific reader (for example
+  `encoding` for
+  [`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md)).
+  Not used by the generic reader.
 
 - actors:
 
@@ -117,7 +122,35 @@ read_biblio(
 
 ## Value
 
-A data frame.
+A data frame with one row per record. The format-specific readers return
+the standard bibnets columns `id`, `title`, `year`, `journal`, `doi`,
+`cited_by_count`, `abstract`, `type` and the list-columns `authors`,
+`references`, `keywords`, followed by any source-specific extras. When
+several files are read, their columns are aligned (missing scalar
+columns filled with `NA`, missing list-columns with empty vectors), the
+rows are bound, and a message reports the number of files and rows. The
+generic reader keeps every source column and adds `id` plus the mapped
+standard fields.
+
+## Details
+
+With `format = "auto"` the format of each file is detected from its
+content and the matching reader is called
+([`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md),
+[`read_wos()`](https://pak.dynasite.org/bibnets-pkg/reference/read_wos.md),
+[`read_bibtex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_bibtex.md),
+[`read_ris()`](https://pak.dynasite.org/bibnets-pkg/reference/read_ris.md),
+[`read_dimensions()`](https://pak.dynasite.org/bibnets-pkg/reference/read_dimensions.md),
+[`read_lens()`](https://pak.dynasite.org/bibnets-pkg/reference/read_lens.md)
+or
+[`read_openalex_csv()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex_csv.md));
+naming source columns with `authors`, `keywords` and the other mapping
+arguments reads any CSV instead. It returns one row per record, with the
+files' rows bound together. Data already loaded in R from openalexR or
+rcrossref are converted with
+[`read_openalex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex.md)
+and
+[`read_crossref()`](https://pak.dynasite.org/bibnets-pkg/reference/read_crossref.md).
 
 ## Examples
 
@@ -125,7 +158,7 @@ A data frame.
 # Auto-detect format from file content (here: a bundled OpenAlex CSV)
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")
 data <- read_biblio(f)
-head(data[, c("id", "title", "year", "journal")])
+head(subset(data, select = c(id, title, year, journal)))
 #>            id
 #> 1 W2769342982
 #> 2 W2264893711
@@ -153,7 +186,7 @@ f_scopus <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
 f_wos    <- system.file("extdata", "wos_sample.txt",  package = "bibnets")
 combined <- read_biblio(c(f_scopus, f_wos))
 #> Read 2 files: 4 rows total
-head(combined[, c("id", "title", "year", "journal")])
+head(subset(combined, select = c(id, title, year, journal)))
 #>                    id                                       title year
 #> 1          2-s2.0-001 Bibliometric networks in education research 2022
 #> 2          2-s2.0-002  Co-citation analysis of learning analytics 2021
@@ -185,11 +218,12 @@ generic <- read_biblio(tmp,
                        authors = "Authors",
                        keywords = "Keywords",
                        sep = ";")
-head(generic)
+generic
 #>   doc_id          Authors                Keywords id          authors
 #> 1      a Smith J; Jones A networks; bibliometrics  a Smith J, Jones A
 #> 2      b          Davis M               analytics  b          Davis M
 #>                  keywords
 #> 1 networks, bibliometrics
 #> 2               analytics
+unlink(tmp)
 ```

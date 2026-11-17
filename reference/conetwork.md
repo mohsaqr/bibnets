@@ -1,8 +1,10 @@
 # Build a co-occurrence network from any field
 
-With one field, entities are linked when they co-occur in the same
-document. With `by`, entities are linked when they share values of the
-`by` field across documents.
+`conetwork()` builds a network between the values of any column. With
+one field, entities are linked when they co-occur in the same document.
+With `by`, entities are linked when they share values of the `by` field
+across documents; for example, journals linked by shared references form
+a journal coupling network.
 
 ## Usage
 
@@ -29,11 +31,12 @@ conetwork(
 
 - data:
 
-  A data frame with column `id` and the specified field(s).
+  A data frame with one row per work and the specified field(s). An `id`
+  column is optional (see `id`).
 
 - field:
 
-  Character. The entity field — determines what the nodes are.
+  Character. The entity field; its values become the nodes.
 
 - by:
 
@@ -44,12 +47,14 @@ conetwork(
 
 - sep:
 
-  Character or `NULL`. Delimiter for splitting character columns.
-  Default `";"`. Set to `NULL` if columns are already list-columns.
+  Character or `NULL`. Delimiter for splitting character columns
+  (applied to both `field` and `by`). Default `";"`. List-columns are
+  never split. `NULL` keeps each character value as a single entity.
 
 - counting:
 
-  Character. Counting method. Default `"full"`.
+  Character. Counting method: `"full"` (default), `"fractional"`,
+  `"paper"` or `"strength"`.
 
 - similarity:
 
@@ -57,7 +62,8 @@ conetwork(
 
 - threshold:
 
-  Numeric. Minimum edge weight. Default 0.
+  Numeric. Minimum edge weight; edges with `weight < threshold` are
+  dropped. Default 0 (keep all).
 
 - min_occur:
 
@@ -65,18 +71,19 @@ conetwork(
 
 - top_n:
 
-  Integer or NULL. Return only the top n edges by weight. Default NULL
-  (all edges).
+  Integer or NULL. Keep only the `top_n` most frequent nodes and return
+  the edges among them. Default `NULL` (all nodes).
 
 - self_loops:
 
   Logical. If `TRUE`, include self-loops (an entity linked to itself).
-  Default `FALSE`.
+  Default `FALSE`. Only takes effect with `similarity = "none"`; every
+  similarity measure zeroes the diagonal.
 
 - deduplicate:
 
   Logical. If `TRUE` (default), each `(paper, entity)` pair is counted
-  at most once — duplicate entries in the source data (e.g., the same
+  at most once – duplicate entries in the source data (e.g., the same
   author listed twice on a paper) are treated as one occurrence. Set to
   `FALSE` to count every raw occurrence.
 
@@ -121,14 +128,24 @@ conetwork(
 
 ## Value
 
-Depends on `format`: a `bibnets_network` data frame (default), a
-Gephi-ready data frame, an igraph graph, a cograph_network, or a sparse
-matrix.
+Depends on `format`. The default `"edgelist"` returns a
+`bibnets_network` data frame with one row per undirected edge, columns
+`from`, `to`, `weight` and `count`, sorted by decreasing `weight`, and
+attributes `network_type`, `counting` and `similarity`. See
+[`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md)
+for the other formats.
 
 ## Details
 
 Fields can be list-columns (already split) or character columns with
-delimiters (auto-split via `sep`).
+delimiters (auto-split via `sep`). Edges are weighted by one of four
+position-independent counting methods and optionally normalized with
+`similarity`. It returns a `bibnets_network` edge list by default. The
+dedicated builders, such as
+[`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md)
+(which adds position-dependent counting) and
+[`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md),
+cover the standard bibliometric networks.
 
 ## Examples
 

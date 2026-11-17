@@ -1,7 +1,10 @@
 # Read Scopus CSV export
 
-Parses a CSV file exported from Scopus into a standardized bibliometric
-data frame with list-columns for multi-valued fields.
+`read_scopus()` parses a CSV file exported from Scopus into a
+standardized bibliometric data frame with list-columns for multi-valued
+fields.
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
+reads several files at once and detects the format.
 
 ## Usage
 
@@ -32,11 +35,11 @@ extras: `index_keywords` (list-column), `affiliations` (character),
 ``` r
 f <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
 data <- read_scopus(f)
-head(data[, c("id", "title", "year", "journal")])
+subset(data, select = c(id, title, year, journal, authors))
 #>           id                                       title year
 #> 1 2-s2.0-001 Bibliometric networks in education research 2022
 #> 2 2-s2.0-002  Co-citation analysis of learning analytics 2021
-#>                     journal
-#> 1 Journal of Scientometrics
-#> 2        Learning Analytics
+#>                     journal          authors
+#> 1 Journal of Scientometrics SMITH J, JONES A
+#> 2        Learning Analytics   DAVIS M, LEE K
 ```

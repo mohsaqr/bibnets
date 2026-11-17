@@ -1,8 +1,9 @@
 # Convert a sparse square matrix to a tidy edge list
 
-Extracts non-zero entries directly from the sparse representation — no
-dense matrix allocation. For undirected networks, only the upper
-triangle is returned.
+`mat_to_edgelist()` converts a square matrix to an edge list with
+columns `from`, `to` and `weight`. It extracts non-zero entries directly
+from the sparse representation, without a dense matrix allocation. For
+undirected networks, only the upper triangle is returned.
 
 ## Usage
 

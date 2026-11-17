@@ -21,7 +21,7 @@ windows.
 
 `bibnets` reads Scopus, Web of Science, OpenAlex, Lens.org, Dimensions,
 Crossref, BibTeX, and RIS exports.
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 detects the format from file content and dispatches to the corresponding
 reader; all readers return an identical schema, so records from
 different databases can be combined without manual reconciliation.
@@ -42,18 +42,19 @@ determined by the function name.
 Counting methods determine each publication’s contribution to an edge.
 They range from full and fractional counting to position-aware schemes
 (harmonic, geometric, golden-ratio, first, last, and first–last), and
-six similarity measures — cosine, association strength, Jaccard,
-inclusion, and equivalence — rescale the projected weights.
+five similarity measures — cosine, association strength, Jaccard,
+inclusion, and equivalence — rescale the projected weights
+(`similarity = "none"` keeps them raw).
 
-Attention weighting assigns each author a positional weight that sums to
-one across the byline, so a publication’s credit is distributed by
-byline position rather than equally and a large author list does not
-dominate the network. Aggregation pools the references or members of a
-group to construct collaboration and coupling networks among countries,
-institutions, or sources rather than individuals. Temporal construction
-applies any builder over fixed, sliding, or cumulative windows, and a
-disparity-filter backbone retains the edges that are significant
-relative to each node’s strength.
+Attention weighting assigns each author a positional weight, and the
+weights of one byline sum to one, so a publication’s credit is
+distributed by byline position rather than equally and a large author
+list cannot dominate the network. Aggregation pools the references or
+members of a group to construct collaboration and coupling networks
+among countries, institutions, or sources rather than individuals.
+Temporal construction applies any builder over fixed, sliding, or
+cumulative windows, and a disparity-filter backbone retains the edges
+that are significant relative to each node’s strength.
 
 ### Implementation
 
@@ -87,17 +88,17 @@ The builders, at a glance:
 
 | Function | Nodes | An edge means |
 |----|----|----|
-| [`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md) | authors | co-authorship, author coupling, or co-citation |
-| [`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md) | cited references | two references cited together |
-| [`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md) | documents | shared references, shared citers, or direct citation |
-| [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md) | keywords | two keywords appear together |
-| [`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md) | journals | sources share references or are co-cited |
-| [`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md) | countries | countries collaborate or share references |
-| [`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md) | institutions | institutions collaborate or share references |
-| [`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md) | any field | entities co-occur, or share values of another field |
-| [`local_citations()`](https://saqr.me/bibnets-pkg/reference/local_citations.md) | documents | within-corpus citation counts |
-| [`historiograph()`](https://saqr.me/bibnets-pkg/reference/historiograph.md) | documents | directed citation history among top-cited papers |
-| [`temporal_network()`](https://saqr.me/bibnets-pkg/reference/temporal_network.md) | any builder’s nodes | the same network over time windows |
+| [`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md) | authors | co-authorship, author coupling, or co-citation |
+| [`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md) | cited references | two references cited together |
+| [`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md) | documents | shared references, shared citers, or direct citation |
+| [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md) | keywords | two keywords appear together |
+| [`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md) | journals | sources share references or are co-cited |
+| [`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md) | countries | countries collaborate or share references |
+| [`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md) | institutions | institutions collaborate or share references |
+| [`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md) | any field | entities co-occur, or share values of another field |
+| [`local_citations()`](https://pak.dynasite.org/bibnets-pkg/reference/local_citations.md) | documents | within-corpus citation counts |
+| [`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md) | documents | directed citation history among top-cited papers |
+| [`temporal_network()`](https://pak.dynasite.org/bibnets-pkg/reference/temporal_network.md) | any builder’s nodes | the same network over time windows |
 
 ## Quick start
 
@@ -137,7 +138,7 @@ inspect, prune, or export.
 
 ### Scholarly exports
 
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 accepts a file, a folder, or several files, and detects Scopus, Web of
 Science, OpenAlex, BibTeX, RIS, Lens.org, and Dimensions from the
 content:
@@ -150,13 +151,13 @@ data <- read_biblio(c("part_1.csv", "part_2.csv"))
 ```
 
 The format-specific readers can also be called directly
-([`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md),
-[`read_wos()`](https://saqr.me/bibnets-pkg/reference/read_wos.md),
-[`read_openalex_csv()`](https://saqr.me/bibnets-pkg/reference/read_openalex_csv.md),
-[`read_dimensions()`](https://saqr.me/bibnets-pkg/reference/read_dimensions.md),
-[`read_lens()`](https://saqr.me/bibnets-pkg/reference/read_lens.md),
-[`read_bibtex()`](https://saqr.me/bibnets-pkg/reference/read_bibtex.md),
-[`read_ris()`](https://saqr.me/bibnets-pkg/reference/read_ris.md)).
+([`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md),
+[`read_wos()`](https://pak.dynasite.org/bibnets-pkg/reference/read_wos.md),
+[`read_openalex_csv()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex_csv.md),
+[`read_dimensions()`](https://pak.dynasite.org/bibnets-pkg/reference/read_dimensions.md),
+[`read_lens()`](https://pak.dynasite.org/bibnets-pkg/reference/read_lens.md),
+[`read_bibtex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_bibtex.md),
+[`read_ris()`](https://pak.dynasite.org/bibnets-pkg/reference/read_ris.md)).
 
 ### A custom CSV
 
@@ -197,7 +198,7 @@ The work identifier is the `id` column. You need not supply one: when no
 are stripped by default (`strip_quotes = TRUE`), and in a coupling
 network the references column takes its own `references_sep`. The
 companion
-[`vignette("reading-data")`](https://saqr.me/bibnets-pkg/articles/reading-data.md)
+[`vignette("reading-data")`](https://pak.dynasite.org/bibnets-pkg/articles/reading-data.md)
 covers every reader and these options in full.
 
 ### The standard schema
@@ -208,7 +209,7 @@ Readers return a common set of columns:
 
 data(scopus_quantum_cloud)
 sc <- scopus_quantum_cloud
-names(sc)[1:12]
+names(sc)
 #>  [1] "id"             "title"          "year"           "journal"       
 #>  [5] "doi"            "cited_by_count" "abstract"       "type"          
 #>  [9] "authors"        "references"     "keywords"       "affiliations"
@@ -216,9 +217,10 @@ names(sc)[1:12]
 
 The columns that matter for network construction are `id`, the
 list-columns `authors` / `references` / `keywords`, and `year` (used by
-[`temporal_network()`](https://saqr.me/bibnets-pkg/reference/temporal_network.md)).
+[`temporal_network()`](https://pak.dynasite.org/bibnets-pkg/reference/temporal_network.md)).
 Source-specific extras such as `countries`, `affiliations`, and
-`keywords_plus` are kept when available.
+`keywords_plus` are kept when available; this Scopus sample carries
+`affiliations`.
 
 ## Datasets used here
 
@@ -337,17 +339,19 @@ correct this. The name is an honest analogy to the attention mechanism
 in large language models: just as a transformer assigns a normalized
 probability distribution across the tokens in a sequence — concentrating
 weight on what matters, spreading it thin over the rest — `bibnets`
-assigns each author on a paper a positional weight that sums to one
-across the full byline. A fifty-author paper therefore contributes
-exactly one unit of connection budget, the same as a two-author paper,
-and the distribution of that budget reflects authorship conventions:
-`"lead"` concentrates weight on the first author, `"last"` on the senior
-or PI position, `"proximity"` rewards the central authors, and
-`"circular"` rewards both ends jointly. The weights are a fixed
-positional prior, not learned content-based attention, but they carry
-real scholarly meaning, and activating them requires nothing more than
-passing `attention = "lead"` (or any of the three alternatives) to any
-of the author, keyword, country, or institution network functions.
+assigns each author on a paper a positional weight, and the weights of
+one byline sum to one. An edge receives the product of its two authors’
+weights, so a paper’s total edge weight is `(1 - sum(w^2)) / 2`, which
+never reaches one half: a fifty-author paper adds less than 0.5 to the
+network, against 1,225 full-strength pairs under full counting. The
+distribution of the weights reflects authorship conventions: `"lead"`
+concentrates weight on the first author, `"last"` on the senior or PI
+position, `"proximity"` rewards the central authors, and `"circular"`
+rewards both ends jointly. The weights are a fixed positional prior, not
+learned content-based attention, but they carry real scholarly meaning,
+and activating them requires nothing more than passing
+`attention = "lead"` (or any of the three alternatives) to any of the
+author, keyword, country, or institution network functions.
 
 | `attention` | Weight vector | Scholarly assumption | When it fits |
 |----|----|----|----|
@@ -489,7 +493,7 @@ before the network is built.
 
 ## Generic co-networks
 
-[`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md)
+[`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md)
 covers projections without a dedicated wrapper. One field links entities
 that co-occur; a second field (`by`) links them through a shared value:
 
@@ -519,25 +523,23 @@ changes, `count` does not:
 
 ``` r
 
-none <- keyword_network(sc, min_occur = 2, similarity = "none")
-cos  <- keyword_network(sc, min_occur = 2, similarity = "cosine")
-head(none[, c("from", "to", "weight", "count")], 3)
-#> # bibnets network: unknown | 3 nodes · 3 edges 
+head(keyword_network(sc, min_occur = 2, similarity = "none"), 3)
+#> # bibnets network: keyword_co_occurrence | 3 nodes · 3 edges | counting: full 
 #>    from            to              weight  count
 #> 1  EDGE COMPUTING  QUANTIZATION        16     16
 #> 2  DEEP LEARNING   QUANTIZATION        14     14
 #> 3  DEEP LEARNING   EDGE COMPUTING      13     13
-head(cos[,  c("from", "to", "weight", "count")], 3)
-#> # bibnets network: unknown | 6 nodes · 3 edges 
+head(keyword_network(sc, min_occur = 2, similarity = "cosine"), 3)
+#> # bibnets network: keyword_co_occurrence | 6 nodes · 3 edges | counting: full | similarity: cosine 
 #>    from                    to                          weight  count
 #> 1  AIR QUALITY PREDICTION  POST-TRAINING QUANTISATION       1      2
 #> 2  LFSR SEED               QUANTIZATION (SIGNAL)            1      2
 #> 3  BOOTH MULTIPLIERS       SHIFT MULTIPLIERS                1      2
 ```
 
-[`normalize()`](https://saqr.me/bibnets-pkg/reference/normalize.md) uses
-the diagonal of the projected matrix as each node’s total occurrence
-count:
+[`normalize()`](https://pak.dynasite.org/bibnets-pkg/reference/normalize.md)
+uses the diagonal of the projected matrix as each node’s total
+occurrence count:
 
 | Similarity | Denominator | Meaning | When to use |
 |----|----|----|----|
@@ -565,7 +567,7 @@ c(all        = nrow(edges),
 - `prune(top_n = k)` — keep each node’s strongest edges.
 - `filter_top(n = k)` — keep edges among the most-connected nodes.
 
-[`backbone()`](https://saqr.me/bibnets-pkg/reference/backbone.md)
+[`backbone()`](https://pak.dynasite.org/bibnets-pkg/reference/backbone.md)
 applies the disparity filter, which keeps edges that are strong relative
 to a node’s local strength distribution — not a global cutoff:
 
@@ -578,7 +580,7 @@ nrow(bb)
 
 ## Temporal networks
 
-[`temporal_network()`](https://saqr.me/bibnets-pkg/reference/temporal_network.md)
+[`temporal_network()`](https://pak.dynasite.org/bibnets-pkg/reference/temporal_network.md)
 runs any builder over time windows (fixed, sliding, or cumulative):
 
 ``` r
@@ -594,54 +596,82 @@ inside a window becomes a warning labelled with that window.
 
 ## Local citations and historiographs
 
-[`local_citations()`](https://saqr.me/bibnets-pkg/reference/local_citations.md)
+[`local_citations()`](https://pak.dynasite.org/bibnets-pkg/reference/local_citations.md)
 counts how often each document is cited by others in the same corpus;
-[`historiograph()`](https://saqr.me/bibnets-pkg/reference/historiograph.md)
-builds the directed citation graph among the top-cited documents:
+[`historiograph()`](https://pak.dynasite.org/bibnets-pkg/reference/historiograph.md)
+keeps the most locally cited documents and the directed citations they
+receive, with the years of both ends for a chronological layout:
 
 ``` r
 
-head(local_citations(sc), 5)
-#>                    id lcs gcs year
-#> 1 2-s2.0-105007159281   0   0 2025
-#> 2 2-s2.0-105006878874   0   0 2025
-#> 3  2-s2.0-85211114952   0   0 2024
-#> 4 2-s2.0-105001072133   0   0 2025
-#> 5  2-s2.0-85210832535   0   5 2025
-#>                                                                                                                                  title
-#> 1                                          Quantum Computing in the RAN with Qu4Fec: Closing Gaps Towards Quantum-based FEC Processors
-#> 2                                                An FPGA-based bit-level weight sparsity and mixed-bit accelerator for neural networks
-#> 3                             FQP: A Fibonacci Quantization Processor with Multiplication-Free Computing and Topological-Order Routing
-#> 4                                                   SysCIM: A Heterogeneous Chip Architecture for High-Efficiency CNN Training at Edge
-#> 5 Integer-Valued Training and Spike-Driven Inference Spiking Neural Network for High-Performance and Energy-Efficient Object Detection
-#>                                                                                                                                 journal
-#> 1                                                               Proceedings of the ACM on Measurement and Analysis of Computing Systems
-#> 2                                                                                                       Journal of Systems Architecture
-#> 3                                                                                            Proceedings - Design Automation Conference
-#> 4                                                                      IEEE Transactions on Very Large Scale Integration (VLSI) Systems
-#> 5 Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics) 
-#>                            doi
-#> 1              10.1145/3727128
-#> 2 10.1016/j.sysarc.2025.103463
-#> 3      10.1145/3649329.3656502
-#> 4   10.1109/TVLSI.2025.3526363
-#> 5 10.1007/978-3-031-73411-3_15
+local_citations(small)
+#>     id lcs gcs year                                         title
+#> 1   W1   7  45 2018 Co-citation analysis of scientific literature
+#> 2   W2   4  32 2019    Bibliographic coupling and research fronts
+#> 3   W3   2  18 2020          Fractional counting in bibliometrics
+#> 4   W5   1  12 2021      Community detection in citation networks
+#> 5   W4   0  55 2019   Network analysis of scholarly communication
+#> 6   W6   0   8 2020            Author name disambiguation methods
+#> 7   W7   0  22 2018                 Keyword co-occurrence mapping
+#> 8   W8   0   5 2022            Temporal patterns in citation data
+#> 9   W9   0  38 2019           Normalization of co-occurrence data
+#> 10 W10   0  15 2021          Mapping scientific knowledge domains
+#>                         journal             doi
+#> 1                Scientometrics  10.1000/test.1
+#> 2       Journal of Informetrics  10.1000/test.2
+#> 3                Scientometrics  10.1000/test.3
+#> 4       Journal of Informetrics  10.1000/test.5
+#> 5                        JASIST  10.1000/test.4
+#> 6                Scientometrics  10.1000/test.6
+#> 7                        JASIST  10.1000/test.7
+#> 8  Quantitative Science Studies  10.1000/test.8
+#> 9                        JASIST  10.1000/test.9
+#> 10      Journal of Informetrics 10.1000/test.10
 
-h <- historiograph(sc, n = 10)
-h$nodes
-#> [1] id      lcs     gcs     year    title   journal doi    
-#> <0 rows> (or 0-length row.names)
-head(h$edges, 5)
-#> [1] from      to        year_from year_to  
-#> <0 rows> (or 0-length row.names)
+historiograph(small, n = 5)
+#> $nodes
+#>   id lcs gcs year                                         title
+#> 1 W1   7  45 2018 Co-citation analysis of scientific literature
+#> 2 W2   4  32 2019    Bibliographic coupling and research fronts
+#> 3 W3   2  18 2020          Fractional counting in bibliometrics
+#> 4 W5   1  12 2021      Community detection in citation networks
+#>                   journal            doi
+#> 1          Scientometrics 10.1000/test.1
+#> 2 Journal of Informetrics 10.1000/test.2
+#> 3          Scientometrics 10.1000/test.3
+#> 4 Journal of Informetrics 10.1000/test.5
+#> 
+#> $edges
+#>    from to year_from year_to
+#> 1    W2 W1      2019    2018
+#> 2    W4 W1      2019    2018
+#> 3    W9 W1      2019    2018
+#> 4    W4 W2      2019    2019
+#> 5    W9 W2      2019    2019
+#> 6    W3 W1      2020    2018
+#> 7    W6 W1      2020    2018
+#> 8    W6 W2      2020    2019
+#> 9    W5 W1      2021    2018
+#> 10  W10 W2      2021    2019
+#> 11   W5 W3      2021    2020
+#> 12  W10 W3      2021    2020
+#> 13   W8 W1      2022    2018
+#> 14   W8 W5      2022    2021
 ```
 
-Both require reference strings or IDs to match document IDs in the data;
-if the cited works are external, local counts stay low.
+Both require the references to use the same identifiers as the
+documents. In `small`, papers cite W1, W2, W3 and W5 by their IDs, so
+W1, cited by seven of the other nine papers, anchors the history. The
+Scopus sample `sc` stores references as formatted citation strings
+rather than EIDs, so every local citation score there is zero and its
+historiograph is empty; OpenAlex data fetched with
+[`read_openalex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex.md),
+whose references are Work IDs, is the usual source for these two
+analyses.
 
 ## Author-name normalization
 
-[`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+[`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
 reorders and splits author names (it recognizes `Last, First`,
 `SURNAME Initials`, and `First Last`). Because node identity is fixed
 when a network is built, normalize *before* building so that two
@@ -659,7 +689,7 @@ parse_names(c("Saqr, Mohammed", "WANG Y", "Mohammed Saqr"))
 ```
 
 See
-[`vignette("parsing-author-names")`](https://saqr.me/bibnets-pkg/articles/parsing-author-names.md)
+[`vignette("parsing-author-names")`](https://pak.dynasite.org/bibnets-pkg/articles/parsing-author-names.md)
 for the full treatment.
 
 ## Exporting
@@ -670,17 +700,17 @@ The edge list is already usable; converters cover the common targets:
 
 edges <- keyword_network(sc, min_occur = 2)
 
-m <- to_matrix(edges)            # sparse adjacency matrix
-m[1:4, 1:4]
-#> 4 x 4 sparse Matrix of class "dgCMatrix"
-#>                ACCELERATION ACCELERATOR ACCURACY AI ACCELERATOR
-#> ACCELERATION              .           .        .              .
-#> ACCELERATOR               .           .        .              .
-#> ACCURACY                  .           .        .              .
-#> AI ACCELERATOR            .           .        .              .
+dim(to_matrix(edges))            # sparse adjacency matrix, one row per keyword
+#> [1] 241 241
 
-gephi <- to_gephi(edges)         # Gephi node/edge tables
-head(gephi$edges, 3)
+to_gephi(head(edges, 3))         # Gephi node and edge tables
+#> $nodes
+#>               Id          Label
+#> 1 EDGE COMPUTING EDGE COMPUTING
+#> 2  DEEP LEARNING  DEEP LEARNING
+#> 3   QUANTIZATION   QUANTIZATION
+#> 
+#> $edges
 #>           Source         Target Weight       Type count
 #> 1 EDGE COMPUTING   QUANTIZATION     16 Undirected    16
 #> 2  DEEP LEARNING   QUANTIZATION     14 Undirected    14
@@ -693,25 +723,22 @@ cat(substr(to_graphml(edges), 1, 200))   # GraphML, no XML dependency
 #>          xsi:schemaLocation="http://graph
 ```
 
-[`to_igraph()`](https://saqr.me/bibnets-pkg/reference/to_igraph.md),
-[`to_tbl_graph()`](https://saqr.me/bibnets-pkg/reference/to_tbl_graph.md),
+[`to_igraph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_igraph.md),
+[`to_tbl_graph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_tbl_graph.md),
 and
-[`to_cograph()`](https://saqr.me/bibnets-pkg/reference/to_cograph.md)
+[`to_cograph()`](https://pak.dynasite.org/bibnets-pkg/reference/to_cograph.md)
 are available when their (suggested) packages are installed.
 
 ## Reading a `bibnets_network`
 
-The object records how it was built, as attributes:
+The object records how it was built (network type, counting and
+similarity are stored with it), and both
+[`print()`](https://rdrr.io/r/base/print.html) and
+[`summary()`](https://rdrr.io/r/base/summary.html) report them:
 
 ``` r
 
 edges <- author_network(oa, type = "collaboration", counting = "harmonic")
-c(type     = attr(edges, "network_type"),
-  counting = attr(edges, "counting"),
-  sim      = attr(edges, "similarity"))
-#>                   type               counting                    sim 
-#> "author_collaboration"             "harmonic"                 "none"
-
 summary(edges)
 #> bibnets network
 #> ------------------------------
@@ -728,6 +755,11 @@ summary(edges)
 [`print()`](https://rdrr.io/r/base/print.html) reports the network type,
 node and edge counts, and the counting and similarity methods — so a
 saved edge list always says how it was made.
+[`summary()`](https://rdrr.io/r/base/summary.html) adds the density, the
+weight range and the best-connected nodes. Under harmonic counting each
+weight is a sum, over the shared papers, of the product of the two
+authors’ credit shares; every share is below one, so each weight falls
+below the raw `count`.
 
 ## References
 

@@ -17,14 +17,14 @@ known export, where you simply name the columns that hold the authors,
 references, or keywords and `bibnets` reads it into the same structure.
 Either way you get the same structure — the **bibnets format** — that
 every network builder
-([`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md),
-[`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md),
-[`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md),
-[`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md),
-[`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md),
-[`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md),
-[`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md),
-[`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md))
+([`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md),
+[`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md),
+[`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md),
+[`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md),
+[`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md),
+[`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md),
+[`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md),
+[`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md))
 works from. The bibnets format is a data frame with one row per paper:
 most columns hold a single value (title, year, journal), while the
 fields that can have many values per paper — authors, references,
@@ -51,10 +51,10 @@ Some sources add extra columns (such as `index_keywords`,
 the standard ones.
 
 This vignette documents the
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 entry point and each reader, the generic-CSV path, network construction
 directly from custom columns and separators, the
-[`split_field()`](https://saqr.me/bibnets-pkg/reference/split_field.md)
+[`split_field()`](https://pak.dynasite.org/bibnets-pkg/reference/split_field.md)
 helper, and the manual construction of a compatible data frame.
 
 ## 2. Custom data and separators
@@ -97,10 +97,15 @@ generic <- read_biblio(
   keywords = "primary_topic.display_name",
   sep      = "|"
 )
-generic$authors[[1]]
-#> [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"
-generic$keywords[[1]]
-#> [1] "Online Learning and Analytics"
+str(head(subset(generic, select = c(id, authors, keywords)), 2))
+#> 'data.frame':    2 obs. of  3 variables:
+#>  $ id      : chr  "https://openalex.org/W2769342982" "https://openalex.org/W2264893711"
+#>  $ authors :List of 2
+#>   ..$ : chr  "Jakub Kužílek" "Martin Hlosta" "Zdeněk Zdráhal"
+#>   ..$ : chr  "Petri Ihantola" "Arto Vihavainen" "Alireza Ahadi" "Matthew Butler" ...
+#>  $ keywords:List of 2
+#>   ..$ : chr "Online Learning and Analytics"
+#>   ..$ : chr "Online Learning and Analytics"
 ```
 
 Each mapped column is split on `sep` and stored under its standard name
@@ -121,7 +126,6 @@ in one call.
 ``` r
 
 papers <- data.frame(
-  id            = 1:4,
   `Author Names`= c("Smith J, Doe A, Lee K", "Smith J, Lee K",
                     "Doe A, Lee K", "Smith J, Doe A"),
   Tags          = c("ml, ai", "ml, nlp", "ai, nlp", "ml, ai"),
@@ -264,7 +268,7 @@ one-reference-per-row citation strings, organisations like
 
 ## 3. `read_biblio()`
 
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 accepts a single file, a vector of file paths, or a directory. When
 `format = "auto"` (the default) it detects the format from the contents
 of the file:
@@ -278,11 +282,15 @@ data <- read_biblio("file.csv", format = "scopus")   # force a format
 ```
 
 When given a directory,
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 collects every `.csv`, `.txt`, `.bib`, `.ris`, `.xls`, and `.xlsx` file
-in it, reads each one, and combines the results with
-[`rbind()`](https://rdrr.io/r/base/cbind.html). For more than one file a
-summary message is emitted:
+in it, reads each one, aligns their columns (a column missing from one
+source is filled with `NA`, or with empty vectors for list-columns), and
+combines the results with
+[`rbind()`](https://rdrr.io/r/base/cbind.html). No reader parses
+spreadsheets, so a folder that contains an `.xls` or `.xlsx` file stops
+with the format-detection error; save such files as CSV first. For more
+than one file a summary message is emitted:
 
     Read 3 files: 1247 rows total
 
@@ -299,19 +307,19 @@ Format detection is performed on the first non-empty line of the file:
   CSV.
 
 If detection fails,
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md)
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
 raises an error that lists the supported formats and indicates how to
 pass `format` explicitly or name the entity columns (`authors`,
 `keywords`, …), which reads the file as a generic CSV.
 
 Two readers are not dispatched by
-[`read_biblio()`](https://saqr.me/bibnets-pkg/reference/read_biblio.md):
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md):
 
-- [`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+- [`read_openalex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex.md)
   accepts an in-memory tibble from
   [`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html),
   not a file path.
-- [`read_crossref()`](https://saqr.me/bibnets-pkg/reference/read_crossref.md)
+- [`read_crossref()`](https://pak.dynasite.org/bibnets-pkg/reference/read_crossref.md)
   accepts the `data` element of
   [`rcrossref::cr_works()`](https://docs.ropensci.org/rcrossref/reference/cr_works.html).
 
@@ -324,30 +332,30 @@ Both take R objects rather than files and are called directly.
 sc <- read_scopus("scopus.csv")
 ```
 
-[`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+[`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md)
 ingests the standard Scopus CSV export (`File -> Export -> CSV` from the
 Scopus search UI). Mappings from Scopus columns to the bibnets schema:
 
-| Scopus column                     | Standard column                |
-|-----------------------------------|--------------------------------|
-| `EID` (or `Article No.`)          | `id`                           |
-| `Title`                           | `title`                        |
-| `Year`                            | `year`                         |
-| `Source title`                    | `journal`                      |
-| `DOI`                             | `doi` (prefix stripped)        |
-| `Cited by`                        | `cited_by_count`               |
-| `Abstract`                        | `abstract`                     |
-| `Document Type`                   | `type`                         |
-| `Authors` (`;`-delimited)         | `authors` (list)               |
-| `References` (`;`-delimited)      | `references` (list)            |
-| `Author Keywords` (`;`-delimited) | `keywords` (list)              |
-| `Index Keywords` (`;`-delimited)  | `index_keywords` (list, extra) |
-| `Affiliations` (`;`-delimited)    | `affiliations` (list, extra)   |
-| `Language of Original Document`   | `language` (extra)             |
+| Scopus column | Standard column |
+|----|----|
+| `EID` (or `Article No.`) | `id` |
+| `Title` | `title` |
+| `Year` | `year` |
+| `Source title` | `journal` |
+| `DOI` | `doi` (prefix stripped) |
+| `Cited by` | `cited_by_count` |
+| `Abstract` | `abstract` |
+| `Document Type` | `type` |
+| `Authors` (`;`-delimited) | `authors` (list) |
+| `References` (`;`-delimited) | `references` (list) |
+| `Author Keywords` (`;`-delimited) | `keywords` (list) |
+| `Index Keywords` (`;`-delimited) | `index_keywords` (list, extra) |
+| `Affiliations` | `affiliations` (character, extra; one string per record) |
+| `Language of Original Document` | `language` (extra) |
 
 Scopus stores each cited reference as one semicolon-delimited string in
 a single cell.
-[`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+[`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md)
 splits on `;` and applies `standardize_refs()` to each entry:
 uppercasing, whitespace normalisation, and removal of a trailing DOI
 where present. References differing only in case or trailing DOI then
@@ -382,10 +390,10 @@ a line, with continuation lines indented:
 | `ID` | Keywords plus (extra: `keywords_plus`) |
 | `CR` | Cited references (one per line)        |
 
-[`read_wos()`](https://saqr.me/bibnets-pkg/reference/read_wos.md) walks
-the file, splitting on `ER` boundaries, and emits one row per record.
-The tab-delimited variant carries the same fields in a flat CSV-like
-grid. Either way the output schema is identical.
+[`read_wos()`](https://pak.dynasite.org/bibnets-pkg/reference/read_wos.md)
+walks the file, splitting on `ER` boundaries, and emits one row per
+record. The tab-delimited variant carries the same fields in a flat
+CSV-like grid. Either way the output schema is identical.
 
 ## 6. Dimensions
 
@@ -399,7 +407,7 @@ The Dimensions CSV begins with a metadata row of the form
     "About the data: This export was generated on YYYY-MM-DD ..."
 
 before the column header.
-[`read_dimensions()`](https://saqr.me/bibnets-pkg/reference/read_dimensions.md)
+[`read_dimensions()`](https://pak.dynasite.org/bibnets-pkg/reference/read_dimensions.md)
 detects this preamble and skips it. If the line has been removed (for
 example, by manual editing of the file), the reader continues to
 function because it identifies the column row by the Dimensions header
@@ -439,10 +447,10 @@ bt <- read_bibtex("library.bib")
 ri <- read_ris("savedrecs.ris")
 ```
 
-[`read_bibtex()`](https://saqr.me/bibnets-pkg/reference/read_bibtex.md)
+[`read_bibtex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_bibtex.md)
 parses `@type{key, field = {value}, ...}` blocks.
-[`read_ris()`](https://saqr.me/bibnets-pkg/reference/read_ris.md) parses
-tagged `TY - ... ER -` blocks; the structure is equivalent to WoS
+[`read_ris()`](https://pak.dynasite.org/bibnets-pkg/reference/read_ris.md)
+parses tagged `TY - ... ER -` blocks; the structure is equivalent to WoS
 plaintext, but with a different tag dictionary.
 
 Standard BibTeX and RIS do not contain cited-reference data, so the
@@ -462,7 +470,7 @@ raw  <- cr_works(query = "graph neural networks", limit = 100)
 data <- read_crossref(raw$data)
 ```
 
-[`read_crossref()`](https://saqr.me/bibnets-pkg/reference/read_crossref.md)
+[`read_crossref()`](https://pak.dynasite.org/bibnets-pkg/reference/read_crossref.md)
 accepts the `data` element of the
 [`cr_works()`](https://docs.ropensci.org/rcrossref/reference/cr_works.html)
 result (a data frame, not the wrapping list). The function handles the
@@ -500,7 +508,7 @@ str(oa, max.level = 1)
 #>  $ keywords      :List of 30
 #>  $ affiliations  :List of 30
 #>  $ countries     :List of 30
-head(oa[, c("id", "title", "year", "journal", "type")], 5)
+head(subset(oa, select = c(id, title, year, journal, type)), 5)
 #>            id
 #> 1 W2769342982
 #> 2 W2264893711
@@ -521,20 +529,22 @@ head(oa[, c("id", "title", "year", "journal", "type")], 5)
 #> 5 2022 Education Sciences  review
 ```
 
-The list-columns:
+The list-columns hold one vector per work:
 
 ``` r
 
-oa$authors[[1]]
-#> [1] "Jakub Kužílek"  "Martin Hlosta"  "Zdeněk Zdráhal"
-oa$affiliations[[1]]
-#> [1] "The Open University"                 
-#> [2] "Czech Technical University in Prague"
-#> [3] "The Open University"                 
-#> [4] "The Open University"                 
-#> [5] "Czech Technical University in Prague"
-oa$countries[[1]]
-#> [1] "CZ" "GB" "GB" "CZ" "GB"
+str(head(subset(oa, select = c(id, authors, affiliations, countries)), 2))
+#> 'data.frame':    2 obs. of  4 variables:
+#>  $ id          : chr  "W2769342982" "W2264893711"
+#>  $ authors     :List of 2
+#>   ..$ : chr  "Jakub Kužílek" "Martin Hlosta" "Zdeněk Zdráhal"
+#>   ..$ : chr  "Petri Ihantola" "Arto Vihavainen" "Alireza Ahadi" "Matthew Butler" ...
+#>  $ affiliations:List of 2
+#>   ..$ : chr  "The Open University" "Czech Technical University in Prague" "The Open University" "The Open University" ...
+#>   ..$ : chr  "Tampere University" "University of Helsinki" "University of Technology Sydney" "Monash University" ...
+#>  $ countries   :List of 2
+#>   ..$ : chr  "CZ" "GB" "GB" "CZ" ...
+#>   ..$ : chr  "FI" "FI" "AU" "AU" ...
 ```
 
 References and abstracts are absent from the OpenAlex flat export:
@@ -542,7 +552,7 @@ References and abstracts are absent from the OpenAlex flat export:
 does not include those fields. Use OpenAlex via
 [`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html)
 and
-[`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+[`read_openalex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex.md)
 when you need cited references or abstracts.
 
 The remaining fields support several network constructions that do not
@@ -568,7 +578,7 @@ This path is used when references and abstracts are required.
 [`openalexR::oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html)
 returns a nested tibble with `author`, `referenced_works`, `concepts`,
 and `keywords` list-columns;
-[`read_openalex()`](https://saqr.me/bibnets-pkg/reference/read_openalex.md)
+[`read_openalex()`](https://pak.dynasite.org/bibnets-pkg/reference/read_openalex.md)
 converts it to the standard schema:
 
 ``` r
@@ -590,7 +600,9 @@ When data does not come from any of the supported sources, a
 bibnets-compatible data frame can be constructed directly. The
 requirement is: standard scalar columns are character or integer;
 multi-valued fields are list-columns whose elements are character
-vectors.
+vectors (wrap each list in [`I()`](https://rdrr.io/r/base/AsIs.html) so
+[`data.frame()`](https://rdrr.io/r/base/data.frame.html) keeps it as one
+column).
 
 ``` r
 
@@ -598,22 +610,21 @@ df <- data.frame(
   id    = c("p1", "p2", "p3"),
   title = c("Paper A", "Paper B", "Paper C"),
   year  = c(2020L, 2021L, 2022L),
-  stringsAsFactors = FALSE
-)
-df$authors <- list(
-  c("ALICE", "BOB"),
-  c("BOB", "CAROL"),
-  c("ALICE", "CAROL", "DAVE")
-)
-df$references <- list(
-  c("R1", "R2"),
-  c("R1", "R3"),
-  c("R2", "R3", "R4")
-)
-df$keywords <- list(
-  c("graph", "network"),
-  c("network", "embedding"),
-  c("graph", "embedding", "neural")
+  authors = I(list(
+    c("ALICE", "BOB"),
+    c("BOB", "CAROL"),
+    c("ALICE", "CAROL", "DAVE")
+  )),
+  references = I(list(
+    c("R1", "R2"),
+    c("R1", "R3"),
+    c("R2", "R3", "R4")
+  )),
+  keywords = I(list(
+    c("graph", "network"),
+    c("network", "embedding"),
+    c("graph", "embedding", "neural")
+  ))
 )
 
 author_network(df, "collaboration")
@@ -642,7 +653,7 @@ reference_network(df)
 #> 5  R3    R4       1      1
 ```
 
-[`build_bipartite()`](https://saqr.me/bibnets-pkg/reference/build_bipartite.md)
+[`build_bipartite()`](https://pak.dynasite.org/bibnets-pkg/reference/build_bipartite.md)
 applies `toupper(trimws(...))` to every entity label before constructing
 the sparse matrix, so `"graph"`, `"Graph"`, and `"GRAPH"` are mapped to
 the same node `"GRAPH"`. Tests or comparisons that reference node names
@@ -650,7 +661,7 @@ should use uppercase strings.
 
 ## 12. The `split_field()` helper
 
-[`split_field()`](https://saqr.me/bibnets-pkg/reference/split_field.md)
+[`split_field()`](https://pak.dynasite.org/bibnets-pkg/reference/split_field.md)
 converts a character column with semicolon-delimited (or otherwise
 delimited) values into a list-column without going through
 `read_biblio(format = "generic")`:
@@ -672,40 +683,60 @@ split_field(c("a|b|c", "d|e"), sep = "|")
 ```
 
 This is the same operation that
-[`read_scopus()`](https://saqr.me/bibnets-pkg/reference/read_scopus.md)
+[`read_scopus()`](https://pak.dynasite.org/bibnets-pkg/reference/read_scopus.md)
 and the other readers apply internally to multi-valued columns; it is
 exported for use in custom pipelines.
 
 ## 13. Combining data from multiple sources
 
 Different readers expose different extras: WoS provides `keywords_plus`,
-Scopus provides `index_keywords`, OpenAlex provides `countries`. To
-combine sources, restrict each frame to the standard columns and bind:
+Scopus provides `index_keywords`, OpenAlex provides `countries`. Passing
+several files to
+[`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
+combines them in one call: the standard columns line up, and each extra
+is kept and filled with `NA` (or empty vectors) for the sources that
+lack it:
 
 ``` r
 
-common <- c("id", "title", "year", "journal", "doi", "cited_by_count",
-            "abstract", "type", "authors", "references", "keywords")
-
-data(biblio_data)
-b1 <- biblio_data
-b2 <- biblio_data
-b2$id <- paste0(b2$id, "_dup")
-
-cols <- intersect(common, names(b1))
-combined <- rbind(b1[, cols], b2[, cols])
-nrow(combined)
-#> [1] 20
+f_scopus <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
+f_wos    <- system.file("extdata", "wos_sample.txt",    package = "bibnets")
+combined <- read_biblio(c(f_scopus, f_wos))
+#> Read 2 files: 4 rows total
+str(combined, max.level = 1)
+#> 'data.frame':    4 obs. of  15 variables:
+#>  $ id            : chr  "2-s2.0-001" "2-s2.0-002" "WOS:000000000000001" "WOS:000000000000002"
+#>  $ title         : chr  "Bibliometric networks in education research" "Co-citation analysis of learning analytics" "Bibliometric networks in education research" "Co-citation analysis of learning analytics"
+#>  $ year          : int  2022 2021 2022 2021
+#>  $ journal       : chr  "Journal of Scientometrics" "Learning Analytics" "Journal of Scientometrics" "Learning Analytics"
+#>  $ doi           : chr  "10.1000/jos.2022.001" "10.1000/la.2021.077" "10.1000/jos.2022.001" "10.1000/la.2021.077"
+#>  $ cited_by_count: int  12 8 12 8
+#>  $ abstract      : chr  "An overview of bibliometric networks applied to education." "Co-citation patterns in learning analytics literature." "An overview of bibliometric networks applied to education." "Co-citation patterns in learning analytics literature."
+#>  $ type          : chr  "Article" "Conference Paper" "Article" "Article"
+#>  $ authors       :List of 4
+#>  $ references    :List of 4
+#>  $ keywords      :List of 4
+#>  $ index_keywords:List of 4
+#>  $ affiliations  : chr  "Univ Helsinki, Finland" "Univ Oslo, Norway" NA NA
+#>  $ language      : chr  "English" "English" NA NA
+#>  $ keywords_plus :List of 4
 ```
+
+The two Scopus records keep their `index_keywords`, the two WoS records
+their `keywords_plus`, and each is empty on the other source’s rows.
 
 Two practical notes:
 
-1.  When document IDs overlap across sources (which occurs when Scopus
-    and WoS both index the same article), prefixing the IDs as shown
-    prevents duplicate documents from inflating co-occurrence counts.
-2.  Source-specific extras (e.g. WoS `keywords_plus`) should be retained
-    on the per-source frame and merged selectively rather than coerced
-    into the combined frame.
+1.  [`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md)
+    does not de-duplicate. When the same article is indexed by both
+    Scopus and WoS it appears twice, under two different IDs, and
+    inflates co-occurrence counts. The bundled samples show it: the two
+    WoS records are the two Scopus articles again (same titles and
+    DOIs). Remove such duplicates (for example by DOI) before building
+    networks.
+2.  Source-specific extras (e.g. WoS `keywords_plus`) are only populated
+    for that source’s rows, so a network built from an extra covers that
+    source alone.
 
 ## 14. Inspecting and sanity-checking
 
@@ -725,8 +756,7 @@ range(lengths(sc$references))
 range(lengths(sc$keywords))
 #> [1]  0 20
 
-head(sort(table(sc$journal), decreasing = TRUE), 5)
-#> 
+summary(factor(sc$journal), maxsum = 6)
 #> IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 
 #>                                                                            24 
 #>                   IEEE Transactions on Circuits and Systems I: Regular Papers 
@@ -736,8 +766,10 @@ head(sort(table(sc$journal), decreasing = TRUE), 5)
 #>              IEEE Transactions on Very Large Scale Integration (VLSI) Systems 
 #>                                                                            14 
 #>                                               IEEE Internet of Things Journal 
-#>                                                                            12
-range(sc$year, na.rm = TRUE)
+#>                                                                            12 
+#>                                                                       (Other) 
+#>                                                                           411
+range(sc$year)
 #> [1] 2020 2025
 table(sc$type)
 #> 
@@ -746,6 +778,11 @@ table(sc$type)
 #> Conference review            Review 
 #>                 3                10
 ```
+
+All three list-columns have a minimum length of 0: some records carry no
+authors, no references or no author keywords, and those records drop out
+of the corresponding networks. The five most frequent venues are IEEE
+outlets, and the years fall inside the 2020–2025 search window.
 
 Indicators to check:
 
@@ -765,30 +802,34 @@ Indicators to check:
 | `Could not detect file format` | First line doesn’t match any signature | Pass `format = "scopus"` (etc.) explicitly, or name the entity columns (`authors`, `keywords`, …) to read it as a generic CSV |
 | Empty `references` list on every row | BibTeX/RIS or OpenAlex flat CSV — these don’t carry citations | Use Scopus/WoS, OpenAlex via [`oa_fetch()`](https://docs.ropensci.org/openalexR/reference/oa_fetch.html), Dimensions, Lens, or Crossref |
 | `Invalid multibyte string` on read | Wrong encoding | Most readers accept `encoding = "latin1"`; pass it through `read_biblio(..., encoding = "latin1")` |
-| Author names look like `LASTNAME, F.J.` not `FJ LASTNAME` | Default is `flip_names = FALSE` | The reader returns names as-is from the source. Cluster them by string match downstream, or pass `flip_names = TRUE` if all names follow `Last, First` |
-| Dimensions file silently fails | “About the data” preamble removed and column header edited | [`read_dimensions()`](https://saqr.me/bibnets-pkg/reference/read_dimensions.md) detects the standard preamble and falls back to header-token detection; the failure mode requires the column header itself to have been edited |
-| Co-authorship network contains duplicate nodes (e.g. `"Alice"` and `"ALICE"`) | Mixed casing in the source | The standard readers and [`build_bipartite()`](https://saqr.me/bibnets-pkg/reference/build_bipartite.md) apply `toupper(trimws(...))` to entity labels. Manually constructed frames should apply the same normalisation |
+| One author appears under several labels (e.g. `SAQR, MOHAMMED` and `SAQR M`) | Sources write names differently; readers keep the source’s name order and only upper-case them and drop the dots from initials | Normalise the `authors` list-column with [`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md) before building (see [`vignette("parsing-author-names")`](https://pak.dynasite.org/bibnets-pkg/articles/parsing-author-names.md)) |
+| Dimensions file silently fails | “About the data” preamble removed and column header edited | [`read_dimensions()`](https://pak.dynasite.org/bibnets-pkg/reference/read_dimensions.md) detects the standard preamble and falls back to header-token detection; the failure mode requires the column header itself to have been edited |
+| Co-authorship network contains duplicate nodes (e.g. `"Alice"` and `"ALICE"`) | Mixed casing in the source | The standard readers and [`build_bipartite()`](https://pak.dynasite.org/bibnets-pkg/reference/build_bipartite.md) apply `toupper(trimws(...))` to entity labels. Manually constructed frames should apply the same normalisation |
 
 ## Further reading
 
 - The companion vignette,
-  [`vignette("bibnets")`](https://saqr.me/bibnets-pkg/articles/bibnets.md),
+  [`vignette("bibnets")`](https://pak.dynasite.org/bibnets-pkg/articles/bibnets.md),
   covers network construction on the in-package datasets.
-- [`vignette("parsing-author-names")`](https://saqr.me/bibnets-pkg/articles/parsing-author-names.md)
+- [`vignette("parsing-author-names")`](https://pak.dynasite.org/bibnets-pkg/articles/parsing-author-names.md)
   covers
-  [`parse_names()`](https://saqr.me/bibnets-pkg/reference/parse_names.md)
+  [`parse_names()`](https://pak.dynasite.org/bibnets-pkg/reference/parse_names.md)
   for normalising author labels before a network is built.
 - All network builders
-  ([`author_network()`](https://saqr.me/bibnets-pkg/reference/author_network.md),
-  [`keyword_network()`](https://saqr.me/bibnets-pkg/reference/keyword_network.md),
-  [`reference_network()`](https://saqr.me/bibnets-pkg/reference/reference_network.md),
-  [`document_network()`](https://saqr.me/bibnets-pkg/reference/document_network.md),
-  [`source_network()`](https://saqr.me/bibnets-pkg/reference/source_network.md),
-  [`country_network()`](https://saqr.me/bibnets-pkg/reference/country_network.md),
-  [`institution_network()`](https://saqr.me/bibnets-pkg/reference/institution_network.md),
-  [`conetwork()`](https://saqr.me/bibnets-pkg/reference/conetwork.md))
-  accept the same core arguments (`type`, `counting`, `similarity`,
-  `threshold`, `top_n`, `format`) plus the custom-column arguments shown
-  above (`id`, the entity column, `sep`, `references_sep`,
-  `strip_quotes`), so switching between network types on data already in
-  the standard schema requires only a function-name change.
+  ([`author_network()`](https://pak.dynasite.org/bibnets-pkg/reference/author_network.md),
+  [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md),
+  [`reference_network()`](https://pak.dynasite.org/bibnets-pkg/reference/reference_network.md),
+  [`document_network()`](https://pak.dynasite.org/bibnets-pkg/reference/document_network.md),
+  [`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md),
+  [`country_network()`](https://pak.dynasite.org/bibnets-pkg/reference/country_network.md),
+  [`institution_network()`](https://pak.dynasite.org/bibnets-pkg/reference/institution_network.md),
+  [`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md))
+  accept the same core arguments (`counting`, `similarity`, `threshold`,
+  `min_occur`, `top_n`, `format`, plus `type` on every builder except
+  [`keyword_network()`](https://pak.dynasite.org/bibnets-pkg/reference/keyword_network.md)
+  and
+  [`conetwork()`](https://pak.dynasite.org/bibnets-pkg/reference/conetwork.md))
+  and the custom-column arguments shown above (`id`, the entity column,
+  `sep`, `strip_quotes`, and `references_sep` on the coupling builders),
+  so switching between network types on data already in the standard
+  schema requires only a function-name change.
