@@ -1,35 +1,15 @@
 # Changelog
 
-## bibnets 0.6.3
+## bibnets 0.7.0
 
-### Documentation
-
-- Reference pages corrected against the code: `top_n` on every builder
-  keeps the most frequent *nodes* (it was described as the top edges);
-  `min_occur` is not applied with position-dependent counting or
-  `attention`; `self_loops` only takes effect with
+- The help pages now state what the builders’ arguments do: `top_n`
+  keeps the most frequent nodes (it was described as keeping the top
+  edges); `min_occur` is not applied with position-dependent counting or
+  `attention`; `self_loops` takes effect only with
   `similarity = "none"`; `document_network(type = "co_citation")` links
-  cited items, not documents;
-  [`source_network()`](https://pak.dynasite.org/bibnets-pkg/reference/source_network.md)’s
-  `sep` is unused; `id` is optional on every builder. Every exported
-  function and method now documents the structure of its return value,
-  and the counting, normalization, backbone, coupling, co-citation and
-  historiograph methods carry `@references`.
-- Examples no longer subset results with `[` or `$`; readers show a
-  [`subset()`](https://rdrr.io/r/base/subset.html) of their columns,
-  [`to_gephi()`](https://pak.dynasite.org/bibnets-pkg/reference/to_gephi.md)
-  writes to [`tempdir()`](https://rdrr.io/r/base/tempfile.html) and
-  cleans up, and the `biblio_data` and `scopus_quantum_cloud`
-  descriptions match the data (13 unique references including in-corpus
-  IDs; 23 keywords; 499 records, no index keywords).
-- Vignettes: the attention vignette now describes what the profiles
-  compute (`"proximity"` weights central positions; a paper’s total edge
-  weight is bounded below one half rather than fixed at one); the
-  Getting Started historiograph uses `biblio_data`, whose references
-  match document IDs; the reading-data vignette combines sources with
-  [`read_biblio()`](https://pak.dynasite.org/bibnets-pkg/reference/read_biblio.md),
-  corrects the Scopus `affiliations` type and the author-name
-  troubleshooting row. README lists all four vignettes.
+  cited items, not documents; `id` is optional on every builder.
+- New package help page,
+  [`?bibnets`](https://pak.dynasite.org/bibnets-pkg/reference/bibnets-package.md).
 
 ## bibnets 0.6.0
 

@@ -36,9 +36,9 @@ attributes.
 data(biblio_data)
 edges <- author_network(biblio_data, "collaboration")
 to_igraph(edges)
-#> IGRAPH 5dc2c8f UNW- 6 12 -- 
+#> IGRAPH 876c1ce UNW- 6 12 -- 
 #> + attr: name (v/c), weight (e/n), count (e/n)
-#> + edges from 5dc2c8f (vertex names):
+#> + edges from 876c1ce (vertex names):
 #>  [1] CHEN W --LEE K   BROWN M--SMITH J BROWN M--LEE K   JONES A--LEE K  
 #>  [5] JONES A--SMITH J LEE K  --SMITH J CHEN W --BROWN M BROWN M--DAVIS R
 #>  [9] CHEN W --DAVIS R CHEN W --JONES A JONES A--DAVIS R DAVIS R--SMITH J

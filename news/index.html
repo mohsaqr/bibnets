@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bibnets</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,14 +32,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.3" id="bibnets-063">bibnets 0.6.3<a class="anchor" aria-label="anchor" href="#bibnets-063"></a></h2>
-<div class="section level3">
-<h3 id="documentation-0-6-3">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-6-3"></a></h3>
-<ul><li>Reference pages corrected against the code: <code>top_n</code> on every builder keeps the most frequent <em>nodes</em> (it was described as the top edges); <code>min_occur</code> is not applied with position-dependent counting or <code>attention</code>; <code>self_loops</code> only takes effect with <code>similarity = "none"</code>; <code>document_network(type = "co_citation")</code> links cited items, not documents; <code><a href="../reference/source_network.html">source_network()</a></code>’s <code>sep</code> is unused; <code>id</code> is optional on every builder. Every exported function and method now documents the structure of its return value, and the counting, normalization, backbone, coupling, co-citation and historiograph methods carry <code>@references</code>.</li>
-<li>Examples no longer subset results with <code>[</code> or <code>$</code>; readers show a <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> of their columns, <code><a href="../reference/to_gephi.html">to_gephi()</a></code> writes to <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> and cleans up, and the <code>biblio_data</code> and <code>scopus_quantum_cloud</code> descriptions match the data (13 unique references including in-corpus IDs; 23 keywords; 499 records, no index keywords).</li>
-<li>Vignettes: the attention vignette now describes what the profiles compute (<code>"proximity"</code> weights central positions; a paper’s total edge weight is bounded below one half rather than fixed at one); the Getting Started historiograph uses <code>biblio_data</code>, whose references match document IDs; the reading-data vignette combines sources with <code><a href="../reference/read_biblio.html">read_biblio()</a></code>, corrects the Scopus <code>affiliations</code> type and the author-name troubleshooting row. README lists all four vignettes.</li>
+<h2 class="pkg-version" data-toc-text="0.7.0" id="bibnets-070">bibnets 0.7.0<a class="anchor" aria-label="anchor" href="#bibnets-070"></a></h2>
+<ul><li>The help pages now state what the builders’ arguments do: <code>top_n</code> keeps the most frequent nodes (it was described as keeping the top edges); <code>min_occur</code> is not applied with position-dependent counting or <code>attention</code>; <code>self_loops</code> takes effect only with <code>similarity = "none"</code>; <code>document_network(type = "co_citation")</code> links cited items, not documents; <code>id</code> is optional on every builder.</li>
+<li>New package help page, <code><a href="../reference/bibnets-package.html">?bibnets</a></code>.</li>
 </ul></div>
-</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="bibnets-060">bibnets 0.6.0<a class="anchor" aria-label="anchor" href="#bibnets-060"></a></h2><p class="text-muted">CRAN release: 2026-06-18</p>
 <div class="section level3">

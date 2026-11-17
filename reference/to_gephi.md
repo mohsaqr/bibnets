@@ -64,7 +64,7 @@ to_gephi(head(edges, 3))
 out_dir <- tempfile("gephi")
 dir.create(out_dir)
 to_gephi(edges, file = out_dir)
-#> Written: /tmp/Rtmpac1oe5/gephi1a21897ecbc/nodes.csv
-#>         /tmp/Rtmpac1oe5/gephi1a21897ecbc/edges.csv
+#> Written: /tmp/Rtmptunhdw/gephi18b6e048b10/nodes.csv
+#>         /tmp/Rtmptunhdw/gephi18b6e048b10/edges.csv
 unlink(out_dir, recursive = TRUE)
 ```
