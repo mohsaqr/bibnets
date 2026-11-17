@@ -54,11 +54,15 @@ data), \code{to} (cited), \code{year_from} and \code{year_to} (integer), sorted 
 Both are empty (zero rows) when no document reaches \code{min_lcs}.
 }
 \description{
-Constructs a Garfield-style historiograph: the \code{n} most locally cited
-documents and the within-corpus citations they receive, each edge
-carrying the publication years of both ends so the network can be laid
-out chronologically. The citing document of an edge may be any document
-in the data, not only one of the \code{n} selected.
+\code{historiograph()} builds a Garfield-style historiograph (Garfield, 2004): the
+\code{n} most locally cited documents and the within-corpus citations they
+receive, each edge carrying the publication years of both ends so the network
+can be laid out chronologically. The citing document of an edge may be any
+document in the data, not only one of the \code{n} selected.
+}
+\details{
+The documents are ranked by \code{\link[=local_citations]{local_citations()}}; \code{n} and \code{min_lcs} set how
+many are kept. It returns a list with a \code{nodes} and an \code{edges} data frame.
 }
 \examples{
 data(biblio_data)

@@ -1,8 +1,8 @@
 #' Example bibliometric dataset
 #'
-#' A small synthetic dataset of 10 scholarly papers with overlapping authors,
-#' references, and keywords. Designed for testing and demonstrating all
-#' network construction functions in bibnets.
+#' `biblio_data` is a small synthetic dataset of 10 scholarly papers with
+#' overlapping authors, references, and keywords, used in the examples of the
+#' network construction functions.
 #'
 #' @format A data frame with 10 rows and 9 columns:
 #' \describe{
@@ -33,11 +33,11 @@
 
 #' Learning analytics dataset (OpenAlex)
 #'
-#' A corpus of 1,508 gold open-access scholarly works on learning analytics,
-#' retrieved from OpenAlex (CC0 licence). All records have a verified title,
-#' publication year, and at least one author. Journal names are present for
-#' works published in a named source; preprints and book chapters may have
-#' `NA` in `journal`.
+#' `learning_analytics` is a corpus of 1,508 gold open-access scholarly works on
+#' learning analytics, retrieved from OpenAlex (CC0 licence). All records have a
+#' verified title, publication year, and at least one author. Journal names are
+#' present for works published in a named source; preprints and book chapters
+#' may have `NA` in `journal`.
 #'
 #' @format A data frame with 1,508 rows and 11 columns:
 #' \describe{
@@ -71,12 +71,12 @@
 
 #' Scopus dataset: green cloud computing and quantization (2020--2025)
 #'
-#' A 499-record subset of a Scopus bibliometric export on the intersection
-#' of green cloud computing and quantization, covering 2020--2025. Includes
-#' full reference strings, author keywords, and affiliations. The
-#' references are formatted citation strings, not Scopus EIDs, so they do
-#' not match the `id` column: use this dataset for co-citation, coupling,
-#' keyword and collaboration networks, not for local citations or
+#' `scopus_quantum_cloud` is a 499-record subset of a Scopus bibliometric export
+#' on the intersection of green cloud computing and quantization, covering
+#' 2020--2025. Includes full reference strings, author keywords, and
+#' affiliations. The references are formatted citation strings, not Scopus EIDs,
+#' so they do not match the `id` column: use this dataset for co-citation,
+#' coupling, keyword and collaboration networks, not for local citations or
 #' historiographs.
 #'
 #' @format A data frame with 499 rows and 12 columns:

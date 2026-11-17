@@ -22,8 +22,9 @@ string. Otherwise writes the file, reports the path with a message, and
 returns the path invisibly.
 }
 \description{
-Writes a bibnets edge list (and optional node attributes) to a GraphML
-file using base R only, without an XML package.
+\code{to_graphml()} writes a bibnets edge list (and optional node attributes)
+to a GraphML file, or returns the document as a string, using base R
+only, without an XML package.
 }
 \examples{
 data(biblio_data)

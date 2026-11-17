@@ -102,7 +102,18 @@ attributes \code{network_type}, \code{counting} and \code{similarity}. See
 \code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
-Constructs a network between countries based on collaboration or coupling.
+\code{country_network()} builds a network between countries based on
+collaboration or coupling. In a collaboration network two countries are
+linked when they appear on the same paper; in a coupling network they are
+linked when their papers cite the same references; the equivalence type
+uses the cosine similarity of the countries' paper-incidence vectors.
+}
+\details{
+\code{counting} and \code{similarity} weight the edges, \code{threshold}, \code{min_occur} and
+\code{top_n} prune them, and \code{attention} replaces the type and counting method
+with an attention weighting of the country order. It returns a
+\code{bibnets_network} edge list by default. For institutions see
+\code{\link[=institution_network]{institution_network()}}; for authors see \code{\link[=author_network]{author_network()}}.
 }
 \examples{
 data(learning_analytics)

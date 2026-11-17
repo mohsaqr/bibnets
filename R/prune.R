@@ -1,8 +1,11 @@
 #' Prune a weighted edge list
 #'
-#' Reduces a weighted edge list by removing weak or excess edges. Supply
-#' exactly one of `threshold` (a global cut-off) or `top_n` (a local,
+#' `prune()` reduces a weighted edge list by removing weak or excess edges.
+#' Supply exactly one of `threshold` (a global cut-off) or `top_n` (a local,
 #' per-node cut-off); supplying both or neither is an error.
+#'
+#' It returns the retained edges. To keep the edges among the most connected
+#' nodes, use [filter_top()]; for a statistical backbone, use [backbone()].
 #'
 #' @param edges A data frame with at least columns `from`, `to`, and `weight`.
 #' @param threshold Numeric or `NULL`. Keep only edges with

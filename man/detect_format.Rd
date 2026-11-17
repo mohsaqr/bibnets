@@ -13,6 +13,10 @@ detect_format(file)
 Character: format name or \code{"unknown"}.
 }
 \description{
-Detect bibliometric file format
+\code{detect_format()} detects the format of a bibliometric export from its
+first non-empty lines: BibTeX (\code{@}), RIS (\verb{TY  -}), Web of Science
+plaintext (\code{FN} or \code{PT}), or, from the CSV header, Scopus, Dimensions
+(whose header follows an \verb{About the data} line), Lens.org or the flat
+OpenAlex CSV.
 }
 \keyword{internal}

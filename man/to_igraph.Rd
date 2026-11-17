@@ -18,7 +18,10 @@ row of \code{edges}; the remaining columns (\code{weight}, \code{count}, ...) be
 edge attributes.
 }
 \description{
-Requires the suggested package igraph.
+\code{to_igraph()} converts a bibnets edge list to an \code{igraph} graph with
+\code{igraph::graph_from_data_frame()}. It requires the suggested package
+igraph. For a \code{tbl_graph} use \code{\link[=to_tbl_graph]{to_tbl_graph()}}; for a cograph network use
+\code{\link[=to_cograph]{to_cograph()}}.
 }
 \examples{
 \dontshow{if (requireNamespace("igraph", quietly = TRUE)) withAutoprint(\{ # examplesIf}

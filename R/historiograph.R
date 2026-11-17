@@ -1,7 +1,14 @@
 #' Compute local citation scores
 #'
-#' Counts how many times each document is cited by other documents
-#' within the dataset.
+#' `local_citations()` computes the local citation score (LCS) of each
+#' document: how many times it is cited by other documents within the
+#' dataset. When the data carry `cited_by_count`, the global citation score
+#' (GCS) is reported beside it.
+#'
+#' It returns one row per document, sorted by decreasing `lcs`. To lay the
+#' most locally cited documents out as a chronological citation network, use
+#' [historiograph()]; for the full citation network, use
+#' `document_network(type = "citation")` (see [document_network()]).
 #'
 #' @param data A data frame with one row per work and a references column
 #'   (list-column or delimited string) whose values use the same identifiers
@@ -79,11 +86,14 @@ local_citations <- function(data, references = "references", sep = ";",
 
 #' Build a historiograph (chronological citation network)
 #'
-#' Constructs a Garfield-style historiograph: the `n` most locally cited
-#' documents and the within-corpus citations they receive, each edge
-#' carrying the publication years of both ends so the network can be laid
-#' out chronologically. The citing document of an edge may be any document
-#' in the data, not only one of the `n` selected.
+#' `historiograph()` builds a Garfield-style historiograph (Garfield, 2004): the
+#' `n` most locally cited documents and the within-corpus citations they
+#' receive, each edge carrying the publication years of both ends so the network
+#' can be laid out chronologically. The citing document of an edge may be any
+#' document in the data, not only one of the `n` selected.
+#'
+#' The documents are ranked by [local_citations()]; `n` and `min_lcs` set how
+#' many are kept. It returns a list with a `nodes` and an `edges` data frame.
 #'
 #' @param data A data frame with one row per work, a references column
 #'   (list-column or delimited string) whose values use the same identifiers

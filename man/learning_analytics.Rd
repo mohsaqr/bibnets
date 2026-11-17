@@ -33,11 +33,11 @@ OpenAlex \url{https://openalex.org}, CC0 licence.
 learning_analytics
 }
 \description{
-A corpus of 1,508 gold open-access scholarly works on learning analytics,
-retrieved from OpenAlex (CC0 licence). All records have a verified title,
-publication year, and at least one author. Journal names are present for
-works published in a named source; preprints and book chapters may have
-\code{NA} in \code{journal}.
+\code{learning_analytics} is a corpus of 1,508 gold open-access scholarly works on
+learning analytics, retrieved from OpenAlex (CC0 licence). All records have a
+verified title, publication year, and at least one author. Journal names are
+present for works published in a named source; preprints and book chapters
+may have \code{NA} in \code{journal}.
 }
 \examples{
 data(learning_analytics)

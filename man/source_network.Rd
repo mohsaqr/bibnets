@@ -93,7 +93,18 @@ attributes \code{network_type}, \code{counting} and \code{similarity}. See
 \code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
-Constructs a network between publication sources (journals, book series).
+\code{source_network()} builds a network between publication sources
+(journals, book series). By default two sources are linked by
+bibliographic coupling, when their papers share cited references; the
+other types are source co-citation (sources cited together, from a
+\code{cited_journals} column) and the cosine similarity of the sources' pooled
+reference vectors.
+}
+\details{
+\code{counting} and \code{similarity} weight the edges and \code{threshold}, \code{min_occur}
+and \code{top_n} prune them. It returns a \code{bibnets_network} edge list by
+default. To link sources by any other field, use
+\code{conetwork(data, "journal", by = ...)} (see \code{\link[=conetwork]{conetwork()}}).
 }
 \examples{
 data(biblio_data)

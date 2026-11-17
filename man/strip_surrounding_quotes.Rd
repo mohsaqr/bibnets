@@ -13,9 +13,10 @@ strip_surrounding_quotes(x)
 Character vector with surrounding quotes/whitespace removed.
 }
 \description{
-Removes leading/trailing double-quote characters (straight \verb{"}, the CSV
-doubled \code{""}, and curly quotes) plus surrounding whitespace, so quoted
-values such as \code{"Alice"} or \verb{""Bob""} become \code{Alice} / \code{Bob}. Quotes
-inside a label (e.g. an apostrophe in \verb{O'Brien}) are left untouched.
+\code{strip_surrounding_quotes()} removes leading/trailing double-quote
+characters (straight \verb{"}, the CSV doubled \code{""}, and curly quotes) plus
+surrounding whitespace, so quoted values such as \code{"Alice"} or \verb{""Bob""}
+become \code{Alice} / \code{Bob}. Quotes inside a label (e.g. an apostrophe in
+\verb{O'Brien}) are left untouched.
 }
 \keyword{internal}

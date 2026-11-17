@@ -19,6 +19,9 @@ symmetric.}
 A sparse \code{dgCMatrix}.
 }
 \description{
-Convert edge list to a square sparse matrix
+\code{edgelist_to_mat()} converts an edge list to a square sparse matrix of
+edge weights, one row and column per node. With \code{symmetric = TRUE} each
+edge is entered in both directions. It is the inverse of
+\code{\link[=mat_to_edgelist]{mat_to_edgelist()}} and the engine behind \code{\link[=to_matrix]{to_matrix()}}.
 }
 \keyword{internal}

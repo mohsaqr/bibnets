@@ -15,8 +15,9 @@ A data frame in the standard bibnets format: \code{id}, \code{title},
 plus list-columns \code{authors}, \code{references}, and \code{keywords}.
 }
 \description{
-Takes the output of \code{rcrossref::cr_works()} (the \verb{$data} tibble/data frame)
-and converts it to the standardized bibnets format.
+\code{read_crossref()} converts the output of \code{rcrossref::cr_works()} (the
+\verb{$data} tibble/data frame) to the standardized bibnets format. For
+exported files rather than data in R, use \code{\link[=read_biblio]{read_biblio()}}.
 }
 \examples{
 # Construct a minimal data frame matching the structure of

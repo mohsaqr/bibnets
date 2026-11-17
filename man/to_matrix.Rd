@@ -17,7 +17,9 @@ A square sparse \code{dgCMatrix} of edge weights with one row and
 column per node label (dimnames are the node labels).
 }
 \description{
-Convert edge data frame to adjacency matrix
+\code{to_matrix()} converts a bibnets edge list to a square sparse adjacency
+matrix of edge weights, one row and column per node. By default each edge
+is entered in both directions, so the matrix is symmetric.
 }
 \examples{
 data(biblio_data)

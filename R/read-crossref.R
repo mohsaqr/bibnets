@@ -1,7 +1,8 @@
 #' Convert Crossref API data to bibnets format
 #'
-#' Takes the output of `rcrossref::cr_works()` (the `$data` tibble/data frame)
-#' and converts it to the standardized bibnets format.
+#' `read_crossref()` converts the output of `rcrossref::cr_works()` (the
+#' `$data` tibble/data frame) to the standardized bibnets format. For
+#' exported files rather than data in R, use [read_biblio()].
 #'
 #' @param data A data frame from `cr_works(...)$data`.
 #'

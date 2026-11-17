@@ -17,8 +17,9 @@ A data frame with columns \code{from}, \code{to}, \code{weight}, sorted by
 descending weight.
 }
 \description{
-Extracts non-zero entries directly from the sparse representation,
-without a dense matrix allocation. For undirected networks, only the upper
-triangle is returned.
+\code{mat_to_edgelist()} converts a square matrix to an edge list with columns
+\code{from}, \code{to} and \code{weight}. It extracts non-zero entries directly from the
+sparse representation, without a dense matrix allocation. For undirected
+networks, only the upper triangle is returned.
 }
 \keyword{internal}

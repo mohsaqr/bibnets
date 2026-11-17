@@ -1,7 +1,8 @@
 #' Read Dimensions CSV export
 #'
-#' Parses a CSV file exported from Dimensions into a standardized
-#' bibliometric data frame.
+#' `read_dimensions()` parses a CSV file exported from Dimensions into a
+#' standardized bibliometric data frame.
+#' [read_biblio()] reads several files at once and detects the format.
 #'
 #' @param file Path to a Dimensions CSV export file.
 #' @param encoding Character. File encoding. Default `"UTF-8"`.

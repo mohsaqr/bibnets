@@ -52,12 +52,16 @@ window is raised and that window is omitted. An empty list is returned
 when the time column has no non-missing values.
 }
 \description{
-Splits data by time windows and builds a separate network for each
-window using any network function, so the same construction can be
-compared across periods. The time column is coerced to integer before
-windows are formed.
+\code{temporal_network()} splits data by time windows and builds a separate
+network for each window using any network function, so the same
+construction can be compared across periods.
 }
 \details{
+The time column is coerced to integer before windows are formed. Windows
+are fixed (disjoint), sliding (overlapping, advancing by \code{step}) or
+cumulative (each starting at the earliest value), of width \code{window}. It
+returns a named list with one edge list per non-empty window.
+
 \code{network_fun} must return a data frame, so keep the builder's
 default \code{format = "edgelist"}.
 }

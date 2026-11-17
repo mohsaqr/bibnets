@@ -1,8 +1,13 @@
 #' Build a bipartite incidence matrix from bibliometric data
 #'
-#' Constructs a sparse works x entities two-mode matrix from a data frame
-#' with a list-column. This is the core engine behind all network construction
-#' functions.
+#' `build_bipartite()` builds a sparse works x entities two-mode matrix from
+#' a data frame with a list-column. This is the core engine behind all
+#' network construction functions: each network is a projection of this
+#' matrix (see [multiply_bipartite()]).
+#'
+#' It returns a `dgCMatrix` with one row per work and one column per unique
+#' entity. When the data are already in long form, use
+#' [build_bipartite_long()].
 #'
 #' @param data A data frame with at least columns `id` and the field specified.
 #' @param field Character. Name of the list-column containing entities
@@ -73,8 +78,10 @@ build_bipartite <- function(data, field, min_freq = 1L, deduplicate = TRUE,
 
 #' Build bipartite matrix from a long-format edge table
 #'
-#' Alternative constructor when data is already in long form (e.g., a two-column
-#' data frame of document-reference pairs).
+#' `build_bipartite_long()` builds a sparse two-mode matrix from data that
+#' is already in long form (e.g., a two-column data frame of
+#' document-reference pairs). It is the long-form alternative to
+#' [build_bipartite()], which takes a list-column.
 #'
 #' @param edges A data frame with columns `source` (work id) and `target`
 #'   (entity id).

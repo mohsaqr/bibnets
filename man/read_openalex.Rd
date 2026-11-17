@@ -18,8 +18,10 @@ A data frame in the standard bibnets format: \code{id}, \code{title},
 plus list-columns \code{authors}, \code{references}, and \code{keywords}.
 }
 \description{
-Takes the output of \code{\link[openalexR:oa_fetch]{openalexR::oa_fetch()}} (a tibble/data frame of works)
-and converts it to the standardized bibnets format with list-columns.
+\code{read_openalex()} converts the output of \code{\link[openalexR:oa_fetch]{openalexR::oa_fetch()}} (a
+tibble/data frame of works) to the standardized bibnets format with
+list-columns. For a flat CSV downloaded from the OpenAlex website, use
+\code{\link[=read_openalex_csv]{read_openalex_csv()}}.
 }
 \examples{
 # Construct a minimal data frame matching the structure returned by

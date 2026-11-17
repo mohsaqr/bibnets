@@ -15,8 +15,8 @@ resolve_id(data, id = NULL)
 \code{data} with a guaranteed character \code{id} column.
 }
 \description{
-Materializes a top-level \code{id} column that the network pipeline uses to
-index works (matrix rows). Resolution rules:
+\code{resolve_id()} materializes a top-level \code{id} column that the network
+pipeline uses to index works (matrix rows). Resolution rules:
 }
 \details{
 \itemize{

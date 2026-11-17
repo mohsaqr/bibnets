@@ -19,9 +19,11 @@ columns \code{from}, \code{to}, \code{weight}, \code{count}). Called for its pri
 output.
 }
 \description{
-Prints a one-line header (network type, number of nodes and edges,
-counting method and, when used, the similarity measure) followed by the
-first \code{n} edges, so a printed edge list always states how it was built.
+\code{print()} displays a \code{bibnets_network} edge list: a one-line header
+(network type, number of nodes and edges, counting method and, when used,
+the similarity measure) followed by the first \code{n} edges, so a printed
+edge list always states how it was built. For network-level statistics
+use \code{\link[=summary.bibnets_network]{summary.bibnets_network()}}.
 }
 \examples{
 data(biblio_data)

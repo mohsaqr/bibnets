@@ -80,8 +80,20 @@ number of files and rows. The generic reader keeps every source column
 and adds \code{id} plus the mapped standard fields.
 }
 \description{
-Universal reader that handles files, folders, format detection, and
-generic CSV input. Accepts a single file, multiple files, or a directory.
+\code{read_biblio()} reads bibliometric exports into a standardized data
+frame. It is the universal reader: it handles files, folders, format
+detection, and generic CSV input, and accepts a single file, multiple
+files, or a directory.
+}
+\details{
+With \code{format = "auto"} the format of each file is detected from its
+content and the matching reader is called (\code{\link[=read_scopus]{read_scopus()}},
+\code{\link[=read_wos]{read_wos()}}, \code{\link[=read_bibtex]{read_bibtex()}}, \code{\link[=read_ris]{read_ris()}}, \code{\link[=read_dimensions]{read_dimensions()}},
+\code{\link[=read_lens]{read_lens()}} or \code{\link[=read_openalex_csv]{read_openalex_csv()}}); naming source columns with
+\code{authors}, \code{keywords} and the other mapping arguments reads any CSV
+instead. It returns one row per record, with the files' rows bound
+together. Data already loaded in R from openalexR or rcrossref are
+converted with \code{\link[=read_openalex]{read_openalex()}} and \code{\link[=read_crossref]{read_crossref()}}.
 }
 \examples{
 # Auto-detect format from file content (here: a bundled OpenAlex CSV)

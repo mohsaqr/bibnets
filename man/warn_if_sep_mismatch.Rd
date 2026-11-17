@@ -7,10 +7,11 @@
 warn_if_sep_mismatch(col, parts, field, sep)
 }
 \description{
-Splitting with the wrong separator silently yields one "entity" per row
-(e.g., a whole author byline as a single node). Heuristic: no row split
-into more than one entity, yet most non-empty strings contain a common
-\emph{structural} delimiter.
+\code{warn_if_sep_mismatch()} warns when a separator likely failed to split a
+multi-entity column. Splitting with the wrong separator silently yields
+one "entity" per row (e.g., a whole author byline as a single node).
+Heuristic: no row split into more than one entity, yet most non-empty
+strings contain a common \emph{structural} delimiter.
 }
 \details{
 Only structural delimiters (\code{";"}, \code{"|"}, tab) are considered, because

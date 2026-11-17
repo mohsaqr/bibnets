@@ -1,7 +1,10 @@
 #' Filter edges to top-n nodes
 #'
-#' Keeps only edges between the most frequent nodes. Node frequency is
-#' determined by how many edges each node participates in.
+#' `filter_top()` keeps only the edges between the `n` most frequent nodes.
+#' Node frequency is determined by how many edges each node participates in.
+#' It returns the edges whose two endpoints are both among the top nodes. To
+#' prune by edge weight or keep each node's strongest edges, use [prune()];
+#' for a statistical backbone, use [backbone()].
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param n Integer. Number of top nodes to keep (ties in edge count are

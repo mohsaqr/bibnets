@@ -18,7 +18,13 @@ apply_counting(B, counting = "full", network_type = "symmetric")
 A weighted sparse matrix.
 }
 \description{
-For position-independent counting of non-author fields (references,
-keywords, etc.). Modifies the bipartite matrix row weights.
+\code{apply_counting()} weights a binary works x entities matrix by a
+position-independent counting method (\code{"fractional"}, \code{"paper"} or
+\code{"strength"}; \code{"full"} leaves it unchanged). It is used for non-author
+fields (references, keywords, etc.). \code{"fractional"} and \code{"paper"} modify
+the bipartite matrix row weights; \code{"strength"} weights the columns by
+inverse document frequency and leaves the row normalization to
+\code{\link[=multiply_bipartite]{multiply_bipartite()}}. For position-dependent counting use
+\code{\link[=build_author_bipartite]{build_author_bipartite()}}.
 }
 \keyword{internal}

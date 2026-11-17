@@ -23,11 +23,11 @@ non-\code{id} column of \code{nodes}, matched by node label (\code{NA} where a n
 has no metadata row).
 }
 \description{
-Converts a bibnets edge list to a \code{cograph_network} object by calling
-\code{cograph::as_cograph()}. Optionally merges node metadata (e.g., from
-\code{\link[=local_citations]{local_citations()}}) into the network's node table so attributes like
-\code{lcs} or \code{year} can be used directly in \code{splot()} aesthetic parameters
-(e.g., \code{node_size = "lcs"}).
+\code{to_cograph()} converts a bibnets edge list to a \code{cograph_network} object by
+calling \code{cograph::as_cograph()}. Optionally merges node metadata (e.g., from
+\code{\link[=local_citations]{local_citations()}}) into the network's node table so attributes like \code{lcs}
+or \code{year} can be used directly in \code{splot()} aesthetic parameters (e.g.,
+\code{node_size = "lcs"}).
 }
 \details{
 Note: bibnets edge lists (\code{from}, \code{to}, \code{weight}) are accepted directly

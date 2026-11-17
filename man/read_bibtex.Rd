@@ -18,10 +18,11 @@ plus list-columns \code{authors}, \code{references} (typically empty for
 BibTeX), and \code{keywords}.
 }
 \description{
-Parses a \code{.bib} file into a standardized bibliometric data frame.
-Note: standard BibTeX does not contain cited references, so the
+\code{read_bibtex()} parses a \code{.bib} file into a standardized bibliometric data
+frame. Note: standard BibTeX does not contain cited references, so the
 \code{references} column will be empty unless the file includes a
 non-standard \code{cited-references} or \code{note} field with reference data.
+\code{\link[=read_biblio]{read_biblio()}} reads several files at once and detects the format.
 }
 \examples{
 # Write a minimal BibTeX entry to a temp file, then read it

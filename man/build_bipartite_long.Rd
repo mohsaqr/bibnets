@@ -16,7 +16,9 @@ build_bipartite_long(edges, min_freq = 1L)
 A sparse \code{dgCMatrix}.
 }
 \description{
-Alternative constructor when data is already in long form (e.g., a two-column
-data frame of document-reference pairs).
+\code{build_bipartite_long()} builds a sparse two-mode matrix from data that
+is already in long form (e.g., a two-column data frame of
+document-reference pairs). It is the long-form alternative to
+\code{\link[=build_bipartite]{build_bipartite()}}, which takes a list-column.
 }
 \keyword{internal}

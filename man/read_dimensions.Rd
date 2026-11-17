@@ -19,8 +19,9 @@ Dimensions-specific extras: \code{affiliations} (list-column),
 \code{countries} (list-column).
 }
 \description{
-Parses a CSV file exported from Dimensions into a standardized
-bibliometric data frame.
+\code{read_dimensions()} parses a CSV file exported from Dimensions into a
+standardized bibliometric data frame.
+\code{\link[=read_biblio]{read_biblio()}} reads several files at once and detects the format.
 }
 \examples{
 f <- system.file("extdata", "dimensions_sample.csv", package = "bibnets")

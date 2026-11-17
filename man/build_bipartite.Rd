@@ -33,8 +33,14 @@ A sparse \code{dgCMatrix} with rows = works (named by \code{id}) and
 columns = unique entities.
 }
 \description{
-Constructs a sparse works x entities two-mode matrix from a data frame
-with a list-column. This is the core engine behind all network construction
-functions.
+\code{build_bipartite()} builds a sparse works x entities two-mode matrix from
+a data frame with a list-column. This is the core engine behind all
+network construction functions: each network is a projection of this
+matrix (see \code{\link[=multiply_bipartite]{multiply_bipartite()}}).
+}
+\details{
+It returns a \code{dgCMatrix} with one row per work and one column per unique
+entity. When the data are already in long form, use
+\code{\link[=build_bipartite_long]{build_bipartite_long()}}.
 }
 \keyword{internal}

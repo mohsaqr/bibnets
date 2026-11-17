@@ -16,10 +16,10 @@
 frame). Called for its printed output.
 }
 \description{
-Prints the network type, counting and similarity methods, the number of
-nodes and edges, the density (edges over the \code{n (n - 1) / 2} possible
-undirected pairs), the minimum, median and maximum \code{weight}, and the five
-nodes with the most edges.
+\code{summary()} describes a \code{bibnets_network} edge list. It prints the network
+type, counting and similarity methods, the number of nodes and edges, the
+density (edges over the \code{n (n - 1) / 2} possible undirected pairs), the
+minimum, median and maximum \code{weight}, and the five nodes with the most edges.
 }
 \examples{
 data(biblio_data)

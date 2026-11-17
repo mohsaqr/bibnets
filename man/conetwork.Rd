@@ -85,13 +85,20 @@ attributes \code{network_type}, \code{counting} and \code{similarity}. See
 \code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
-With one field, entities are linked when they co-occur in the same
-document. With \code{by}, entities are linked when they share values of the
-\code{by} field across documents.
+\code{conetwork()} builds a network between the values of any column. With one
+field, entities are linked when they co-occur in the same document. With
+\code{by}, entities are linked when they share values of the \code{by} field across
+documents; for example, journals linked by shared references form a
+journal coupling network.
 }
 \details{
 Fields can be list-columns (already split) or character columns with
-delimiters (auto-split via \code{sep}).
+delimiters (auto-split via \code{sep}). Edges are weighted by one of four
+position-independent counting methods and optionally normalized with
+\code{similarity}. It returns a \code{bibnets_network} edge list by default. The
+dedicated builders, such as \code{\link[=author_network]{author_network()}} (which adds
+position-dependent counting) and \code{\link[=keyword_network]{keyword_network()}}, cover the standard
+bibliometric networks.
 }
 \examples{
 data(biblio_data)

@@ -1,7 +1,16 @@
 #' Build a reference network
 #'
-#' Constructs a co-citation or equivalence network among cited references.
-#' Two references are linked when they are cited together by the same paper.
+#' `reference_network()` builds a co-citation or equivalence network among
+#' cited references. In a co-citation network two references are linked when
+#' they are cited together by the same paper; the equivalence network instead
+#' uses the cosine similarity of the references' citing-paper vectors.
+#'
+#' The citing papers and their references form a two-mode matrix that is
+#' projected onto the references; `counting` and `similarity` weight the
+#' edges and `threshold`, `min_occur` and `top_n` prune them. It returns a
+#' `bibnets_network` edge list by default. To link the citing documents
+#' instead (bibliographic coupling or direct citation), use
+#' [document_network()].
 #'
 #' @param data A data frame with one row per work and a references column
 #'   (list-column or delimited string). An `id` column is optional (see `id`).

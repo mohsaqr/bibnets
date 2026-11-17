@@ -1,8 +1,10 @@
 #' Normalize a co-occurrence matrix
 #'
-#' Applies a similarity normalization to a square co-occurrence matrix.
-#' The diagonal of the input matrix is used as the total occurrence count
-#' \eqn{w_i} of each item (a zero diagonal entry is treated as 1). Matrices
+#' `normalize()` normalizes a square co-occurrence matrix by a similarity
+#' measure: association strength, cosine, Jaccard, inclusion or equivalence
+#' (van Eck & Waltman, 2009). The diagonal of the input matrix is used as the
+#' total occurrence count \eqn{w_i} of each item (a zero diagonal entry is
+#' treated as 1). Matrices
 #' with 500 or more rows are processed in sparse triplet form, so no dense
 #' outer product is allocated. Every network builder calls this through its
 #' `similarity` argument; call it directly to normalize a matrix you built

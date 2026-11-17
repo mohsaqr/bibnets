@@ -1,7 +1,10 @@
 #' Read Web of Science plaintext or tab-delimited export
 #'
-#' Parses a Web of Science export file (plaintext or tab-delimited) into a
-#' standardized bibliometric data frame.
+#' `read_wos()` parses a Web of Science export file (plaintext or
+#' tab-delimited) into a standardized bibliometric data frame.
+#' [read_biblio()] reads several files at once and detects plaintext
+#' exports automatically; pass it `format = "wos_tab"` for tab-delimited
+#' files.
 #'
 #' @param file Path to a WoS export file (.txt).
 #' @param format Character. `"plaintext"` (default) for WoS tagged format,

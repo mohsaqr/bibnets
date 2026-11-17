@@ -19,8 +19,11 @@ plus list-columns \code{authors}, \code{references}, and \code{keywords}.
 WoS-specific extra: \code{keywords_plus} (list-column).
 }
 \description{
-Parses a Web of Science export file (plaintext or tab-delimited) into a
-standardized bibliometric data frame.
+\code{read_wos()} parses a Web of Science export file (plaintext or
+tab-delimited) into a standardized bibliometric data frame.
+\code{\link[=read_biblio]{read_biblio()}} reads several files at once and detects plaintext
+exports automatically; pass it \code{format = "wos_tab"} for tab-delimited
+files.
 }
 \examples{
 f <- system.file("extdata", "wos_sample.txt", package = "bibnets")

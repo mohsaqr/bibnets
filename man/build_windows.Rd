@@ -7,6 +7,9 @@
 build_windows(min_time, max_time, window, step, strategy)
 }
 \description{
-Build time window definitions
+\code{build_windows()} computes the time windows used by
+\code{\link[=temporal_network]{temporal_network()}} for the fixed, sliding or cumulative \code{strategy}. It
+returns a data frame with one row per window and columns \code{start}, \code{end}
+and \code{label} (\code{"start-end"}).
 }
 \keyword{internal}

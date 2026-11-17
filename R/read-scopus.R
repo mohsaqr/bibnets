@@ -1,7 +1,9 @@
 #' Read Scopus CSV export
 #'
-#' Parses a CSV file exported from Scopus into a standardized bibliometric
-#' data frame with list-columns for multi-valued fields.
+#' `read_scopus()` parses a CSV file exported from Scopus into a
+#' standardized bibliometric data frame with list-columns for multi-valued
+#' fields.
+#' [read_biblio()] reads several files at once and detects the format.
 #'
 #' @param file Path to a Scopus CSV export file.
 #' @param encoding Character. File encoding. Default `"UTF-8"`.

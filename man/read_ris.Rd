@@ -18,8 +18,9 @@ plus list-columns \code{authors}, \code{references} (typically empty for
 RIS), and \code{keywords}.
 }
 \description{
-Parses a \code{.ris} file into a standardized bibliometric data frame.
-Like BibTeX, standard RIS does not include cited references.
+\code{read_ris()} parses a \code{.ris} file into a standardized bibliometric data
+frame. Like BibTeX, standard RIS does not include cited references.
+\code{\link[=read_biblio]{read_biblio()}} reads several files at once and detects the format.
 }
 \examples{
 # Write a minimal RIS record to a temp file, then read it

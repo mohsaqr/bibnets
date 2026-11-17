@@ -93,8 +93,17 @@ attributes \code{network_type}, \code{counting} and \code{similarity}. See
 \code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
-Constructs a network where two keywords are linked when they appear
-together in the same document.
+\code{keyword_network()} builds a keyword co-occurrence network, in which two
+keywords are linked when they appear together in the same document.
+}
+\details{
+The documents and their keywords form a two-mode matrix that is projected
+onto the keywords; \code{counting} and \code{similarity} weight the edges,
+\code{threshold}, \code{min_occur} and \code{top_n} prune them, and \code{attention} replaces
+the counting method with an attention weighting of the keyword order. It
+returns a \code{bibnets_network} edge list by default. To link keywords by
+another field (for example shared authors) use
+\code{conetwork(data, "keywords", by = ...)} (see \code{\link[=conetwork]{conetwork()}}).
 }
 \examples{
 data(biblio_data)

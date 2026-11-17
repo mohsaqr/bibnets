@@ -18,8 +18,11 @@ both among the top \code{n} nodes, with the same class and columns as the
 input, sorted by decreasing \code{weight}.
 }
 \description{
-Keeps only edges between the most frequent nodes. Node frequency is
-determined by how many edges each node participates in.
+\code{filter_top()} keeps only the edges between the \code{n} most frequent nodes.
+Node frequency is determined by how many edges each node participates in.
+It returns the edges whose two endpoints are both among the top nodes. To
+prune by edge weight or keep each node's strongest edges, use \code{\link[=prune]{prune()}};
+for a statistical backbone, use \code{\link[=backbone]{backbone()}}.
 }
 \examples{
 data(biblio_data)

@@ -1,8 +1,8 @@
 #' Aggregate multi-valued fields by an entity
 #'
-#' Groups documents by a single-valued or list-column entity (e.g., author,
-#' journal) and pools all values from another list-column (e.g., references,
-#' keywords) across documents belonging to that entity.
+#' `aggregate_by_entity()` groups documents by a single-valued or list-column
+#' entity (e.g., author, journal) and pools all values from another list-column
+#' (e.g., references, keywords) across documents belonging to that entity.
 #'
 #' @param data A data frame with `id` and the specified columns.
 #' @param entity_field Character. Name of the entity column. If it is a scalar
@@ -76,11 +76,10 @@ aggregate_by_entity <- function(data, entity_field, value_field, min_freq = 1L) 
 
 #' Split delimited strings into a list-column
 #'
-#' Splits delimited strings (semicolons are common in Scopus/WoS exports)
-#' into character vectors, trimming whitespace around each piece and
-#' dropping empty pieces. This is the operation every reader and builder
-#' applies to a multi-valued character column; use it to prepare a
-#' list-column yourself.
+#' `split_field()` splits delimited strings (semicolons are common in Scopus/WoS
+#' exports) into character vectors, trimming whitespace around each piece and
+#' dropping empty pieces. This is the operation every reader and builder applies
+#' to a multi-valued character column; use it to prepare a list-column yourself.
 #'
 #' @param x A character vector (a factor is coerced to character) of
 #'   delimited strings.
@@ -107,10 +106,11 @@ split_field <- function(x, sep = ";") {
 
 #' Strip surrounding quote characters from entity labels
 #'
-#' Removes leading/trailing double-quote characters (straight `"`, the CSV
-#' doubled `""`, and curly quotes) plus surrounding whitespace, so quoted
-#' values such as `"Alice"` or `""Bob""` become `Alice` / `Bob`. Quotes
-#' inside a label (e.g. an apostrophe in `O'Brien`) are left untouched.
+#' `strip_surrounding_quotes()` removes leading/trailing double-quote
+#' characters (straight `"`, the CSV doubled `""`, and curly quotes) plus
+#' surrounding whitespace, so quoted values such as `"Alice"` or `""Bob""`
+#' become `Alice` / `Bob`. Quotes inside a label (e.g. an apostrophe in
+#' `O'Brien`) are left untouched.
 #'
 #' @param x Character vector.
 #' @return Character vector with surrounding quotes/whitespace removed.
@@ -128,9 +128,10 @@ strip_surrounding_quotes <- function(x) {
 
 #' Standardize author names
 #'
-#' Uppercase, whitespace normalisation, and dot removal from initials
-#' (`F.J.` -> `FJ`). Name order and format are preserved, consistent with
-#' how bibliometrix handles multi-source data.
+#' `standardize_authors()` cleans author names by uppercasing, whitespace
+#' normalisation, and dot removal from initials (`F.J.` -> `FJ`). Name
+#' order and format are preserved, consistent with how bibliometrix handles
+#' multi-source data. To reorder and parse names, use [parse_names()].
 #'
 #' @param x Character vector of author names.
 #' @param flip_names Logical. If `TRUE`, names in `Last, First` format are
@@ -167,8 +168,8 @@ check_data <- function(data, required) {
 
 #' Resolve the work-identifier column
 #'
-#' Materializes a top-level `id` column that the network pipeline uses to
-#' index works (matrix rows). Resolution rules:
+#' `resolve_id()` materializes a top-level `id` column that the network
+#' pipeline uses to index works (matrix rows). Resolution rules:
 #'
 #' - `id = NULL` (default): use the existing `id` column if one is present,
 #'   otherwise fall back to row numbers (`seq_len(nrow(data))`).

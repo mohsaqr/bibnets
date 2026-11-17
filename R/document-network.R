@@ -1,6 +1,19 @@
 #' Build a document network
 #'
-#' Constructs a network between documents (papers) in the dataset.
+#' `document_network()` builds a network between documents (papers) in the
+#' dataset. By default two documents are linked by bibliographic coupling,
+#' when they share cited references (Kessler, 1963); the other types are
+#' direct citation, co-citation of the cited items (Small, 1973) and the
+#' cosine similarity of the documents' reference vectors.
+#'
+#' The documents and their references form a two-mode matrix, projected onto
+#' the documents for coupling and onto the cited items for co-citation;
+#' `counting` and `similarity` weight the edges and `threshold`, `min_occur`
+#' and `top_n` prune them. It returns a `bibnets_network` edge list by
+#' default, directed for `type = "citation"`. For a co-citation network of
+#' the references themselves see [reference_network()]; for local citation
+#' counts and a chronological citation network see [local_citations()] and
+#' [historiograph()].
 #'
 #' @param data A data frame with one row per work and a references column
 #'   (list-column or delimited string). An `id` column is optional (see `id`);

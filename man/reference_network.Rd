@@ -83,8 +83,18 @@ attributes \code{network_type}, \code{counting} and \code{similarity}. See
 \code{\link[=author_network]{author_network()}} for the other formats.
 }
 \description{
-Constructs a co-citation or equivalence network among cited references.
-Two references are linked when they are cited together by the same paper.
+\code{reference_network()} builds a co-citation or equivalence network among
+cited references. In a co-citation network two references are linked when
+they are cited together by the same paper; the equivalence network instead
+uses the cosine similarity of the references' citing-paper vectors.
+}
+\details{
+The citing papers and their references form a two-mode matrix that is
+projected onto the references; \code{counting} and \code{similarity} weight the
+edges and \code{threshold}, \code{min_occur} and \code{top_n} prune them. It returns a
+\code{bibnets_network} edge list by default. To link the citing documents
+instead (bibliographic coupling or direct citation), use
+\code{\link[=document_network]{document_network()}}.
 }
 \examples{
 data(biblio_data)

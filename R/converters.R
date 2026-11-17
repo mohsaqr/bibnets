@@ -1,6 +1,9 @@
 #' Convert edge data frame to igraph
 #'
-#' Requires the suggested package igraph.
+#' `to_igraph()` converts a bibnets edge list to an `igraph` graph with
+#' `igraph::graph_from_data_frame()`. It requires the suggested package
+#' igraph. For a `tbl_graph` use [to_tbl_graph()]; for a cograph network use
+#' [to_cograph()].
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns,
 #'   as returned by any network function in bibnets.
@@ -27,7 +30,9 @@ to_igraph <- function(edges, directed = FALSE) {
 
 #' Convert edge data frame to tbl_graph
 #'
-#' Requires the suggested packages tidygraph and igraph.
+#' `to_tbl_graph()` converts a bibnets edge list to a tidygraph `tbl_graph`,
+#' through [to_igraph()]. It requires the suggested packages tidygraph and
+#' igraph.
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param directed Logical. Default `FALSE`.
@@ -52,6 +57,10 @@ to_tbl_graph <- function(edges, directed = FALSE) {
 
 #' Convert edge data frame to adjacency matrix
 #'
+#' `to_matrix()` converts a bibnets edge list to a square sparse adjacency
+#' matrix of edge weights, one row and column per node. By default each edge
+#' is entered in both directions, so the matrix is symmetric.
+#'
 #' @param edges A data frame with `from`, `to`, `weight` columns.
 #' @param symmetric Logical. If `TRUE` (default), produces a symmetric matrix
 #'   (each edge is entered in both directions).
@@ -72,9 +81,9 @@ to_matrix <- function(edges, symmetric = TRUE) {
 
 #' Export to Gephi node and edge tables
 #'
-#' Converts a bibnets edge list (and optional node table) to the CSV format
-#' expected by Gephi's Data Laboratory. Column names are remapped to Gephi
-#' conventions (`Source`, `Target`, `Weight`, `Id`, `Label`).
+#' `to_gephi()` converts a bibnets edge list (and optional node table) to the
+#' CSV format expected by Gephi's Data Laboratory. Column names are remapped to
+#' Gephi conventions (`Source`, `Target`, `Weight`, `Id`, `Label`).
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param nodes Optional data frame of node attributes. Must contain an `id`
@@ -156,8 +165,9 @@ to_gephi <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 
 #' Export to GraphML
 #'
-#' Writes a bibnets edge list (and optional node attributes) to a GraphML
-#' file using base R only, without an XML package.
+#' `to_graphml()` writes a bibnets edge list (and optional node attributes)
+#' to a GraphML file, or returns the document as a string, using base R
+#' only, without an XML package.
 #'
 #' @param edges A data frame with at least `from`, `to`, `weight` columns.
 #' @param nodes Optional data frame of node attributes with an `id` column.
@@ -278,11 +288,11 @@ to_graphml <- function(edges, nodes = NULL, file = NULL, directed = FALSE) {
 
 #' Prepare network for cograph::splot()
 #'
-#' Converts a bibnets edge list to a `cograph_network` object by calling
-#' `cograph::as_cograph()`. Optionally merges node metadata (e.g., from
-#' [local_citations()]) into the network's node table so attributes like
-#' `lcs` or `year` can be used directly in `splot()` aesthetic parameters
-#' (e.g., `node_size = "lcs"`).
+#' `to_cograph()` converts a bibnets edge list to a `cograph_network` object by
+#' calling `cograph::as_cograph()`. Optionally merges node metadata (e.g., from
+#' [local_citations()]) into the network's node table so attributes like `lcs`
+#' or `year` can be used directly in `splot()` aesthetic parameters (e.g.,
+#' `node_size = "lcs"`).
 #'
 #' Note: bibnets edge lists (`from`, `to`, `weight`) are accepted directly
 #' by `cograph::splot()` without conversion. This function is only needed

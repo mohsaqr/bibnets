@@ -1,6 +1,16 @@
 #' Build an institution network
 #'
-#' Constructs a network between institutions (affiliations).
+#' `institution_network()` builds a network between institutions
+#' (affiliations). In a collaboration network two institutions are linked
+#' when they appear on the same paper; in a coupling network they are linked
+#' when their papers cite the same references; the equivalence type uses the
+#' cosine similarity of the institutions' paper-incidence vectors.
+#'
+#' `counting` and `similarity` weight the edges, `threshold`, `min_occur` and
+#' `top_n` prune them, and `attention` replaces the type and counting method
+#' with an attention weighting of the affiliation order. It returns a
+#' `bibnets_network` edge list by default. For countries see
+#' [country_network()]; for authors see [author_network()].
 #'
 #' @param data A data frame with one row per work and an affiliation column (list-column
 #'   or delimited string). An `id` column is optional (see `id`).

@@ -139,9 +139,24 @@ attributes \code{network_type}, \code{counting} and \code{similarity}.
 \code{cograph_network}; \code{"matrix"} a symmetric sparse \code{dgCMatrix}.
 }
 \description{
-Constructs a network between authors using one of four relationship types
-and any of 13 counting methods, including 9 position-dependent methods
-that respect author byline order.
+\code{author_network()} builds a network between authors using one of four
+relationship types: co-authorship (\code{"collaboration"}), bibliographic
+coupling (\code{"coupling"}), author co-citation (\code{"co_citation"}) or profile
+similarity (\code{"equivalence"}). Edges are weighted by any of 13 counting
+methods, including 9 position-dependent methods that respect author byline
+order, such as harmonic counting (Hagen, 2008); full and fractional
+counting are described by Perianes-Rodriguez et al. (2016).
+}
+\details{
+The authors and the works form a two-mode matrix that is projected onto
+the authors; \code{similarity} normalizes the projected counts, \code{threshold},
+\code{min_occur} and \code{top_n} prune the result, and \code{attention} replaces the
+counting method with an attention weighting of the byline. It returns a
+\code{bibnets_network} edge list by default, or the network in another
+\code{format}. For networks of other entities use \code{\link[=keyword_network]{keyword_network()}},
+\code{\link[=reference_network]{reference_network()}}, \code{\link[=document_network]{document_network()}}, \code{\link[=source_network]{source_network()}},
+\code{\link[=country_network]{country_network()}}, \code{\link[=institution_network]{institution_network()}} or, for any column,
+\code{\link[=conetwork]{conetwork()}}.
 }
 \examples{
 data(biblio_data)

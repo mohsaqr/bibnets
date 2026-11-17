@@ -1,8 +1,22 @@
 #' Build an author network
 #'
-#' Constructs a network between authors using one of four relationship types
-#' and any of 13 counting methods, including 9 position-dependent methods
-#' that respect author byline order.
+#' `author_network()` builds a network between authors using one of four
+#' relationship types: co-authorship (`"collaboration"`), bibliographic
+#' coupling (`"coupling"`), author co-citation (`"co_citation"`) or profile
+#' similarity (`"equivalence"`). Edges are weighted by any of 13 counting
+#' methods, including 9 position-dependent methods that respect author byline
+#' order, such as harmonic counting (Hagen, 2008); full and fractional
+#' counting are described by Perianes-Rodriguez et al. (2016).
+#'
+#' The authors and the works form a two-mode matrix that is projected onto
+#' the authors; `similarity` normalizes the projected counts, `threshold`,
+#' `min_occur` and `top_n` prune the result, and `attention` replaces the
+#' counting method with an attention weighting of the byline. It returns a
+#' `bibnets_network` edge list by default, or the network in another
+#' `format`. For networks of other entities use [keyword_network()],
+#' [reference_network()], [document_network()], [source_network()],
+#' [country_network()], [institution_network()] or, for any column,
+#' [conetwork()].
 #'
 #' @param data A data frame with one row per work and an author column
 #'   (list-column or delimited string, byline order preserved). An `id`

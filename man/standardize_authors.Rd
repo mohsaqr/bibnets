@@ -17,8 +17,9 @@ in \code{x} reliably follow the \verb{Last, First} convention.}
 Character vector, uppercased and cleaned.
 }
 \description{
-Uppercase, whitespace normalisation, and dot removal from initials
-(\code{F.J.} -> \code{FJ}). Name order and format are preserved, consistent with
-how bibliometrix handles multi-source data.
+\code{standardize_authors()} cleans author names by uppercasing, whitespace
+normalisation, and dot removal from initials (\code{F.J.} -> \code{FJ}). Name
+order and format are preserved, consistent with how bibliometrix handles
+multi-source data. To reorder and parse names, use \code{\link[=parse_names]{parse_names()}}.
 }
 \keyword{internal}

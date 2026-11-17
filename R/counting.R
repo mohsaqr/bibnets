@@ -1,9 +1,11 @@
 #' Compute positional author weights for a single paper
 #'
-#' Given the number of authors and their positions, returns a weight vector
-#' for positional counting methods. All methods normalize weights to sum to 1
-#' per paper. Position-independent methods (fractional, paper, strength) are
-#' handled by [apply_counting()] instead.
+#' `author_weights()` computes the weight of each byline position on a paper
+#' with `n` authors under a positional counting method, such as harmonic
+#' counting, where the author in position \eqn{i} receives \eqn{1/i},
+#' rescaled. All methods normalize weights to sum to 1 per paper.
+#' Position-independent methods (fractional, paper, strength) are handled by
+#' [apply_counting()] instead.
 #'
 #' @param n Integer. Number of authors.
 #' @param counting Character. Counting method.
@@ -138,8 +140,10 @@ author_weights <- function(n, counting = "fractional",
 
 #' Build a weighted bipartite matrix using positional counting
 #'
-#' For position-dependent counting methods, this replaces the binary bipartite
-#' matrix entries with positional weights derived from author order.
+#' `build_author_bipartite()` builds the works x authors two-mode matrix for
+#' position-dependent counting methods. It replaces the binary bipartite
+#' matrix entries with positional weights derived from author order (see
+#' [author_weights()]); authors with weight zero on a paper are dropped.
 #'
 #' @param data A data frame with `id` and an ordered entity column
 #'   (list-column or delimited string).
@@ -222,8 +226,14 @@ build_author_bipartite <- function(data, field = "authors",
 
 #' Apply counting weights to a generic bipartite matrix
 #'
-#' For position-independent counting of non-author fields (references,
-#' keywords, etc.). Modifies the bipartite matrix row weights.
+#' `apply_counting()` weights a binary works x entities matrix by a
+#' position-independent counting method (`"fractional"`, `"paper"` or
+#' `"strength"`; `"full"` leaves it unchanged). It is used for non-author
+#' fields (references, keywords, etc.). `"fractional"` and `"paper"` modify
+#' the bipartite matrix row weights; `"strength"` weights the columns by
+#' inverse document frequency and leaves the row normalization to
+#' [multiply_bipartite()]. For position-dependent counting use
+#' [build_author_bipartite()].
 #'
 #' @param B A sparse binary bipartite matrix (works x entities).
 #' @param counting Character. One of `"full"`, `"fractional"`, `"paper"`,
@@ -274,7 +284,13 @@ apply_counting <- function(B, counting = "full",
 }
 
 
-#' List of all available counting methods
+#' List the position-independent counting methods
+#'
+#' `position_independent_counts()` returns the names of the four
+#' position-independent counting methods: `"full"`, `"fractional"`,
+#' `"paper"` and `"strength"`. Every network builder accepts these; the
+#' position-dependent methods apply only to co-authorship networks (see
+#' [author_network()]).
 #'
 #' @return Character vector of method names.
 #' @keywords internal

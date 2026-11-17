@@ -1,7 +1,9 @@
 #' Convert OpenAlex data to bibnets format
 #'
-#' Takes the output of [openalexR::oa_fetch()] (a tibble/data frame of works)
-#' and converts it to the standardized bibnets format with list-columns.
+#' `read_openalex()` converts the output of [openalexR::oa_fetch()] (a
+#' tibble/data frame of works) to the standardized bibnets format with
+#' list-columns. For a flat CSV downloaded from the OpenAlex website, use
+#' [read_openalex_csv()].
 #'
 #' @param data A data frame from `oa_fetch(entity = "works", ...)`. Must
 #'   contain at least an `id` column. Common columns include `display_name`,
@@ -140,10 +142,10 @@ read_openalex <- function(data) {
 
 #' Read a flat OpenAlex CSV export
 #'
-#' Reads the flat CSV format downloaded directly from the OpenAlex website
-#' (`openalex.org/works` exports). Multi-value fields are pipe-delimited (`|`).
-#' This is distinct from the nested tibble produced by [openalexR::oa_fetch()],
-#' which is handled by [read_openalex()].
+#' `read_openalex_csv()` reads the flat CSV format downloaded directly from the
+#' OpenAlex website (`openalex.org/works` exports). Multi-value fields are
+#' pipe-delimited (`|`). This is distinct from the nested tibble produced by
+#' [openalexR::oa_fetch()], which is handled by [read_openalex()].
 #'
 #' @param file Path to the CSV file.
 #' @param sep Character. Delimiter for multi-value fields. Default `"|"`.

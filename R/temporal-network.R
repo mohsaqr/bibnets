@@ -1,9 +1,13 @@
 #' Build time-windowed networks
 #'
-#' Splits data by time windows and builds a separate network for each
-#' window using any network function, so the same construction can be
-#' compared across periods. The time column is coerced to integer before
-#' windows are formed.
+#' `temporal_network()` splits data by time windows and builds a separate
+#' network for each window using any network function, so the same
+#' construction can be compared across periods.
+#'
+#' The time column is coerced to integer before windows are formed. Windows
+#' are fixed (disjoint), sliding (overlapping, advancing by `step`) or
+#' cumulative (each starting at the earliest value), of width `window`. It
+#' returns a named list with one edge list per non-empty window.
 #'
 #' @param data A data frame with a numeric time column.
 #' @param network_fun Function or character string naming a network function
@@ -97,6 +101,11 @@ temporal_network <- function(data,
 
 
 #' Build time window definitions
+#'
+#' `build_windows()` computes the time windows used by
+#' [temporal_network()] for the fixed, sliding or cumulative `strategy`. It
+#' returns a data frame with one row per window and columns `start`, `end`
+#' and `label` (`"start-end"`).
 #' @keywords internal
 build_windows <- function(min_time, max_time, window, step, strategy) {
   window <- as.integer(window)

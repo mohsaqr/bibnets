@@ -1,4 +1,4 @@
-# bibnets 0.6.2
+# bibnets 0.6.3
 
 ## Documentation
 

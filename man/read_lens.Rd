@@ -17,8 +17,9 @@ A data frame in the standard bibnets format: \code{id}, \code{title},
 plus list-columns \code{authors}, \code{references}, and \code{keywords}.
 }
 \description{
-Parses a CSV file exported from Lens.org into a standardized bibliometric
-data frame.
+\code{read_lens()} parses a CSV file exported from Lens.org into a standardized
+bibliometric data frame.
+\code{\link[=read_biblio]{read_biblio()}} reads several files at once and detects the format.
 }
 \examples{
 f <- system.file("extdata", "lens_sample.csv", package = "bibnets")

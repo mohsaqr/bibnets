@@ -1,7 +1,18 @@
 #' Read bibliometric data
 #'
-#' Universal reader that handles files, folders, format detection, and
-#' generic CSV input. Accepts a single file, multiple files, or a directory.
+#' `read_biblio()` reads bibliometric exports into a standardized data
+#' frame. It is the universal reader: it handles files, folders, format
+#' detection, and generic CSV input, and accepts a single file, multiple
+#' files, or a directory.
+#'
+#' With `format = "auto"` the format of each file is detected from its
+#' content and the matching reader is called ([read_scopus()],
+#' [read_wos()], [read_bibtex()], [read_ris()], [read_dimensions()],
+#' [read_lens()] or [read_openalex_csv()]); naming source columns with
+#' `authors`, `keywords` and the other mapping arguments reads any CSV
+#' instead. It returns one row per record, with the files' rows bound
+#' together. Data already loaded in R from openalexR or rcrossref are
+#' converted with [read_openalex()] and [read_crossref()].
 #'
 #' @param path Character. Path to a file, a vector of file paths, or a
 #'   directory containing export files.
@@ -144,6 +155,11 @@ read_biblio <- function(path,
 
 
 #' Align columns before row-binding bibliographic files
+#'
+#' `align_biblio_columns()` gives every data frame in a list the same
+#' columns in the same order, so that they can be row-bound. A missing
+#' list-column is filled with empty character vectors and any other missing
+#' column with `NA`. It returns the list of aligned data frames.
 #' @keywords internal
 align_biblio_columns <- function(dfs) {
   all_cols <- unique(unlist(lapply(dfs, names), use.names = FALSE))
@@ -167,6 +183,12 @@ align_biblio_columns <- function(dfs) {
 
 
 #' Read a single bibliometric file
+#'
+#' `read_single_biblio()` reads one file for [read_biblio()]. It calls
+#' [read_generic()] for `format = "generic"`; otherwise it detects the
+#' format with [detect_format()] when `format = "auto"` and dispatches to
+#' the matching format-specific reader, with an error that lists the
+#' supported formats when none matches.
 #' @keywords internal
 read_single_biblio <- function(file, format, id, sep,
                                authors = NULL, keywords = NULL,
@@ -211,6 +233,14 @@ read_single_biblio <- function(file, format, id, sep,
 
 
 #' Read a generic CSV with user-specified columns
+#'
+#' `read_generic()` reads any CSV and maps its columns onto the standard
+#' bibnets fields by name. The `authors`, `keywords`, `references`,
+#' `countries` and `affiliations` columns, and any `list_cols`, are split on
+#' `sep` into list-columns; `journal` is copied as a single value; `id` is
+#' set from the named column or from row numbers. Named columns missing from
+#' the file are skipped with a warning. It returns every source column plus
+#' the mapped fields.
 #' @keywords internal
 read_generic <- function(file, id = NULL, sep = ";",
                          authors = NULL, keywords = NULL, references = NULL,
@@ -268,6 +298,11 @@ read_generic <- function(file, id = NULL, sep = ";",
 
 
 #' Resolve file paths from a file, vector of files, or directory
+#'
+#' `resolve_paths()` expands `path` into a character vector of files: a
+#' directory contributes its `.csv`, `.txt`, `.bib`, `.ris`, `.xls` and
+#' `.xlsx` files, an existing file is kept, and a path that does not exist
+#' is dropped.
 #' @keywords internal
 resolve_paths <- function(path) {
   unlist(lapply(path, function(p) {
@@ -284,6 +319,12 @@ resolve_paths <- function(path) {
 
 
 #' Detect bibliometric file format
+#'
+#' `detect_format()` detects the format of a bibliometric export from its
+#' first non-empty lines: BibTeX (`@`), RIS (`TY  -`), Web of Science
+#' plaintext (`FN` or `PT`), or, from the CSV header, Scopus, Dimensions
+#' (whose header follows an `About the data` line), Lens.org or the flat
+#' OpenAlex CSV.
 #' @param file Path to file.
 #' @return Character: format name or `"unknown"`.
 #' @keywords internal

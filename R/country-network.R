@@ -1,6 +1,16 @@
 #' Build a country network
 #'
-#' Constructs a network between countries based on collaboration or coupling.
+#' `country_network()` builds a network between countries based on
+#' collaboration or coupling. In a collaboration network two countries are
+#' linked when they appear on the same paper; in a coupling network they are
+#' linked when their papers cite the same references; the equivalence type
+#' uses the cosine similarity of the countries' paper-incidence vectors.
+#'
+#' `counting` and `similarity` weight the edges, `threshold`, `min_occur` and
+#' `top_n` prune them, and `attention` replaces the type and counting method
+#' with an attention weighting of the country order. It returns a
+#' `bibnets_network` edge list by default. For institutions see
+#' [institution_network()]; for authors see [author_network()].
 #'
 #' @param data A data frame with one row per work and a country column (list-column or
 #'   delimited string). An `id` column is optional (see `id`).

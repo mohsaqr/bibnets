@@ -231,11 +231,11 @@
 
 #' Reorder and parse author names
 #'
-#' Converts author names to `"First Last"` order and breaks each name
-#' into its components. The parser is aware of nobiliary particles
-#' (`van`, `von`, `de`, `del`, `da`, `der`, ...) and generational
-#' suffixes (`Jr`, `Sr`, `II`, `III`, `IV`), and is case-insensitive so
-#' it handles bibnets' uppercased entity labels.
+#' `parse_names()` converts author names to `"First Last"` order (or another
+#' `format`) and breaks each name into its components. The parser is aware of
+#' nobiliary particles (`van`, `von`, `de`, `del`, `da`, `der`, ...) and
+#' generational suffixes (`Jr`, `Sr`, `II`, `III`, `IV`), and is
+#' case-insensitive so it handles bibnets' uppercased entity labels.
 #'
 #' Three name conventions are recognised:
 #' \itemize{

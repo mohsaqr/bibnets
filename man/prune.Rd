@@ -22,9 +22,13 @@ same class and columns as the input, one row per edge, sorted by
 decreasing \code{weight}.
 }
 \description{
-Reduces a weighted edge list by removing weak or excess edges. Supply
-exactly one of \code{threshold} (a global cut-off) or \code{top_n} (a local,
+\code{prune()} reduces a weighted edge list by removing weak or excess edges.
+Supply exactly one of \code{threshold} (a global cut-off) or \code{top_n} (a local,
 per-node cut-off); supplying both or neither is an error.
+}
+\details{
+It returns the retained edges. To keep the edges among the most connected
+nodes, use \code{\link[=filter_top]{filter_top()}}; for a statistical backbone, use \code{\link[=backbone]{backbone()}}.
 }
 \examples{
 edges <- data.frame(

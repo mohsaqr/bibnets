@@ -38,7 +38,9 @@ repeated within one paper.}
 A sparse weighted bipartite matrix (works x authors).
 }
 \description{
-For position-dependent counting methods, this replaces the binary bipartite
-matrix entries with positional weights derived from author order.
+\code{build_author_bipartite()} builds the works x authors two-mode matrix for
+position-dependent counting methods. It replaces the binary bipartite
+matrix entries with positional weights derived from author order (see
+\code{\link[=author_weights]{author_weights()}}); authors with weight zero on a paper are dropped.
 }
 \keyword{internal}

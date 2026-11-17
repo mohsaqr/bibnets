@@ -28,9 +28,9 @@ Each paper has 3 keywords.}
 biblio_data
 }
 \description{
-A small synthetic dataset of 10 scholarly papers with overlapping authors,
-references, and keywords. Designed for testing and demonstrating all
-network construction functions in bibnets.
+\code{biblio_data} is a small synthetic dataset of 10 scholarly papers with
+overlapping authors, references, and keywords, used in the examples of the
+network construction functions.
 }
 \examples{
 data(biblio_data)

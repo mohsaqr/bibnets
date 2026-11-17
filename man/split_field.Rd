@@ -19,11 +19,10 @@ vector of pieces of \code{x[i]}. \code{NA} and empty strings give
 \code{character(0)}.
 }
 \description{
-Splits delimited strings (semicolons are common in Scopus/WoS exports)
-into character vectors, trimming whitespace around each piece and
-dropping empty pieces. This is the operation every reader and builder
-applies to a multi-valued character column; use it to prepare a
-list-column yourself.
+\code{split_field()} splits delimited strings (semicolons are common in Scopus/WoS
+exports) into character vectors, trimming whitespace around each piece and
+dropping empty pieces. This is the operation every reader and builder applies
+to a multi-valued character column; use it to prepare a list-column yourself.
 }
 \examples{
 split_field(c("Alice; Bob; Carol", "Dave; Eve"))

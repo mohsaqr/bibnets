@@ -1,9 +1,10 @@
 #' Read a BibTeX file
 #'
-#' Parses a `.bib` file into a standardized bibliometric data frame.
-#' Note: standard BibTeX does not contain cited references, so the
+#' `read_bibtex()` parses a `.bib` file into a standardized bibliometric data
+#' frame. Note: standard BibTeX does not contain cited references, so the
 #' `references` column will be empty unless the file includes a
 #' non-standard `cited-references` or `note` field with reference data.
+#' [read_biblio()] reads several files at once and detects the format.
 #'
 #' @param file Path to a `.bib` file.
 #' @param encoding Character. File encoding. Default `"UTF-8"`.

@@ -19,6 +19,11 @@ build_by_network(
 )
 }
 \description{
-Build a network where entities share values from another field
+\code{build_by_network()} builds the network behind \code{conetwork(by = ...)}:
+two entities of \code{field} are linked when they share values of the \code{by}
+field across documents. It pools each entity's \code{by} values, builds an
+entities x values two-mode matrix and projects it onto the entities,
+returning an edge data frame with columns \code{from}, \code{to}, \code{weight} and
+\code{count}.
 }
 \keyword{internal}

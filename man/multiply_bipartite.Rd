@@ -34,7 +34,16 @@ honoured with \code{similarity = "none"}.}
 A data frame with columns \code{from}, \code{to}, \code{weight}, \code{count}.
 }
 \description{
-The unified engine for all bibliometric networks. Operates entirely in
-sparse representation and never allocates a dense n x n matrix.
+\code{multiply_bipartite()} projects a weighted works x entities matrix onto a
+one-mode co-occurrence network and returns its edges. With
+\code{mode = "columns"} it links the entities (columns) that occur in the same
+rows (\code{crossprod(B)}, e.g. co-citation); with \code{mode = "rows"} it links
+the rows that share entities (\code{tcrossprod(B)}, e.g. coupling).
+}
+\details{
+It is the unified engine for all bibliometric networks. It operates
+entirely in sparse representation and never allocates a dense n x n
+matrix; \code{top_n} keeps the most frequent nodes, \code{similarity} normalizes
+the projection with \code{\link[=normalize]{normalize()}}, and \code{threshold} drops weak edges.
 }
 \keyword{internal}

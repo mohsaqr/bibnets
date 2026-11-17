@@ -20,10 +20,10 @@ plus list-columns \code{authors}, \code{references}, \code{keywords}, \code{affi
 neither.
 }
 \description{
-Reads the flat CSV format downloaded directly from the OpenAlex website
-(\code{openalex.org/works} exports). Multi-value fields are pipe-delimited (\code{|}).
-This is distinct from the nested tibble produced by \code{\link[openalexR:oa_fetch]{openalexR::oa_fetch()}},
-which is handled by \code{\link[=read_openalex]{read_openalex()}}.
+\code{read_openalex_csv()} reads the flat CSV format downloaded directly from the
+OpenAlex website (\code{openalex.org/works} exports). Multi-value fields are
+pipe-delimited (\code{|}). This is distinct from the nested tibble produced by
+\code{\link[openalexR:oa_fetch]{openalexR::oa_fetch()}}, which is handled by \code{\link[=read_openalex]{read_openalex()}}.
 }
 \examples{
 f <- system.file("extdata", "openalex_works.csv", package = "bibnets")

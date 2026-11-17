@@ -1,8 +1,9 @@
 #' Convert a sparse square matrix to a tidy edge list
 #'
-#' Extracts non-zero entries directly from the sparse representation,
-#' without a dense matrix allocation. For undirected networks, only the upper
-#' triangle is returned.
+#' `mat_to_edgelist()` converts a square matrix to an edge list with columns
+#' `from`, `to` and `weight`. It extracts non-zero entries directly from the
+#' sparse representation, without a dense matrix allocation. For undirected
+#' networks, only the upper triangle is returned.
 #'
 #' @param A A square sparse or dense matrix.
 #' @param directed Logical. If `FALSE` (default), returns only upper-triangle
@@ -64,6 +65,11 @@ mat_to_edgelist <- function(A, directed = FALSE) {
 
 
 #' Convert edge list to a square sparse matrix
+#'
+#' `edgelist_to_mat()` converts an edge list to a square sparse matrix of
+#' edge weights, one row and column per node. With `symmetric = TRUE` each
+#' edge is entered in both directions. It is the inverse of
+#' [mat_to_edgelist()] and the engine behind [to_matrix()].
 #'
 #' @param edges A data frame with columns `from`, `to`, `weight`.
 #' @param nodes Optional character vector of node names. If `NULL`,

@@ -99,7 +99,21 @@ cited) with \code{weight} and \code{count} both 1, in data order; the other
 types are undirected and sorted by decreasing \code{weight}.
 }
 \description{
-Constructs a network between documents (papers) in the dataset.
+\code{document_network()} builds a network between documents (papers) in the
+dataset. By default two documents are linked by bibliographic coupling,
+when they share cited references (Kessler, 1963); the other types are
+direct citation, co-citation of the cited items (Small, 1973) and the
+cosine similarity of the documents' reference vectors.
+}
+\details{
+The documents and their references form a two-mode matrix, projected onto
+the documents for coupling and onto the cited items for co-citation;
+\code{counting} and \code{similarity} weight the edges and \code{threshold}, \code{min_occur}
+and \code{top_n} prune them. It returns a \code{bibnets_network} edge list by
+default, directed for \code{type = "citation"}. For a co-citation network of
+the references themselves see \code{\link[=reference_network]{reference_network()}}; for local citation
+counts and a chronological citation network see \code{\link[=local_citations]{local_citations()}} and
+\code{\link[=historiograph]{historiograph()}}.
 }
 \examples{
 data(biblio_data)

@@ -29,12 +29,12 @@ Scopus bibliometric export. Dataset archived at
 scopus_quantum_cloud
 }
 \description{
-A 499-record subset of a Scopus bibliometric export on the intersection
-of green cloud computing and quantization, covering 2020--2025. Includes
-full reference strings, author keywords, and affiliations. The
-references are formatted citation strings, not Scopus EIDs, so they do
-not match the \code{id} column: use this dataset for co-citation, coupling,
-keyword and collaboration networks, not for local citations or
+\code{scopus_quantum_cloud} is a 499-record subset of a Scopus bibliometric export
+on the intersection of green cloud computing and quantization, covering
+2020--2025. Includes full reference strings, author keywords, and
+affiliations. The references are formatted citation strings, not Scopus EIDs,
+so they do not match the \code{id} column: use this dataset for co-citation,
+coupling, keyword and collaboration networks, not for local citations or
 historiographs.
 }
 \examples{

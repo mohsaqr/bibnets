@@ -26,9 +26,11 @@ when \code{counting = "first_last"}. Default 2.}
 Numeric vector of length \code{n}, summing to 1.
 }
 \description{
-Given the number of authors and their positions, returns a weight vector
-for positional counting methods. All methods normalize weights to sum to 1
-per paper. Position-independent methods (fractional, paper, strength) are
-handled by \code{\link[=apply_counting]{apply_counting()}} instead.
+\code{author_weights()} computes the weight of each byline position on a paper
+with \code{n} authors under a positional counting method, such as harmonic
+counting, where the author in position \eqn{i} receives \eqn{1/i},
+rescaled. All methods normalize weights to sum to 1 per paper.
+Position-independent methods (fractional, paper, strength) are handled by
+\code{\link[=apply_counting]{apply_counting()}} instead.
 }
 \keyword{internal}

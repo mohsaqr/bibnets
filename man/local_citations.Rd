@@ -45,8 +45,16 @@ followed by \code{year} (integer), \code{title}, \code{journal} and \code{doi} w
 in the input.
 }
 \description{
-Counts how many times each document is cited by other documents
-within the dataset.
+\code{local_citations()} computes the local citation score (LCS) of each
+document: how many times it is cited by other documents within the
+dataset. When the data carry \code{cited_by_count}, the global citation score
+(GCS) is reported beside it.
+}
+\details{
+It returns one row per document, sorted by decreasing \code{lcs}. To lay the
+most locally cited documents out as a chronological citation network, use
+\code{\link[=historiograph]{historiograph()}}; for the full citation network, use
+\code{document_network(type = "citation")} (see \code{\link[=document_network]{document_network()}}).
 }
 \examples{
 data(biblio_data)

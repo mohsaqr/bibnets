@@ -19,18 +19,22 @@ of the two endpoint alphas), one row per retained edge, sorted by
 decreasing \code{weight}.
 }
 \description{
-Applies the disparity filter to a weighted edge list. For each edge, it
-computes an alpha (p-value) from both endpoints and keeps the edge if it
-is statistically significant from at least one endpoint.
+\code{backbone()} extracts the backbone of a weighted edge list with the
+disparity filter (Serrano et al., 2009). For each edge, it computes an
+alpha (p-value) from both endpoints and keeps the edge if it is
+statistically significant from at least one endpoint.
 }
 \details{
-The null model asks: given that node \eqn{i} has total strength \eqn{s_i}
-distributed uniformly across \eqn{k_i} edges, what is the probability that
-a single edge weight is as large as \eqn{w_{ij}}? The answer is
+Under the null model, the total strength \eqn{s_i} of node \eqn{i} is
+distributed uniformly across its \eqn{k_i} edges; the probability that a
+single edge weight is as large as \eqn{w_{ij}} is then
 \deqn{\alpha_{ij} = \left(1 - \frac{w_{ij}}{s_i}\right)^{k_i - 1}}
 
 An edge is retained if \eqn{\min(\alpha_{ij}, \alpha_{ji}) < \alpha}.
 Nodes with only one edge always have \eqn{\alpha = 0} and are always kept.
+It returns the retained edges with their \code{alpha}. To prune by a fixed
+weight cut-off or a per-node edge count instead, use \code{\link[=prune]{prune()}}; to keep
+the edges among the most connected nodes, use \code{\link[=filter_top]{filter_top()}}.
 }
 \examples{
 edges <- data.frame(

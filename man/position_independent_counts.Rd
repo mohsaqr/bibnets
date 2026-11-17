@@ -2,7 +2,7 @@
 % Please edit documentation in R/counting.R
 \name{position_independent_counts}
 \alias{position_independent_counts}
-\title{List of all available counting methods}
+\title{List the position-independent counting methods}
 \usage{
 position_independent_counts()
 }
@@ -10,6 +10,10 @@ position_independent_counts()
 Character vector of method names.
 }
 \description{
-List of all available counting methods
+\code{position_independent_counts()} returns the names of the four
+position-independent counting methods: \code{"full"}, \code{"fractional"},
+\code{"paper"} and \code{"strength"}. Every network builder accepts these; the
+position-dependent methods apply only to co-authorship networks (see
+\code{\link[=author_network]{author_network()}}).
 }
 \keyword{internal}

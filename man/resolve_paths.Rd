@@ -7,6 +7,9 @@
 resolve_paths(path)
 }
 \description{
-Resolve file paths from a file, vector of files, or directory
+\code{resolve_paths()} expands \code{path} into a character vector of files: a
+directory contributes its \code{.csv}, \code{.txt}, \code{.bib}, \code{.ris}, \code{.xls} and
+\code{.xlsx} files, an existing file is kept, and a path that does not exist
+is dropped.
 }
 \keyword{internal}

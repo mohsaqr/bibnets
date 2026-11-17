@@ -13,6 +13,10 @@ quoted CSV value \code{"Alice"} becomes \code{Alice}). See
 \code{\link[=strip_surrounding_quotes]{strip_surrounding_quotes()}}.}
 }
 \description{
-Ensure a column is a list-column, splitting if needed
+\code{ensure_list_column()} turns a column into a list-column. A character
+column is split on \code{sep} with \code{\link[=split_field]{split_field()}} (with a warning from
+\code{\link[=warn_if_sep_mismatch]{warn_if_sep_mismatch()}} when the separator looks wrong); with
+\code{sep = NULL} each value becomes a single entity. A list-column is kept as
+it is. It returns \code{data} with the column replaced.
 }
 \keyword{internal}

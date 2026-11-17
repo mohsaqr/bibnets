@@ -1,6 +1,16 @@
 #' Build a source (journal) network
 #'
-#' Constructs a network between publication sources (journals, book series).
+#' `source_network()` builds a network between publication sources
+#' (journals, book series). By default two sources are linked by
+#' bibliographic coupling, when their papers share cited references; the
+#' other types are source co-citation (sources cited together, from a
+#' `cited_journals` column) and the cosine similarity of the sources' pooled
+#' reference vectors.
+#'
+#' `counting` and `similarity` weight the edges and `threshold`, `min_occur`
+#' and `top_n` prune them. It returns a `bibnets_network` edge list by
+#' default. To link sources by any other field, use
+#' `conetwork(data, "journal", by = ...)` (see [conetwork()]).
 #'
 #' @param data A data frame with one row per work and a journal column
 #'   (one value per work). An `id` column is optional (see `id`). Coupling

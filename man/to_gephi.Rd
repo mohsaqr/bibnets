@@ -26,9 +26,9 @@ existing directory, writes \code{nodes.csv} and \code{edges.csv} there, reports
 the paths with a message, and returns the two paths invisibly.
 }
 \description{
-Converts a bibnets edge list (and optional node table) to the CSV format
-expected by Gephi's Data Laboratory. Column names are remapped to Gephi
-conventions (\code{Source}, \code{Target}, \code{Weight}, \code{Id}, \code{Label}).
+\code{to_gephi()} converts a bibnets edge list (and optional node table) to the
+CSV format expected by Gephi's Data Laboratory. Column names are remapped to
+Gephi conventions (\code{Source}, \code{Target}, \code{Weight}, \code{Id}, \code{Label}).
 }
 \examples{
 data(biblio_data)

@@ -18,6 +18,12 @@ read_generic(
 )
 }
 \description{
-Read a generic CSV with user-specified columns
+\code{read_generic()} reads any CSV and maps its columns onto the standard
+bibnets fields by name. The \code{authors}, \code{keywords}, \code{references},
+\code{countries} and \code{affiliations} columns, and any \code{list_cols}, are split on
+\code{sep} into list-columns; \code{journal} is copied as a single value; \code{id} is
+set from the named column or from row numbers. Named columns missing from
+the file are skipped with a warning. It returns every source column plus
+the mapped fields.
 }
 \keyword{internal}

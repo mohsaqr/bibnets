@@ -16,7 +16,9 @@ A \code{tbl_graph} (tidygraph) with the edge columns as edge data and
 one node row per node label.
 }
 \description{
-Requires the suggested packages tidygraph and igraph.
+\code{to_tbl_graph()} converts a bibnets edge list to a tidygraph \code{tbl_graph},
+through \code{\link[=to_igraph]{to_igraph()}}. It requires the suggested packages tidygraph and
+igraph.
 }
 \examples{
 \dontshow{if (requireNamespace("tidygraph", quietly = TRUE)) withAutoprint(\{ # examplesIf}

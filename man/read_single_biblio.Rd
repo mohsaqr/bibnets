@@ -20,6 +20,10 @@ read_single_biblio(
 )
 }
 \description{
-Read a single bibliometric file
+\code{read_single_biblio()} reads one file for \code{\link[=read_biblio]{read_biblio()}}. It calls
+\code{\link[=read_generic]{read_generic()}} for \code{format = "generic"}; otherwise it detects the
+format with \code{\link[=detect_format]{detect_format()}} when \code{format = "auto"} and dispatches to
+the matching format-specific reader, with an error that lists the
+supported formats when none matches.
 }
 \keyword{internal}

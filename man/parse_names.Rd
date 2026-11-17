@@ -56,11 +56,11 @@ of \code{"person"}, \code{"organization"}, \code{"empty"}, \code{"missing"}). Ca
 the input is preserved; periods are stripped from parsed initials.
 }
 \description{
-Converts author names to \code{"First Last"} order and breaks each name
-into its components. The parser is aware of nobiliary particles
-(\code{van}, \code{von}, \code{de}, \code{del}, \code{da}, \code{der}, ...) and generational
-suffixes (\code{Jr}, \code{Sr}, \code{II}, \code{III}, \code{IV}), and is case-insensitive so
-it handles bibnets' uppercased entity labels.
+\code{parse_names()} converts author names to \code{"First Last"} order (or another
+\code{format}) and breaks each name into its components. The parser is aware of
+nobiliary particles (\code{van}, \code{von}, \code{de}, \code{del}, \code{da}, \code{der}, ...) and
+generational suffixes (\code{Jr}, \code{Sr}, \code{II}, \code{III}, \code{IV}), and is
+case-insensitive so it handles bibnets' uppercased entity labels.
 }
 \details{
 Three name conventions are recognised:

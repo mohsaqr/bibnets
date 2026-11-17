@@ -1,7 +1,15 @@
 #' Build a keyword co-occurrence network
 #'
-#' Constructs a network where two keywords are linked when they appear
-#' together in the same document.
+#' `keyword_network()` builds a keyword co-occurrence network, in which two
+#' keywords are linked when they appear together in the same document.
+#'
+#' The documents and their keywords form a two-mode matrix that is projected
+#' onto the keywords; `counting` and `similarity` weight the edges,
+#' `threshold`, `min_occur` and `top_n` prune them, and `attention` replaces
+#' the counting method with an attention weighting of the keyword order. It
+#' returns a `bibnets_network` edge list by default. To link keywords by
+#' another field (for example shared authors) use
+#' `conetwork(data, "keywords", by = ...)` (see [conetwork()]).
 #'
 #' @param data A data frame with one row per work and a keyword column
 #'   (list-column or delimited string). An `id` column is optional (see `id`).

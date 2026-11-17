@@ -24,8 +24,8 @@ A data frame with columns \code{id} (entity name) and \code{value_field}
 (list-column of pooled values, with duplicates preserved).
 }
 \description{
-Groups documents by a single-valued or list-column entity (e.g., author,
-journal) and pools all values from another list-column (e.g., references,
-keywords) across documents belonging to that entity.
+\code{aggregate_by_entity()} groups documents by a single-valued or list-column
+entity (e.g., author, journal) and pools all values from another list-column
+(e.g., references, keywords) across documents belonging to that entity.
 }
 \keyword{internal}

@@ -3,26 +3,26 @@
 [![R-CMD-check](https://github.com/mohsaqr/bibnets/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/mohsaqr/bibnets/actions/workflows/R-CMD-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-`bibnets` is an R package for importing, constructing, and exporting
-bibliometric networks. It reads scholarly export formats from Scopus, Web of
-Science, OpenAlex, BibTeX, RIS, Lens.org, Dimensions, and Crossref; converts
-multi-valued fields such as authors, references, keywords, countries, and
-affiliations into sparse incidence matrices; returns edge lists for
-co-authorship, co-citation, bibliographic coupling, keyword co-occurrence,
-direct citation, historiograph, and custom co-occurrence analyses; and exports
-to igraph, tidygraph, cograph, Gephi CSV, GraphML, and sparse matrix formats.
+`bibnets` builds bibliometric networks from the exports of scholarly
+databases. A bibliometric network links authors, documents, references,
+keywords, journals, institutions or countries through the records they share:
+co-authorship links authors who write together, co-citation links references
+cited together (Small, 1973), and bibliographic coupling links documents that
+cite the same work (Kessler, 1963). These networks show how a research field
+is organized: its collaborating groups, its intellectual base and its topics.
+The weight of a link can be normalized for how active each entity is, by
+association strength, cosine, Jaccard, inclusion or equivalence, and
+authorship credit can be counted in full, fractionally or by author position.
+Networks can be built for fixed, sliding or cumulative time windows, reduced
+to their backbone with the disparity filter (Serrano et al., 2009), and
+traced over time with a historiograph of the most locally cited documents
+(Garfield, 2004).
 
-Beyond construction, `bibnets` supports similarity and dissimilarity
-normalizations (association strength, cosine, Jaccard, inclusion, equivalence,
-and raw counts); counting methods including fractional, paper, and
-position-aware authorship credit (harmonic, arithmetic, geometric, adaptive
-geometric, golden-ratio, first-author, last-author, first-last, custom);
-attention-style position weights (lead, last, proximity, circular) for
-author, keyword, country, and institution networks; temporal network
-construction with fixed, sliding, and cumulative time windows; disparity-filter
-backbone extraction for multiscale weighted networks; Garfield-style
-historiograph construction over the most locally cited documents; local
-citation scoring; and threshold and top-n pruning utilities.
+Records are read from Scopus, Web of Science, OpenAlex, BibTeX, RIS,
+Lens.org, Dimensions and Crossref exports, or from any data frame with its
+own column names and separators. Every builder returns an edge list with
+`from`, `to`, `weight` and `count` columns, which exports to igraph,
+tidygraph, cograph, Gephi CSV, GraphML and sparse matrices.
 
 ## Main Features
 

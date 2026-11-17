@@ -19,8 +19,10 @@ Scopus-specific extras: \code{index_keywords} (list-column),
 \code{affiliations} (character), \code{language} (character).
 }
 \description{
-Parses a CSV file exported from Scopus into a standardized bibliometric
-data frame with list-columns for multi-valued fields.
+\code{read_scopus()} parses a CSV file exported from Scopus into a
+standardized bibliometric data frame with list-columns for multi-valued
+fields.
+\code{\link[=read_biblio]{read_biblio()}} reads several files at once and detects the format.
 }
 \examples{
 f <- system.file("extdata", "scopus_sample.csv", package = "bibnets")
